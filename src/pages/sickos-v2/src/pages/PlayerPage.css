@@ -1,0 +1,822 @@
+/* ─── ROOT ──────────────────────────────────────────────────────────────────── */
+.pp-root {
+  min-height: calc(100vh - 56px);
+  background: var(--bg0);
+}
+
+.pp-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  font-family: var(--font-ui);
+  font-size: 15px;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ─── HEADER ────────────────────────────────────────────────────────────────── */
+.pp-header {
+  background: var(--bg1);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Team logo watermark — large, faded, right-aligned behind content */
+.pp-team-watermark {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 200px;
+  width: auto;
+  opacity: 0.11;
+  z-index: 0;
+  pointer-events: none;
+  filter: saturate(0.15) brightness(1.5) contrast(0.8);
+}
+
+/* Ensure content sits above watermark */
+.pp-header-inner {
+  position: relative;
+  z-index: 1;
+}
+.pp-team-bar {
+  position: relative;
+  z-index: 1;
+}
+
+/* Diagonal texture */
+.pp-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 3px,
+    rgba(255,255,255,0.012) 3px,
+    rgba(255,255,255,0.012) 6px
+  );
+  pointer-events: none;
+}
+
+.pp-team-bar {
+  height: 3px;
+  background: linear-gradient(90deg, var(--orange) 0%, transparent 60%);
+}
+
+.pp-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 40px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── IDENTITY ──────────────────────────────────────────────────────────────── */
+.pp-identity {
+  display: flex;
+  align-items: flex-start;
+  gap: 28px;
+}
+
+.pp-headshot-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 150px;
+  height: 150px;
+  border: 2px solid var(--border-bright);
+  overflow: hidden;
+  background: var(--bg3);
+}
+
+.pp-headshot {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+}
+
+.pp-nfl-logo {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 4px rgba(0,0,0,0.8));
+}
+
+.pp-bio {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 4px;
+}
+
+.pp-pos-tag {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--orange);
+  background: var(--orange-dim);
+  display: inline-block;
+  padding: 3px 8px;
+  border-left: 2px solid var(--orange);
+}
+
+.pp-name {
+  font-family: var(--font-display);
+  font-size: 44px;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+  line-height: 1;
+  margin-top: 2px;
+}
+
+.pp-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.pp-nfl-team {
+  font-weight: 700;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.pp-dot {
+  color: var(--text-muted);
+}
+
+.pp-physical {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.pp-fantasy-team {
+  margin-top: 4px;
+}
+
+.pp-fl {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-right: 6px;
+}
+
+.pp-team-link {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--orange);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pp-team-link:hover { text-decoration: underline; }
+
+.pp-fa-badge {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--green);
+  background: var(--green-dim);
+  padding: 3px 8px;
+  border-left: 2px solid var(--green);
+}
+
+/* ─── RANK CIRCLES ──────────────────────────────────────────────────────────── */
+.pp-ranks {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  flex-shrink: 0;
+}
+
+.rank-circle-wrap {
+  position: relative;
+  width: 110px;
+  height: 110px;
+}
+
+.rank-circle-svg {
+  width: 110px;
+  height: 110px;
+}
+
+.rank-circle-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.rank-circle-value {
+  font-family: var(--font-display);
+  font-size: 30px;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.rank-circle-label {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ─── TABS BAR ──────────────────────────────────────────────────────────────── */
+.pp-tabs-bar {
+  background: var(--bg1);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 56px;
+  z-index: 50;
+}
+
+.pp-tabs-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 40px;
+  display: flex;
+  gap: 0;
+}
+
+.pp-tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 14px 20px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-bottom: -1px;
+}
+
+.pp-tab:hover { color: var(--text-secondary); }
+
+.pp-tab--active {
+  color: var(--orange);
+  border-bottom-color: var(--orange);
+}
+
+/* ─── CONTENT ───────────────────────────────────────────────────────────────── */
+.pp-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 40px 80px;
+}
+
+/* ─── STAT PANELS ───────────────────────────────────────────────────────────── */
+.pp-panels {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+}
+
+.stat-panel {
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  padding: 20px 20px 16px;
+}
+
+.stat-panel-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.stat-panel-title {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+
+.stat-panel-score {
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--orange);
+  letter-spacing: 0.02em;
+}
+
+.stat-panel-meta {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+
+.stat-panel-cols {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  text-transform: lowercase;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cols-right { display: flex; gap: 4px; align-items: center; }
+.col-sep { color: var(--bg4); }
+.col-pct { color: var(--orange); }
+
+/* ─── STAT ROWS ─────────────────────────────────────────────────────────────── */
+.stat-panel-rows { display: flex; flex-direction: column; gap: 10px; }
+
+.stat-row {
+  display: grid;
+  grid-template-columns: 1fr auto 60px;
+  align-items: center;
+  gap: 10px;
+}
+
+.stat-row--highlight .stat-row-label {
+  color: var(--red);
+}
+
+.stat-row-label {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  letter-spacing: 0.04em;
+}
+
+.stat-row-values {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-accent);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.stat-val { color: var(--text-primary); min-width: 32px; text-align: right; }
+.stat-sep { color: var(--text-muted); font-size: 10px; }
+.stat-avg { color: var(--text-muted); min-width: 28px; text-align: right; }
+.stat-pct { min-width: 22px; text-align: right; }
+
+.pct-green { color: var(--green); }
+.pct-orange { color: var(--orange); }
+.pct-gold { color: var(--gold); }
+.pct-red { color: var(--red); }
+
+/* Percentile bar */
+.pct-bar-wrap {
+  display: block;
+  height: 3px;
+  background: var(--bg4);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.pct-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.6s ease;
+}
+
+/* ─── LOADING / EMPTY ───────────────────────────────────────────────────────── */
+.pp-stats-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 80px 0;
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.pp-stats-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--bg4);
+  border-top-color: var(--orange);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.pp-no-stats {
+  text-align: center;
+  padding: 80px 0;
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ─── WEEKLY CHART ──────────────────────────────────────────────────────────── */
+.pp-weekly { display: flex; flex-direction: column; gap: 24px; }
+
+.pp-chart-wrap {
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  padding: 20px 24px;
+}
+
+.pp-chart-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.pp-chart-title {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+
+.pp-chart-sub {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.chart-tooltip {
+  background: var(--bg3);
+  border: 1px solid var(--border-bright);
+  padding: 8px 12px;
+  font-family: var(--font-ui);
+}
+
+.chart-tooltip-week {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.chart-tooltip-pts {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--orange);
+}
+
+/* ─── WEEKLY TABLE ──────────────────────────────────────────────────────────── */
+.pp-weekly-table {
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  overflow-x: auto;
+}
+
+.pp-weekly-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.pp-weekly-table th {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+}
+
+.pp-weekly-table td {
+  font-family: var(--font-accent);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.pp-weekly-table tr:last-child td { border-bottom: none; }
+
+.pp-weekly-table tr:hover td { background: var(--bg2); }
+
+.pp-weekly-table tr.row-best td {
+  background: rgba(232,130,42,0.06);
+}
+
+.td-week { color: var(--text-muted); font-size: 12px; }
+.td-pts { color: var(--orange); font-weight: 700; font-size: 14px; }
+.td-neg { color: var(--red); }
+
+/* ─── CONTRACT TAB ──────────────────────────────────────────────────────────── */
+.pp-contract { max-width: 600px; }
+
+.pp-contract-card {
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  padding: 32px;
+}
+
+.pp-contract-header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pp-contract-status { display: inline-block; }
+
+.pp-contract-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.pp-bid-btn {
+  display: inline-block;
+  background: var(--orange);
+  color: #000;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 12px 24px;
+  transition: all 0.15s;
+  width: fit-content;
+}
+
+.pp-bid-btn:hover { background: #f09234; }
+
+/* ─── SEASON SELECTOR ───────────────────────────────────────────────────────── */
+.pp-tabs-season {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.season-selector {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.season-arrow {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 18px;
+  line-height: 1;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  padding: 0;
+}
+.season-arrow:hover:not(:disabled) {
+  background: var(--bg4);
+  color: var(--orange);
+  border-color: var(--orange);
+}
+.season-arrow:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.season-select {
+  background: var(--bg3);
+  border: 1px solid var(--border-bright);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 5px 10px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.season-select:focus {
+  border-color: var(--orange);
+}
+
+/* ─── NO STATS STATE ────────────────────────────────────────────────────────── */
+.pp-no-stats {
+  text-align: center;
+  padding: 80px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.pp-no-stats span {
+  font-family: var(--font-ui);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.pp-no-stats p {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ─── CONTRACT DETAILS ──────────────────────────────────────────────────────── */
+.pp-contract-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.pp-contract-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.pp-contract-row:last-child { border-bottom: none; }
+.pp-contract-label {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.pp-contract-val {
+  font-family: var(--font-accent);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.pp-contract-salary {
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--orange);
+}
+
+/* ─── SEASON SUMMARY (when only totals available, no weekly breakdown) ──────── */
+.pp-season-summary {
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.pp-season-summary-inner {
+  display: flex;
+  gap: 64px;
+  align-items: center;
+}
+
+.pp-ss-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.pp-ss-val {
+  font-family: var(--font-display);
+  font-size: 48px;
+  letter-spacing: 0.02em;
+  color: var(--orange);
+  line-height: 1;
+}
+
+.pp-ss-label {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.pp-season-note {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ─── SMALL BID BUTTON (in header) ─────────────────────────────────────────── */
+.pp-bid-btn-sm {
+  display: inline-block;
+  background: var(--orange);
+  color: #000;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  text-decoration: none;
+  transition: background 0.15s;
+  margin-left: 10px;
+}
+.pp-bid-btn-sm:hover { background: #f09234; }
+
+/* ─── FANTASY TEAM LOGO ─────────────────────────────────────────────────────── */
+.pp-fantasy-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  border-radius: 3px;
+  flex-shrink: 0;
+  margin-right: 2px;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.5));
+}
+
+.pp-ranks {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 16px 20px;
+  border-radius: 4px;
+  position: relative;
+  z-index: 1;
+}
+
+.pp-bio {
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(6px);
+  padding: 14px 18px;
+  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.06);
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── FORCE ALL BIO TEXT WHITE — override any inherited muted colors ─────────── */
+.pp-bio * {
+  color: rgba(255, 255, 255, 0.92);
+}
+.pp-bio .pp-pos-tag {
+  color: inherit; /* overridden inline per position */
+}
+.pp-bio .pp-name {
+  color: #ffffff;
+}
+.pp-bio .pp-team-link {
+  color: inherit; /* overridden inline with team accent */
+}
+.pp-bio .pp-fa-badge {
+  color: var(--green);
+}
+.pp-bio .pp-bid-btn-sm {
+  color: #000;
+}

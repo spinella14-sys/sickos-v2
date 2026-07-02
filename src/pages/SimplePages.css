@@ -1,0 +1,49 @@
+.sp-root { background: var(--bg0); min-height: calc(100vh - 56px); }
+.sp-header { background: var(--bg1); border-bottom: 1px solid var(--border); padding: 32px 40px; }
+.sp-title { font-family: var(--font-display); font-size: 42px; letter-spacing: 0.04em; }
+.sp-sub { font-family: var(--font-ui); font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); margin-top: 4px; }
+.sp-content { max-width: 1200px; margin: 0 auto; padding: 32px 40px; }
+.sp-logo-ph { display: inline-block; background: var(--bg3); border-radius: 2px; flex-shrink: 0; }
+.sp-note { margin-top: 24px; font-family: var(--font-body); font-size: 13px; color: var(--text-muted); font-style: italic; }
+
+/* Transactions */
+.txn-full-list { display: flex; flex-direction: column; border: 1px solid var(--border); }
+.txn-full-row { display: flex; align-items: flex-start; gap: 16px; padding: 16px; border-bottom: 1px solid var(--border); }
+.txn-full-row:last-child { border-bottom: none; }
+.txn-full-date { font-family: var(--font-body); font-size: 11px; color: var(--text-muted); white-space: nowrap; padding-top: 2px; min-width: 80px; }
+.txn-full-type { font-family: var(--font-ui); font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; padding: 3px 8px; border-left: 2px solid; flex-shrink: 0; background: rgba(255,255,255,0.04); }
+.txn-full-body { flex: 1; }
+.txn-full-desc { font-family: var(--font-ui); font-size: 14px; font-weight: 500; color: var(--text-primary); margin-bottom: 6px; }
+.txn-full-teams { display: flex; gap: 12px; flex-wrap: wrap; }
+.txn-full-team { display: flex; align-items: center; gap: 5px; font-family: var(--font-ui); font-size: 12px; color: var(--text-muted); font-weight: 600; }
+
+/* Draft */
+.draft-years { display: flex; gap: 4px; margin-bottom: 20px; }
+.draft-year-btn { background: var(--bg3); border: 1px solid var(--border); color: var(--text-muted); font-family: var(--font-ui); font-size: 13px; font-weight: 700; letter-spacing: 0.08em; padding: 8px 18px; cursor: pointer; transition: all 0.15s; }
+.draft-year-btn--active { background: var(--orange); border-color: var(--orange); color: #000; }
+.draft-table { border: 1px solid var(--border); }
+.draft-row { display: grid; grid-template-columns: 80px 1fr 1fr 80px; align-items: center; gap: 16px; padding: 10px 16px; border-bottom: 1px solid var(--border); }
+.draft-row:last-child { border-bottom: none; }
+.draft-row--header { font-family: var(--font-ui); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-muted); background: var(--bg2); }
+.draft-pick { font-family: var(--font-display); font-size: 16px; color: var(--orange); }
+.draft-team { display: flex; align-items: center; gap: 8px; font-family: var(--font-ui); font-size: 13px; color: var(--text-secondary); }
+.draft-player { font-family: var(--font-ui); font-size: 13px; color: var(--text-muted); }
+.draft-pos { font-family: var(--font-ui); font-size: 12px; font-weight: 700; color: var(--text-muted); }
+
+/* Rules */
+.rules-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+.rules-card { background: var(--bg1); border: 1px solid var(--border); padding: 24px; }
+.rules-card-title { font-family: var(--font-ui); font-size: 13px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--orange); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+.rules-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.rules-list li { font-family: var(--font-body); font-size: 13px; color: var(--text-secondary); padding-left: 14px; position: relative; }
+.rules-list li::before { content: '·'; position: absolute; left: 0; color: var(--orange); }
+
+/* Admin */
+.admin-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+.admin-card { background: var(--bg1); border: 1px solid var(--border); padding: 24px; display: flex; flex-direction: column; gap: 8px; transition: border-color 0.15s; }
+.admin-card:hover { border-color: var(--border-bright); }
+.admin-icon { font-size: 24px; }
+.admin-label { font-family: var(--font-ui); font-size: 14px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-primary); }
+.admin-desc { font-family: var(--font-body); font-size: 13px; color: var(--text-muted); flex: 1; }
+.admin-btn { background: var(--bg3); border: 1px solid var(--border-bright); color: var(--text-muted); font-family: var(--font-ui); font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 8px 12px; cursor: pointer; transition: all 0.15s; margin-top: 8px; }
+.admin-btn:hover { background: var(--bg4); color: var(--text-primary); border-color: var(--orange); }

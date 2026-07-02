@@ -1,0 +1,150 @@
+.dc-root { min-height: 100vh; background: var(--bg0); }
+
+/* Header */
+.dc-header {
+  background: var(--bg1); border-bottom: 1px solid var(--border);
+  padding: 24px 32px 20px;
+}
+.dc-header-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  max-width: 1200px; margin: 0 auto;
+}
+.dc-title {
+  font-family: var(--font-display); font-size: 32px; font-weight: 900;
+  letter-spacing: 0.02em; color: var(--text-primary); margin: 0 0 4px;
+}
+.dc-sub { font-family: var(--font-ui); font-size: 13px; color: var(--text-muted); margin: 0; }
+.dc-board-btn {
+  font-family: var(--font-ui); font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; padding: 10px 20px;
+  background: var(--orange); color: #000; border: none; cursor: pointer; transition: opacity 0.15s;
+}
+.dc-board-btn:hover { opacity: 0.85; }
+
+/* Loading */
+.dc-loading {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 80px; color: var(--text-muted); font-family: var(--font-ui); font-size: 13px;
+}
+.dc-spinner {
+  width: 20px; height: 20px; border: 2px solid var(--border);
+  border-top-color: var(--orange); border-radius: 50%;
+  animation: dc-spin 0.75s linear infinite;
+}
+@keyframes dc-spin { to { transform: rotate(360deg); } }
+@keyframes dc-pulse {
+  0%, 100% { opacity: 1; } 50% { opacity: 0.4; }
+}
+
+.dc-content { max-width: 1200px; margin: 0 auto; padding: 32px; }
+
+/* Phase bar */
+.dc-phase-bar {
+  display: flex; gap: 0; margin-bottom: 32px;
+  border: 1px solid var(--border); overflow: hidden;
+}
+.dc-phase {
+  flex: 1; display: flex; align-items: center; gap: 10px;
+  padding: 14px 20px; border-right: 1px solid var(--border);
+  background: var(--bg1);
+}
+.dc-phase:last-child { border-right: none; }
+.dc-phase--active { background: rgba(232,130,42,0.06); border-right-color: rgba(232,130,42,0.2); }
+.dc-phase--done   { opacity: 0.6; }
+.dc-phase-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  background: var(--border-bright);
+}
+.dc-phase--active .dc-phase-dot { background: var(--orange); animation: dc-pulse 1.5s ease-in-out infinite; }
+.dc-phase--done .dc-phase-dot   { background: #3a9fd4; }
+.dc-phase-label {
+  font-family: var(--font-ui); font-size: 12px; font-weight: 700;
+  color: var(--text-primary); letter-spacing: 0.04em;
+}
+.dc-phase-status {
+  font-family: var(--font-ui); font-size: 9px; font-weight: 700; letter-spacing: 0.14em;
+  color: var(--text-muted); margin-left: auto;
+}
+.dc-phase--active .dc-phase-status { color: var(--orange); }
+.dc-phase--done .dc-phase-status   { color: #3a9fd4; }
+
+/* Cards */
+.dc-cards {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 16px; margin-bottom: 32px;
+}
+@media (max-width: 900px) { .dc-cards { grid-template-columns: 1fr; } }
+
+.dc-card {
+  background: var(--bg1); border: 1px solid var(--border);
+  padding: 20px; display: flex; flex-direction: column; gap: 16px;
+  transition: border-color 0.15s;
+}
+.dc-card:hover { border-color: var(--dc-accent, var(--orange)); }
+
+.dc-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.dc-card-title {
+  font-family: var(--font-display); font-size: 20px; font-weight: 800;
+  letter-spacing: 0.02em; color: var(--text-primary); margin-bottom: 3px;
+}
+.dc-card-sub { font-family: var(--font-ui); font-size: 11px; color: var(--text-muted); }
+
+.dc-card-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.dc-stat {}
+.dc-stat-val {
+  font-family: var(--font-display); font-size: 22px; font-weight: 800;
+  letter-spacing: 0.02em;
+}
+.dc-stat-label { font-family: var(--font-ui); font-size: 9px; font-weight: 700; letter-spacing: 0.12em; color: var(--text-muted); text-transform: uppercase; }
+
+.dc-cta {
+  font-family: var(--font-ui); font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; padding: 10px 16px; width: 100%; cursor: pointer;
+  background: none; border: 1px solid var(--dc-accent, var(--orange));
+  color: var(--dc-accent, var(--orange)); transition: all 0.15s;
+}
+.dc-cta:hover { background: color-mix(in srgb, var(--dc-accent, var(--orange)) 10%, transparent); }
+.dc-cta:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* My picks */
+.dc-my-picks {
+  background: var(--bg1); border: 1px solid var(--border);
+  padding: 20px; margin-bottom: 24px;
+}
+.dc-section-label {
+  font-family: var(--font-ui); font-size: 9px; font-weight: 800; letter-spacing: 0.18em;
+  color: var(--text-muted); text-transform: uppercase; margin-bottom: 14px;
+}
+.dc-picks-grid { display: flex; gap: 24px; margin-bottom: 14px; }
+.dc-round-col {}
+.dc-round-label {
+  font-family: var(--font-ui); font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+  color: var(--orange); text-transform: uppercase; margin-bottom: 8px;
+}
+.dc-pick-chip {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px; background: var(--bg2); border: 1px solid var(--border);
+  margin-bottom: 4px; min-width: 160px;
+}
+.dc-pick-chip--used { opacity: 0.55; }
+.dc-pick-num { font-family: var(--font-ui); font-size: 12px; font-weight: 800; color: var(--orange); }
+.dc-pick-via { font-family: var(--font-ui); font-size: 9px; color: var(--text-muted); }
+.dc-pick-player { font-family: var(--font-ui); font-size: 11px; font-weight: 600; color: var(--text-primary); }
+.dc-board-link {
+  background: none; border: none; font-family: var(--font-ui); font-size: 12px; font-weight: 700;
+  color: var(--orange); cursor: pointer; padding: 0; letter-spacing: 0.04em;
+}
+.dc-board-link:hover { text-decoration: underline; }
+
+/* Admin panel */
+.dc-admin-panel {
+  background: var(--bg1); border: 1px solid var(--border); padding: 20px;
+}
+.dc-admin-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.dc-admin-btn {
+  font-family: var(--font-ui); font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; padding: 8px 16px; cursor: pointer;
+  background: var(--bg3); border: 1px solid var(--border-bright);
+  color: var(--text-secondary); transition: all 0.12s;
+}
+.dc-admin-btn:hover { border-color: var(--orange); color: var(--orange); }

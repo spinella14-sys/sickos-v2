@@ -1,0 +1,406 @@
+.cs-root { background:var(--bg0); min-height:calc(100vh - 56px); }
+
+/* ── HEADER ─────────────────────────────────────────────────────────────────── */
+.cs-header { background:var(--bg1); border-bottom:1px solid var(--border); }
+.cs-header-inner { max-width:1400px; margin:0 auto; padding:20px 40px 0; display:flex; align-items:center; justify-content:space-between; gap:20px; }
+.cs-identity { display:flex; align-items:center; gap:16px; }
+.cs-logo  { height:56px; width:auto; object-fit:contain; }
+.cs-title { font-family:var(--font-display); font-size:28px; letter-spacing:0.04em; }
+.cs-sub   { font-family:var(--font-ui); font-size:11px; color:var(--text-muted); letter-spacing:0.08em; margin-top:3px; }
+.cs-header-right { display:flex; align-items:center; gap:12px; }
+.cs-back { font-family:var(--font-ui); font-size:12px; color:var(--text-muted); text-decoration:none; }
+.cs-back:hover { color:var(--orange); }
+
+/* ── NON-GUARANTEED YEAR STYLING ────────────────────────────────────────────── */
+.cs-ng-cell { background: var(--purple-dim) !important; }
+.cs-ng-dot  {
+  font-family: var(--font-ui); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.1em; color: var(--purple); border: 1px solid var(--purple);
+  padding: 1px 3px; display: inline-block;
+}
+
+/* Admin auth */
+.cs-admin-auth { display:flex; gap:6px; }
+.cs-admin-input { background:var(--bg2); border:1px solid var(--border); color:var(--text-primary);
+  font-family:var(--font-body); font-size:12px; padding:6px 10px; outline:none; width:140px; }
+.cs-admin-input:focus { border-color:var(--orange); }
+.cs-admin-btn { background:var(--bg3); border:1px solid var(--border-bright); color:var(--text-secondary);
+  font-family:var(--font-ui); font-size:11px; font-weight:700; letter-spacing:0.08em;
+  padding:6px 12px; cursor:pointer; transition:all 0.15s; }
+.cs-admin-btn:hover { border-color:var(--orange); color:var(--orange); }
+.cs-admin-badge { font-family:var(--font-ui); font-size:11px; color:var(--green); display:flex; align-items:center; gap:8px; }
+.cs-admin-exit { background:none; border:1px solid var(--border); color:var(--text-muted); font-family:var(--font-ui); font-size:11px; padding:4px 8px; cursor:pointer; }
+
+/* Year summary bar */
+.cs-year-summary {
+  max-width:1400px; margin:0 auto;
+  display:grid;
+  grid-template-columns: 280px repeat(6, 1fr);
+  border-top:1px solid var(--border);
+  margin-top:12px;
+}
+.cs-ys-label { display:flex; align-items:center; padding:12px 40px;
+  font-family:var(--font-ui); font-size:10px; font-weight:700; letter-spacing:0.2em;
+  text-transform:uppercase; color:var(--text-muted); }
+.cs-ys-col { padding:10px 12px; border-left:1px solid var(--border); display:flex; flex-direction:column; gap:3px; }
+.cs-ys-year  { font-family:var(--font-ui); font-size:10px; font-weight:700; letter-spacing:0.1em; color:var(--text-muted); }
+.cs-ys-val   { font-family:var(--font-display); font-size:18px; letter-spacing:0.02em; color:var(--text-primary); }
+.cs-ys-space { font-family:var(--font-accent); font-size:10px; color:var(--text-muted); }
+.cs-ys-bar-wrap  { margin-top:4px; }
+.cs-ys-bar-track { position:relative; height:3px; background:var(--bg4); border-radius:2px; }
+.cs-ys-bar-fill  { height:100%; background:var(--green); border-radius:2px; transition:width 0.4s; }
+.cs-ys-bar-fill.cs-ys-lux { background:var(--gold); }
+.cs-ys-lux-line  { position:absolute; top:-2px; bottom:-2px; width:1px; background:var(--orange); opacity:0.7; }
+.cs-over { color:var(--red) !important; }
+.cs-lux  { color:var(--gold) !important; }
+
+/* ── CONTENT ────────────────────────────────────────────────────────────────── */
+.cs-content { max-width:1400px; margin:0 auto; padding:0 40px 60px; }
+.cs-loading { padding:60px 0; text-align:center; font-family:var(--font-ui); font-size:13px; color:var(--text-muted); letter-spacing:0.1em; text-transform:uppercase; }
+.cs-empty   { padding:40px; text-align:center; font-family:var(--font-ui); font-size:13px; color:var(--text-muted); letter-spacing:0.08em; background:var(--bg1); border:1px solid var(--border); margin-top:1px; }
+
+/* ── TABLE ──────────────────────────────────────────────────────────────────── */
+.cs-table-wrap { overflow-x:auto; border:1px solid var(--border); border-top:none; }
+.cs-table { width:100%; border-collapse:collapse; min-width:900px; }
+
+/* Column widths */
+.th-slot   { width:60px; }
+.th-player { min-width:200px; }
+.th-year   { width:110px; text-align:right; }
+.th-edit   { width:56px; text-align:center; }
+
+.cs-table thead tr { background:var(--bg2); }
+.cs-table th { font-family:var(--font-ui); font-size:10px; font-weight:700; letter-spacing:0.14em;
+  text-transform:uppercase; color:var(--text-muted); padding:9px 12px;
+  text-align:left; border-bottom:1px solid var(--border); white-space:nowrap; }
+.cs-table th.th-year { text-align:right; }
+
+/* Section headers */
+.cs-section-header td {
+  background:var(--bg2); font-family:var(--font-ui); font-size:10px; font-weight:800;
+  letter-spacing:0.2em; text-transform:uppercase; padding:7px 12px;
+  border-top:2px solid var(--border); border-bottom:1px solid var(--border);
+  border-left:3px solid; color:var(--text-muted);
+}
+
+/* Player rows */
+.cs-row { border-bottom:1px solid var(--border); transition:background 0.1s; }
+.cs-row:hover { background:var(--bg2); }
+.cs-row td { padding:8px 12px; vertical-align:middle; }
+
+.cs-slot span { font-family:var(--font-ui); font-size:10px; font-weight:700; letter-spacing:0.1em;
+  text-transform:uppercase; color:var(--text-muted); border-left:3px solid; padding-left:6px; display:block; white-space:nowrap; }
+
+.cs-player { min-width:200px; }
+.cs-player-link { display:flex; align-items:center; gap:9px; text-decoration:none; }
+.cs-shot { width:32px; height:32px; object-fit:cover; object-position:top; border-radius:2px; background:var(--bg3); flex-shrink:0; }
+.cs-pinfo { display:flex; flex-direction:column; gap:2px; }
+.cs-pname { font-family:var(--font-ui); font-size:13px; font-weight:700; color:var(--text-primary); white-space:nowrap; }
+.cs-ppos  { font-family:var(--font-ui); font-size:10px; font-weight:600; letter-spacing:0.04em; }
+
+/* Year cells */
+.cs-year-cell { text-align:right; width:110px; }
+.cs-year-empty { color:var(--text-muted); font-family:var(--font-accent); font-size:12px; }
+.cs-year-has-val { position:relative; }
+.cs-sal { font-family:var(--font-display); font-size:15px; color:var(--text-primary); display:block; letter-spacing:0.02em; }
+.cs-cap-hit { font-family:var(--font-accent); font-size:10px; color:var(--text-muted); display:block; margin-top:1px; }
+
+/* FA badges */
+.cs-fa-badge {
+  display:inline-block;
+  font-family:var(--font-ui); font-size:10px; font-weight:800; letter-spacing:0.12em;
+  text-transform:uppercase; padding:4px 8px; border-radius:2px; white-space:nowrap;
+}
+.cs-fa-rfa   { background:rgba(217,79,79,0.15); color:var(--red); border:1px solid var(--red); }
+.cs-fa-rfa-1 { border-style:solid; }
+.cs-fa-rfa-2 { border-style:dashed; }
+.cs-fa-ufa   { background:var(--green-dim); color:var(--green); border:1px solid var(--green); }
+
+/* Edit button */
+.cs-edit-cell { text-align:center; }
+.cs-edit-btn  { background:none; border:1px solid var(--border); color:var(--text-muted);
+  font-family:var(--font-ui); font-size:10px; font-weight:700; letter-spacing:0.08em;
+  padding:4px 8px; cursor:pointer; transition:all 0.15s; text-transform:uppercase; }
+.cs-edit-btn:hover { border-color:var(--orange); color:var(--orange); }
+
+/* Footer totals */
+.cs-totals td, .cs-limits td {
+  background:var(--bg2); font-family:var(--font-ui); font-size:11px; font-weight:700;
+  letter-spacing:0.1em; text-transform:uppercase; padding:9px 12px;
+  border-top:2px solid var(--border); border-bottom:1px solid var(--border);
+}
+.cs-total-cell, .cs-limit-cell { text-align:right; font-family:var(--font-display); font-size:16px; }
+.cs-limit-cell { color:var(--text-muted); font-size:13px; }
+.cs-lux-row .cs-limit-cell { color:var(--gold) !important; }
+
+/* Legend */
+.cs-legend { display:flex; align-items:center; gap:20px; padding:16px 0; flex-wrap:wrap; }
+.cs-legend-item { display:flex; align-items:center; gap:8px; font-family:var(--font-body); font-size:12px; color:var(--text-muted); }
+.cs-legend-sub  { font-style:italic; color:var(--text-muted); font-size:11px; }
+
+/* ── EDIT MODAL ─────────────────────────────────────────────────────────────── */
+.cs-modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:500;
+  display:flex; align-items:center; justify-content:center; }
+.cs-modal { background:var(--bg1); border:1px solid var(--border-bright); width:480px; max-width:95vw;
+  border-top:3px solid var(--orange); }
+.cs-modal-header { display:flex; align-items:center; justify-content:space-between;
+  padding:16px 20px; border-bottom:1px solid var(--border); }
+.cs-modal-title { font-family:var(--font-ui); font-size:13px; font-weight:700; letter-spacing:0.1em;
+  text-transform:uppercase; color:var(--text-primary); }
+.cs-modal-close { background:none; border:none; color:var(--text-muted); font-size:16px; cursor:pointer; padding:2px 6px; }
+.cs-modal-close:hover { color:var(--red); }
+.cs-modal-body { padding:20px; display:flex; flex-direction:column; gap:16px; }
+.cs-modal-years { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.cs-modal-year { display:flex; flex-direction:column; gap:4px; }
+.cs-modal-year--ng { background:rgba(212,168,67,0.06); padding:6px; border-radius:2px; }
+.cs-modal-label { font-family:var(--font-ui); font-size:10px; font-weight:700; letter-spacing:0.12em;
+  text-transform:uppercase; color:var(--text-muted); }
+.cs-modal-sal-wrap { display:flex; }
+.cs-modal-prefix { background:var(--bg3); border:1px solid var(--border-bright); border-right:none;
+  color:var(--text-muted); font-family:var(--font-ui); font-weight:700; padding:7px 8px; font-size:12px; }
+.cs-modal-input { background:var(--bg2); border:1px solid var(--border-bright); color:var(--text-primary);
+  font-family:var(--font-body); font-size:14px; padding:6px 10px; outline:none; flex:1; width:100%; }
+.cs-modal-input:focus { border-color:var(--orange); }
+.cs-modal-options { display:flex; flex-direction:column; gap:10px; }
+.cs-modal-field { display:flex; flex-direction:column; gap:5px; }
+.cs-modal-select { background:var(--bg2); border:1px solid var(--border-bright); color:var(--text-primary);
+  font-family:var(--font-body); font-size:13px; padding:8px 10px; outline:none; cursor:pointer; }
+.cs-modal-checkbox { display:flex; align-items:center; gap:8px; font-family:var(--font-body); font-size:13px;
+  color:var(--text-secondary); cursor:pointer; }
+.cs-modal-checkbox input { accent-color:var(--orange); }
+.cs-modal-error { font-family:var(--font-body); font-size:13px; color:var(--red);
+  background:var(--red-dim); padding:8px 12px; border-left:3px solid var(--red); }
+.cs-modal-footer { display:flex; justify-content:flex-end; gap:8px; padding:14px 20px;
+  border-top:1px solid var(--border); background:var(--bg2); }
+.cs-modal-cancel { background:none; border:1px solid var(--border); color:var(--text-muted);
+  font-family:var(--font-ui); font-size:12px; font-weight:700; padding:8px 16px; cursor:pointer; }
+.cs-modal-save { background:var(--orange); border:none; color:#000;
+  font-family:var(--font-ui); font-size:12px; font-weight:700; letter-spacing:0.08em;
+  padding:8px 20px; cursor:pointer; }
+.cs-modal-save:disabled { opacity:0.4; cursor:not-allowed; }
+
+/* ── EDIT MODAL ENHANCEMENTS ─────────────────────────────────────────────────── */
+.cs-modal-pos { font-family:var(--font-ui); font-size:11px; font-weight:700;
+  letter-spacing:0.1em; margin-left:10px; }
+
+.cs-modal-year-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; }
+
+/* MAX year */
+.cs-modal-year--max { background:rgba(212,168,67,0.08); border:1px solid rgba(212,168,67,0.25); padding:6px; border-radius:2px; }
+.cs-modal-year--max .cs-modal-prefix { border-color:var(--gold); color:var(--gold); }
+.cs-modal-max-tag { font-family:var(--font-ui); font-size:9px; font-weight:800; letter-spacing:0.12em;
+  text-transform:uppercase; color:var(--gold); background:rgba(212,168,67,0.15);
+  border:1px solid var(--gold); padding:1px 5px; }
+
+/* Below min error */
+.cs-modal-year--err { background:rgba(217,79,79,0.06); border:1px solid rgba(217,79,79,0.25); padding:6px; border-radius:2px; }
+.cs-modal-err-tag { font-family:var(--font-ui); font-size:9px; font-weight:800; letter-spacing:0.1em;
+  text-transform:uppercase; color:var(--red); border:1px solid var(--red); padding:1px 5px; }
+
+/* Cap hit line below each input */
+.cs-modal-cap-line { margin-top:3px; }
+.cs-modal-cap-note { font-family:var(--font-accent); font-size:10px; color:var(--text-muted); }
+.cs-modal-cap-max  { color:var(--gold) !important; font-weight:600; }
+.cs-modal-cap-full { color:var(--text-muted); }
+.cs-modal-credit   { font-size:9px; opacity:0.8; }
+
+/* Range hint */
+.cs-modal-range-hint { font-family:var(--font-accent); font-size:9px; color:var(--text-muted);
+  opacity:0.6; margin-top:2px; }
+
+/* MAX contract notice banner */
+.cs-modal-max-notice {
+  background:rgba(212,168,67,0.1);
+  border:1px solid var(--gold);
+  border-left:3px solid var(--gold);
+  padding:10px 14px;
+  font-family:var(--font-body); font-size:12px; color:var(--gold);
+  line-height:1.5;
+}
+
+/* ── PURPLE FOR NON-GUARANTEED ──────────────────────────────────────────────── */
+
+.cs-ng-cell    { background: var(--purple-dim) !important; }
+
+/* ── QUICK-FILL BUTTONS ─────────────────────────────────────────────────────── */
+.cs-modal-quickfill {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  padding: 10px 14px; background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 3px;
+}
+.cs-modal-quickfill-label {
+  font-family: var(--font-ui); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted);
+  margin-right: 4px;
+}
+.cs-modal-quickfill-hint {
+  font-family: var(--font-body); font-size: 10px; color: var(--text-muted);
+  font-style: italic; margin-left: auto;
+}
+.cs-qf-btn {
+  font-family: var(--font-ui); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 5px 10px; border: 1px solid; cursor: pointer;
+  transition: all 0.15s; background: none;
+}
+.cs-qf-max  { color: var(--gold);   border-color: var(--gold);   }
+.cs-qf-max:hover  { background: rgba(212,168,67,0.15); }
+.cs-qf-min  { color: var(--green);  border-color: var(--green);  }
+.cs-qf-min:hover  { background: var(--green-dim); }
+.cs-qf-flat { color: var(--text-muted); border-color: var(--border-bright); }
+.cs-qf-flat:hover { background: var(--bg3); color: var(--text-primary); }
+.cs-qf-asc  { color: var(--orange); border-color: var(--orange); }
+.cs-qf-asc:hover  { background: var(--orange-dim); }
+.cs-qf-desc { color: var(--blue);   border-color: var(--blue);   }
+.cs-qf-desc:hover { background: rgba(58,159,212,0.1); }
+
+/* ── YEAR GRID (wider for more years) ──────────────────────────────────────── */
+.cs-modal-years-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+}
+
+/* ── BADGES ─────────────────────────────────────────────────────────────────── */
+.cs-modal-year-badges { display: flex; gap: 4px; align-items: center; }
+.cs-badge-max { font-family:var(--font-ui); font-size:9px; font-weight:800; letter-spacing:0.1em;
+  color:var(--gold);   background:rgba(212,168,67,0.15); border:1px solid var(--gold);   padding:1px 4px; }
+.cs-badge-ng  { font-family:var(--font-ui); font-size:9px; font-weight:800; letter-spacing:0.1em;
+  color:var(--purple); background:var(--purple-dim);     border:1px solid var(--purple); padding:1px 4px; }
+.cs-badge-err { font-family:var(--font-ui); font-size:9px; font-weight:800; letter-spacing:0.1em;
+  color:var(--red);    background:var(--red-dim);         border:1px solid var(--red);    padding:1px 4px; }
+
+/* ── CAP NOTES ──────────────────────────────────────────────────────────────── */
+.cs-cap-note     { font-family:var(--font-accent); font-size:10px; color:var(--text-muted); display:block; margin-top:2px; }
+.cs-cap-note em  { font-style:normal; opacity:0.7; font-size:9px; }
+.cs-cap-max      { color:var(--gold) !important; }
+
+/* Header layout */
+.cs-modal-header-left { display:flex; align-items:center; gap:8px; }
+.cs-modal-years-badge { font-family:var(--font-ui); font-size:11px; color:var(--text-muted); background:var(--bg3); padding:2px 7px; border-radius:10px; }
+
+/* ── CONTRACT LENGTH SELECTOR ───────────────────────────────────────────────── */
+.cs-modal-options-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 16px;
+  align-items: start;
+}
+.cs-years-select {
+  display: flex;
+  gap: 4px;
+}
+.cs-yr-btn {
+  background: var(--bg2);
+  border: 1px solid var(--border-bright);
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.cs-yr-btn:hover { border-color: var(--orange); color: var(--text-primary); }
+.cs-yr-btn--active {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: #000;
+}
+
+/* ── MAX CONTRACT: cap hit is primary number (gold), salary is secondary ─────── */
+.cs-sal--cap-hit {
+  color: var(--gold) !important;
+  font-family: var(--font-display);
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  display: block;
+}
+.cs-cap-hit--full {
+  color: var(--text-muted);
+  font-family: var(--font-accent);
+  font-size: 10px;
+  display: block;
+  margin-top: 1px;
+}
+
+/* ── NG years: no badge, just purple text (handled inline) ───────────────────── */
+
+/* ── PER-YEAR GUARANTEED TOGGLE IN EDIT MODAL ───────────────────────────────── */
+.cs-modal-guar-toggle {
+  display: flex; align-items: center; gap: 6px;
+  cursor: pointer; margin-top: 5px;
+  font-family: var(--font-ui); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+.cs-modal-guar-toggle input { accent-color: var(--orange); cursor: pointer; }
+.cs-guar-yes { color: var(--green); }
+.cs-guar-no  { color: var(--purple); }
+
+/* ── DEAD CAP ROWS ───────────────────────────────────────────────────────────── */
+.cs-section-dc td { color: var(--text-muted) !important; }
+.cs-row-dc { opacity: 0.75; }
+.cs-row-dc:hover { background: var(--bg2); opacity: 1; }
+.cs-dc-player { display:flex; align-items:center; gap:9px; }
+.cs-shot-dc { filter: grayscale(0.6); }
+.cs-pname-dc { color: var(--text-muted) !important; font-style: italic; }
+.cs-ppos-dc  { font-family: var(--font-ui); font-size: 10px; color: var(--text-muted);
+  letter-spacing: 0.06em; text-transform: uppercase; }
+.cs-dc-cell  { }
+.cs-sal-dc   { font-family: var(--font-display); font-size: 15px;
+  color: var(--red) !important; letter-spacing: 0.02em; display: block; }
+
+/* ── SIGNING BONUS PROJECTION WIDGET ────────────────────────────────────────── */
+.sb-widget { background:var(--bg1); border:1px solid var(--border); margin-top:24px; }
+.sb-widget-header { display:flex; align-items:center; justify-content:space-between;
+  padding:14px 20px; border-bottom:1px solid var(--border); }
+.sb-widget-title { font-family:var(--font-ui); font-size:11px; font-weight:800;
+  letter-spacing:0.2em; text-transform:uppercase; color:var(--orange); }
+.sb-widget-season { font-family:var(--font-ui); font-size:11px; color:var(--text-muted); }
+
+.sb-widget-body { padding:20px; display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+
+/* Left: current season */
+.sb-current { display:flex; flex-direction:column; gap:12px; }
+.sb-current-title { font-family:var(--font-ui); font-size:10px; font-weight:700;
+  letter-spacing:0.15em; text-transform:uppercase; color:var(--text-muted); }
+.sb-balance-row { display:flex; align-items:baseline; gap:8px; }
+.sb-balance-val { font-family:var(--font-display); font-size:36px; color:var(--orange); letter-spacing:0.02em; }
+.sb-balance-sub { font-family:var(--font-body); font-size:12px; color:var(--text-muted); }
+.sb-bar-wrap { }
+.sb-bar-track { height:8px; background:var(--bg4); border-radius:4px; overflow:hidden; }
+.sb-bar-fill  { height:100%; border-radius:4px; transition:width 0.4s; }
+.sb-bar-labels { display:flex; justify-content:space-between; margin-top:4px;
+  font-family:var(--font-accent); font-size:10px; color:var(--text-muted); }
+.sb-row { display:flex; justify-content:space-between; padding:6px 0;
+  border-bottom:1px solid var(--border); font-family:var(--font-body); font-size:13px; }
+.sb-row:last-child { border-bottom:none; }
+.sb-row-label { color:var(--text-muted); }
+.sb-row-val   { color:var(--text-primary); font-family:var(--font-ui); font-weight:600; }
+
+/* Right: next season projection */
+.sb-projection { display:flex; flex-direction:column; gap:12px; }
+.sb-proj-title { font-family:var(--font-ui); font-size:10px; font-weight:700;
+  letter-spacing:0.15em; text-transform:uppercase; color:var(--text-muted); }
+
+.sb-scenarios { display:flex; flex-direction:column; gap:3px; }
+.sb-scenario { display:grid; grid-template-columns:120px 1fr 60px; align-items:center;
+  gap:10px; padding:7px 10px; background:var(--bg2); border:1px solid var(--border);
+  transition:all 0.15s; cursor:default; }
+.sb-scenario:hover { border-color:var(--orange); background:rgba(232,130,42,0.04); }
+.sb-scenario-label { font-family:var(--font-ui); font-size:11px; color:var(--text-muted); }
+.sb-scenario-bar   { height:4px; background:var(--bg4); border-radius:2px; overflow:hidden; }
+.sb-scenario-fill  { height:100%; border-radius:2px; background:var(--green); }
+.sb-scenario-val   { font-family:var(--font-display); font-size:14px; color:var(--text-primary);
+  text-align:right; letter-spacing:0.02em; }
+
+.sb-proj-formula { background:var(--bg2); border:1px solid var(--border); padding:12px 14px;
+  display:flex; flex-direction:column; gap:5px; }
+.sb-formula-row { display:flex; justify-content:space-between;
+  font-family:var(--font-body); font-size:12px; color:var(--text-muted); }
+.sb-formula-total { font-family:var(--font-ui); font-size:13px; font-weight:700;
+  color:var(--text-primary); padding-top:6px; border-top:1px solid var(--border);
+  margin-top:2px; display:flex; justify-content:space-between; }
+.sb-formula-note { font-family:var(--font-body); font-size:11px; color:var(--text-muted);
+  font-style:italic; margin-top:4px; }

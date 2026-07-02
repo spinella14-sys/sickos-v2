@@ -1,0 +1,409 @@
+.topnav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(6, 10, 15, 0.96);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.topnav-inner {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 56px;
+}
+
+.topnav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  margin-right: 16px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  transition: opacity 0.15s;
+}
+.topnav-brand:hover { opacity: 0.8; }
+
+.topnav-league-logo {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+}
+
+.topnav-links {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  flex: 1;
+  gap: 2px;
+  overflow: visible;
+}
+
+.tnl {
+  display: block;
+  padding: 0 14px;
+  height: 56px;
+  line-height: 56px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.72) !important;
+  transition: color 0.15s;
+  position: relative;
+  white-space: nowrap;
+}
+.tnl::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 14px;
+  right: 14px;
+  height: 2px;
+  background: #e8822a;
+  transform: scaleX(0);
+  transition: transform 0.15s ease;
+}
+.tnl:hover       { color: #e8822a !important; }
+.tnl.active      { color: #e8822a !important; }
+.tnl.active::after, .tnl:hover::after { transform: scaleX(1); }
+
+.topnav-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.topnav-admin-btn {
+  background: var(--bg3);
+  border: 1px solid var(--border-bright);
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.topnav-admin-btn:hover {
+  background: var(--bg4);
+  color: var(--text-primary);
+  border-color: var(--orange);
+}
+
+.topnav-back {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 8px 0 0;
+  margin-right: 8px;
+  transition: color 0.15s;
+  flex-shrink: 0;
+}
+.topnav-back:hover { color: var(--orange); }
+
+/* ── Teams dropdown ─────────────────────────────────────────────────────── */
+.tnl-dropdown-wrap { position: relative; }
+
+.tnl-dropdown {
+  position: absolute;
+  top: 56px;
+  left: 0;
+  background: #0f1923 !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  border-top: 2px solid #e8822a !important;
+  min-width: 720px;
+  z-index: 300;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+}
+
+.tnl-dropdown-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.tnl-dropdown-all {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #e8822a !important;
+  text-decoration: none;
+}
+.tnl-dropdown-all:hover { opacity: 0.8; }
+
+.tnl-dropdown-divisions {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+}
+
+.tnl-div-col {
+  padding: 16px 0;
+  border-right: 1px solid rgba(255,255,255,0.07);
+}
+.tnl-div-col:last-child { border-right: none; }
+
+/* ── Division label — orange, always ───────────────────────────────────── */
+.tnl-div-label {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #e8822a !important;
+  padding: 0 16px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  margin-bottom: 6px;
+  display: block;
+}
+
+.tnl-team-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 6px 16px;
+  cursor: pointer;
+  transition: background 0.1s;
+  text-align: left;
+}
+.tnl-team-row:hover { background: rgba(255,255,255,0.04); }
+
+.tnl-team-logo { width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; }
+
+.tnl-team-name {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.78) !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tnl-team-row:hover .tnl-team-name { color: rgba(255,255,255,0.95) !important; }
+
+/* ── Home dropdown ──────────────────────────────────────────────────────── */
+.tnl-home-wrap { position: relative; }
+.tnl-home-wrap:hover .tnl-home-dropdown { display: flex; }
+
+.tnl-home-dropdown {
+  display: none;
+  position: absolute;
+  top: 56px;
+  left: 0;
+  background: #0f1923 !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  border-top: 2px solid #e8822a !important;
+  min-width: 480px;
+  z-index: 300;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+  flex-direction: row;
+  gap: 0;
+}
+
+.tnl-home-section {
+  flex: 1;
+  padding: 16px 0;
+  border-right: 1px solid rgba(255,255,255,0.07);
+}
+.tnl-home-section:last-child { border-right: none; }
+
+.tnl-home-section-label {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #e8822a !important;
+  padding: 0 16px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  margin-bottom: 6px;
+  display: block;
+}
+
+.tnl-home-item {
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 6px 16px;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.78) !important;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.1s;
+  letter-spacing: 0.04em;
+}
+.tnl-home-item:hover {
+  background: rgba(255,255,255,0.04);
+  color: #e8822a !important;
+}
+
+/* ── Inbox badge ────────────────────────────────────────────────────────── */
+.tnl-inbox-item { display: flex !important; align-items: center; gap: 6px; }
+.tnl-inbox-badge {
+  background: #e8822a;
+  color: #000;
+  font-family: var(--font-ui);
+  font-size: 9px;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 10px;
+  line-height: 1.4;
+}
+
+/* ── Admin dropdown ─────────────────────────────────────────────────────── */
+.tnl-admin-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  min-width: 200px;
+  background: #0f1923 !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  border-top: 2px solid #e8822a !important;
+  z-index: 300;
+  padding: 6px 0;
+}
+.tnl-dropdown-wrap:hover .tnl-admin-dropdown { display: block; }
+
+.tnl-admin-section-label {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35) !important;
+  padding: 6px 14px 4px;
+}
+
+.tnl-admin-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.78) !important;
+  padding: 7px 14px;
+  transition: all 0.12s;
+}
+.tnl-admin-item:hover {
+  background: rgba(255,255,255,0.04);
+  color: #e8822a !important;
+}
+
+/* ── Draft Central dropdown ─────────────────────────────────────────────── */
+.tnl-draft-dropdown {
+  display: none;
+  position: absolute;
+  top: 56px;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 200px;
+  background: #0f1923 !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  border-top: 2px solid #e8822a !important;
+  z-index: 300;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+  padding: 6px 0;
+}
+.tnl-dropdown-wrap:hover .tnl-draft-dropdown { display: block; }
+
+.tnl-draft-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.78) !important;
+  padding: 9px 20px;
+  transition: all 0.12s;
+}
+.tnl-draft-item:hover {
+  background: rgba(255,255,255,0.04);
+  color: #e8822a !important;
+}
+
+/* ── Manager identity ───────────────────────────────────────────────────── */
+.topnav-manager { display: flex; flex-direction: column; align-items: flex-end; }
+.topnav-manager-abbrev {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 800;
+  color: #e8822a;
+  letter-spacing: 0.1em;
+  line-height: 1;
+}
+.topnav-manager-name {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1;
+  margin-top: 1px;
+}
+
+.topnav-signout-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.topnav-signout-btn:hover { border-color: var(--red); color: var(--red); }
+
+.tnl-trade-block-link {
+  background: none;
+  border: 1px solid #e8822a;
+  color: #e8822a !important;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.tnl-trade-block-link:hover { background: rgba(232,130,42,0.1); }

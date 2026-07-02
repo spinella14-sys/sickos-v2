@@ -1,0 +1,46 @@
+.teams-root { background: var(--bg0); min-height: calc(100vh - 56px); }
+.teams-header { background: var(--bg1); border-bottom: 1px solid var(--border); padding: 32px 40px; }
+.teams-title { font-family: var(--font-display); font-size: 42px; letter-spacing: 0.04em; }
+.teams-sub { font-family: var(--font-ui); font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); margin-top: 4px; }
+
+.teams-content { max-width: 1200px; margin: 0 auto; padding: 32px 40px; }
+
+.teams-divisions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+
+.div-section { display: flex; flex-direction: column; gap: 0; border: 1px solid var(--border); }
+
+.div-label {
+  font-family: var(--font-ui); font-size: 11px; font-weight: 800;
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--orange);
+  background: var(--bg2); padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.div-teams { display: flex; flex-direction: column; }
+
+.div-team-card {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px; border-bottom: 1px solid var(--border);
+  text-decoration: none; transition: background 0.1s; background: var(--bg1);
+}
+.div-team-card:last-child { border-bottom: none; }
+.div-team-card:hover { background: var(--bg2); }
+
+.div-team-logo { width: 48px; height: 48px; object-fit: contain; flex-shrink: 0; }
+
+.div-team-info { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.div-team-name { font-family: var(--font-ui); font-size: 14px; font-weight: 700; color: var(--text-primary); }
+.div-team-mgr  { font-family: var(--font-body); font-size: 11px; color: var(--text-muted); }
+
+.tp-cap-bar-wrap { display: flex; align-items: center; gap: 8px; margin-top: 2px; }
+.tp-cap-bar-track { position: relative; height: 3px; background: var(--bg4); border-radius: 2px; flex: 1; }
+.tp-cap-bar-fill { height: 100%; border-radius: 2px; }
+.tp-cap--ok  { background: var(--green); }
+.tp-cap--lux { background: var(--gold); }
+.tp-cap-lux-line { position: absolute; top: -2px; bottom: -2px; width: 1px; background: var(--orange); opacity: 0.6; }
+.tp-cap-val { font-family: var(--font-accent); font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+.tp-cap-over { color: var(--gold); }
+
+.div-team-record { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0; }
+.div-record-wl  { font-family: var(--font-display); font-size: 20px; color: var(--text-primary); }
+.div-record-pct { font-family: var(--font-accent); font-size: 11px; color: var(--text-muted); }

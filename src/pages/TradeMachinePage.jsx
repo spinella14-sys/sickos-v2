@@ -1,0 +1,685 @@
+import { useState, useEffect, useMemo, useCallback } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+import { useTeamColors } from '../hooks/useTeamColors'
+import { TEAMS, LOGOS } from '../data/league'
+import { getSeasonConsts } from '../utils/contractCalc'
+import PlayerLink from '../components/PlayerCard/PlayerLink'
+import './TradeMachinePage.css'
+
+const API    = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
+const SEASON = new Date().getFullYear()
+const POS_COLOR = { QB:'#e8822a', RB:'#3dba6e', WR:'#3a9fd4', TE:'#d4a843' }
+const CONSTS = getSeasonConsts(SEASON)
+
+// ─── useTeamAssets ─────────────────────────────────────────────────────────
+function useTeamAssets(abbrev, onCapLoaded, slot) {
+  const [roster,  setRoster]  = useState([])
+  const [picks,   setPicks]   = useState([])
+  const [sbBal,   setSbBal]   = useState(0)
+  const [stats,   setStats]   = useState({})
+  const [loading, setLoading] = useState(false)
+
+  const load = useCallback(async () => {
+    if (!abbrev) { onCapLoaded && onCapLoaded(slot, 0, []); return }
+    setLoading(true)
+    const [rData, pData, sbData, stData] = await Promise.all([
+      fetch(`${API}/teams/${abbrev}`).then(r=>r.ok?r.json():null),
+      fetch(`${API}/draft-picks?team=${abbrev}&available_only=true`).then(r=>r.ok?r.json():[]),
+      fetch(`${API}/bids/sb-balances?season=${SEASON}`).then(r=>r.ok?r.json():{}),
+      fetch(`${API}/stats/season?season=${SEASON}&limit=500`).then(r=>r.ok?r.json():[]).catch(()=>[]),
+    ])
+    const newRoster = rData?.roster || []
+    setRoster(newRoster)
+    setPicks(pData || [])
+    setSbBal(sbData?.[abbrev] ?? 0)
+    const sl = {}
+    ;(stData||[]).forEach(s => { sl[s.sleeper_id] = s })
+    setStats(sl)
+    setLoading(false)
+    const cap = newRoster.reduce((s,r)=>s+calcCapHit(r),0)
+    onCapLoaded && onCapLoaded(slot, parseFloat(cap.toFixed(2)), newRoster)
+  }, [abbrev, slot])
+
+  useEffect(() => { load() }, [load])
+  return { roster, picks, sbBal, stats, loading, reload: load }
+}
+
+// ─── Cap calc ──────────────────────────────────────────────────────────────
+function calcCapHit(contract) {
+  const sal      = parseFloat(contract.salary||0)
+  const slotType = contract.roster_slots?.[0]?.slot_type||'active'
+  let hit = sal
+  if (slotType==='ps'||slotType==='ir') hit*=0.5
+  if (contract.is_max_contract) hit*=0.8
+  return parseFloat(hit.toFixed(2))
+}
+
+// ─── Player Card ───────────────────────────────────────────────────────────
+// PlayerLink wraps the name — stopPropagation so opening the card
+// doesn't also toggle the trade selection.
+function PlayerCard({ contract, stats, inTrade, onToggle }) {
+  const p   = contract.players || {}
+  const s   = stats[p.sleeper_id] || {}
+  const ppg = s.pts_per_game ? parseFloat(s.pts_per_game).toFixed(1) : '—'
+  const rnk = s.pos_rank || '—'
+  const rfa = contract.rfa_round ? `RFA ${contract.rfa_round===1?'1st':'2nd'}` : 'UFA'
+
+  const currentYrRow = (contract.contract_years||[]).find(cy => cy.season === SEASON)
+  const isNG = currentYrRow
+    ? (currentYrRow.is_guaranteed === false || currentYrRow.is_guaranteed === 0)
+    : false
+
+  return (
+    <div
+      className={`tm-player-card ${inTrade?'tm-player-card--selected':''}`}
+      onClick={onToggle}
+    >
+      <img
+        src={`https://sleepercdn.com/content/nfl/players/thumb/${p.sleeper_id}.jpg`}
+        alt="" className="tm-pc-shot"
+        onError={e=>e.target.style.opacity=0}
+      />
+      <div className="tm-pc-info">
+        {/* PlayerLink — click opens player card, stopPropagation prevents trade toggle */}
+        <PlayerLink
+          playerId={p.sleeper_id}
+          className="tm-pc-name"
+          onClick={e => e.stopPropagation()}
+          style={{ textDecoration:'none', color:'inherit', cursor:'pointer' }}
+        >
+          {p.full_name}
+        </PlayerLink>
+        <div className="tm-pc-meta">
+          <span style={{color:POS_COLOR[p.position]}}>{p.position}</span>
+          <span className="tm-pc-nfl">{p.nfl_team}</span>
+          {p.injury_status && <span className="tm-pc-inj">{p.injury_status}</span>}
+        </div>
+      </div>
+      <div className="tm-pc-stats">
+        <div className="tm-pc-sal" style={isNG?{color:'var(--purple)'}:{}}>
+          ${parseFloat(contract.salary).toFixed(2)}
+        </div>
+        <div className="tm-pc-detail">{contract.years}yr · {rfa}</div>
+      </div>
+      <div className="tm-pc-pts">
+        <div className="tm-pc-ppg">{ppg}</div>
+        <div className="tm-pc-rank">#{rnk}</div>
+      </div>
+      <div className="tm-pc-toggle">{inTrade?'✓':'+'}</div>
+    </div>
+  )
+}
+
+// ─── Pick Card ─────────────────────────────────────────────────────────────
+function PickCard({ pick, inTrade, onToggle }) {
+  const label   = `${pick.season} R${pick.round} (${pick.original_team_abbrev})`
+  const isOwned = pick.original_team_abbrev !== pick.current_owner_abbrev
+  const valStr  = pick.cap_value ? `$${parseFloat(pick.cap_value).toFixed(2)}` : '$TBD'
+
+  return (
+    <div className={`tm-pick-card ${inTrade?'tm-pick-card--selected':''}`} onClick={onToggle}>
+      <div className="tm-pick-icon">🏈</div>
+      <div className="tm-pick-info">
+        <div className="tm-pick-label">{label}</div>
+        {isOwned && <div className="tm-pick-via">via {pick.original_team_abbrev}</div>}
+      </div>
+      <div className={`tm-pick-val ${!pick.cap_value?'tm-pick-tbd':''}`}>{valStr}</div>
+      <div className="tm-pc-toggle">{inTrade?'✓':'+'}</div>
+    </div>
+  )
+}
+
+// ─── Team Panel ────────────────────────────────────────────────────────────
+function TeamPanel({ slot, selectedTeam, onSelectTeam, tradingPlayers, tradingPicks, tradingSb,
+  onTogglePlayer, onTogglePick, onSbChange, posFilter, otherTeams, allTeams, threeWay,
+  onCapLoaded, projectedCap, sendTo, onSetSendTo, activeSlots }) {
+
+  const colors = useTeamColors(selectedTeam ? LOGOS[selectedTeam] : null)
+  const { roster, picks, sbBal, stats, loading } = useTeamAssets(selectedTeam, onCapLoaded, slot)
+
+  const filteredRoster = useMemo(()=>{
+    if (posFilter==='ALL') return roster
+    return roster.filter(r=>r.players?.position===posFilter)
+  },[roster,posFilter])
+
+  const currentCap  = roster.reduce((s,r)=>s+calcCapHit(r),0)
+  const displayCap  = (projectedCap !== null && projectedCap !== undefined) ? projectedCap : currentCap
+  const capSpace    = parseFloat((CONSTS.hardCap - displayCap).toFixed(2))
+  const isOver      = displayCap > CONSTS.hardCap
+  const capChanged  = Math.abs(displayCap - currentCap) > 0.01
+  const otherSlots  = activeSlots.filter(s => s !== slot)
+
+  return (
+    <div className="tm-panel" style={colors ? {
+      '--tp-primary': colors.primary, '--tp-accent': colors.accent,
+      '--tp-dim': colors.dim, '--tp-text': colors.text,
+    } : {}}>
+      <div className="tm-panel-header" style={{background:colors?.primary||'var(--bg2)'}}>
+        <div className="tm-panel-header-left">
+          {selectedTeam && <img src={LOGOS[selectedTeam]} alt="" className="tm-panel-logo"
+            style={{filter:'drop-shadow(0 1px 4px rgba(0,0,0,0.4))'}}/>}
+          <select className="tm-team-select" value={selectedTeam||''}
+            onChange={e=>onSelectTeam(e.target.value||null)}
+            style={{color:colors?.text||'var(--text-primary)'}}>
+            <option value="">Select team…</option>
+            {TEAMS.filter(t=>!otherTeams.includes(t.abbrev)||t.abbrev===selectedTeam)
+              .map(t=><option key={t.abbrev} value={t.abbrev}>{t.name}</option>)}
+          </select>
+        </div>
+        {selectedTeam && (
+          <div className="tm-panel-cap" style={{color:colors?.text}}>
+            <div className="tm-panel-cap-row">
+              <span className={`tm-panel-cap-val ${isOver?'tm-cap-over-text':''}`}>
+                ${displayCap.toFixed(2)}
+              </span>
+              {capChanged && (
+                <span className={`tm-panel-cap-delta ${displayCap>currentCap?'tm-delta-up':'tm-delta-down'}`}>
+                  {displayCap > currentCap ? '▲' : '▼'} ${Math.abs(displayCap-currentCap).toFixed(2)}
+                </span>
+              )}
+            </div>
+            <div className="tm-panel-space-row">
+              <span className={`tm-cap-space ${isOver?'tm-space-over':capSpace<10?'tm-space-warn':'tm-space-ok'}`}>
+                {isOver ? `$${Math.abs(capSpace).toFixed(2)} OVER CAP` : `$${capSpace.toFixed(2)} cap space`}
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {!selectedTeam ? (
+        <div className="tm-panel-empty">Select a team to view their assets</div>
+      ) : loading ? (
+        <div className="tm-panel-empty">Loading…</div>
+      ) : (
+        <div className="tm-panel-body">
+          {/* Sending zone */}
+          {(tradingPlayers.length > 0 || tradingPicks.length > 0 || tradingSb > 0) && (
+            <div className="tm-sending-zone">
+              <div className="tm-section-label tm-sending-label">SENDING</div>
+              {tradingPlayers.map(c => {
+                const key = `p_${c.id}`
+                const dest = sendTo[key]
+                return (
+                  <div key={c.id} className="tm-sending-item">
+                    <span style={{color:POS_COLOR[c.players?.position],fontSize:10,fontWeight:800}}>{c.players?.position}</span>
+                    <span className="tm-sending-name">{c.players?.full_name}</span>
+                    <span className="tm-sending-sal">${parseFloat(c.salary).toFixed(2)}</span>
+                    {threeWay && (
+                      <div className="tm-dest-btns">
+                        {otherSlots.map(os => (
+                          <button key={os}
+                            className={`tm-dest-btn ${dest===os?'tm-dest-btn--active':''}`}
+                            onClick={e=>{e.stopPropagation(); onSetSendTo(key, os)}}>
+                            → {allTeams[os] || `Team ${os+1}`}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    <span className="tm-sending-remove" onClick={()=>onTogglePlayer(slot,c)}>✕</span>
+                  </div>
+                )
+              })}
+              {tradingPicks.map(p => {
+                const key = `pk_${p.id}`
+                const dest = sendTo[key]
+                return (
+                  <div key={p.id} className="tm-sending-item">
+                    <span>🏈</span>
+                    <span className="tm-sending-name">{p.season} R{p.round} ({p.original_team_abbrev})</span>
+                    <span className="tm-sending-sal">{p.cap_value ? `$${parseFloat(p.cap_value).toFixed(2)}` : '$TBD'}</span>
+                    {threeWay && (
+                      <div className="tm-dest-btns">
+                        {otherSlots.map(os => (
+                          <button key={os}
+                            className={`tm-dest-btn ${dest===os?'tm-dest-btn--active':''}`}
+                            onClick={e=>{e.stopPropagation(); onSetSendTo(key, os)}}>
+                            → {allTeams[os] || `Team ${os+1}`}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    <span className="tm-sending-remove" onClick={()=>onTogglePick(slot,p)}>✕</span>
+                  </div>
+                )
+              })}
+              {tradingSb > 0 && (
+                <div className="tm-sending-item">
+                  <span>💰</span>
+                  <span className="tm-sending-name">Signing Bonus Budget</span>
+                  <span className="tm-sending-sal">${tradingSb.toFixed(2)}</span>
+                  {threeWay && (
+                    <div className="tm-dest-btns">
+                      {otherSlots.map(os => (
+                        <button key={os}
+                          className={`tm-dest-btn ${sendTo[`sb_${slot}`]===os?'tm-dest-btn--active':''}`}
+                          onClick={e=>{e.stopPropagation(); onSetSendTo(`sb_${slot}`, os)}}>
+                          → {allTeams[os] || `Team ${os+1}`}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="tm-section-label">ROSTER</div>
+          <div className="tm-roster-list">
+            {filteredRoster.map(c=>(
+              <PlayerCard key={c.id} contract={c} stats={stats}
+                inTrade={tradingPlayers.some(p=>p.id===c.id)}
+                onToggle={()=>onTogglePlayer(slot,c)}/>
+            ))}
+          </div>
+
+          {picks.length > 0 && <>
+            <div className="tm-section-label">DRAFT PICKS</div>
+            <div className="tm-picks-list">
+              {picks.map(p=>(
+                <PickCard key={p.id} pick={p}
+                  inTrade={tradingPicks.some(tp=>tp.id===p.id)}
+                  onToggle={()=>onTogglePick(slot,p)}/>
+              ))}
+            </div>
+          </>}
+
+          <div className="tm-section-label">SIGNING BONUS BUDGET</div>
+          <div className="tm-sb-row">
+            <span className="tm-sb-bal">Available: ${sbBal.toFixed(2)}</span>
+            <div className="tm-sb-input-wrap">
+              <span>Include $</span>
+              <input className="tm-sb-input" type="number" step="0.10" min="0" max={sbBal}
+                placeholder="0.00" value={tradingSb||''}
+                onChange={e=>onSbChange(slot, Math.min(parseFloat(e.target.value)||0, sbBal))}/>
+              <span>in trade</span>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Main Page ─────────────────────────────────────────────────────────────
+export default function TradeMachinePage() {
+  const { manager, isAdmin } = useAuth()
+  const [searchParams] = useSearchParams()
+  const counterTradeId    = searchParams.get('counter')
+  const counterTeamsParam = searchParams.get('teams')
+  const counterThreeWay   = searchParams.get('three') === '1'
+
+  const [threeWay,   setThreeWay]   = useState(counterThreeWay)
+  const [teams,      setTeams]      = useState(() => {
+    if (counterTeamsParam) {
+      const arr = counterTeamsParam.split(',')
+      return [arr[0]||null, arr[1]||null, arr[2]||null]
+    }
+    return [manager?.team_abbrev||null, null, null]
+  })
+  const [posFilter,  setPosFilter]  = useState('ALL')
+  const [submitting, setSubmitting] = useState(false)
+  const [result,     setResult]     = useState(null)
+  const [activeTab,  setActiveTab]  = useState('build')
+  const [trades,     setTrades]     = useState([])
+  const [notes,      setNotes]      = useState('')
+  const [teamCaps,   setTeamCaps]   = useState({ 0:0, 1:0, 2:0 })
+
+  const [tradingPlayers, setTradingPlayers] = useState({ 0:[], 1:[], 2:[] })
+  const [tradingPicks,   setTradingPicks]   = useState({ 0:[], 1:[], 2:[] })
+  const [tradingSb,      setTradingSb]      = useState({ 0:0, 1:0, 2:0 })
+  const [sendTo,         setSendTo]         = useState({})
+
+  const activeSlots = threeWay ? [0,1,2] : [0,1]
+
+  function handleCapLoaded(slot, cap) {
+    setTeamCaps(prev => ({ ...prev, [slot]: cap }))
+  }
+
+  function handleSetSendTo(key, targetSlot) {
+    setSendTo(prev => ({ ...prev, [key]: targetSlot }))
+  }
+
+  const projectedCaps = useMemo(() => {
+    const proj = {}
+    activeSlots.forEach(slot => {
+      const outgoing = tradingPlayers[slot].reduce((s,c) => s+calcCapHit(c), 0)
+      let incoming = 0
+      if (!threeWay) {
+        const other = slot === 0 ? 1 : 0
+        incoming = tradingPlayers[other].reduce((s,c) => s+calcCapHit(c), 0)
+      } else {
+        activeSlots.filter(s=>s!==slot).forEach(s => {
+          tradingPlayers[s].forEach(c => {
+            if (sendTo[`p_${c.id}`] === slot) incoming += calcCapHit(c)
+          })
+        })
+      }
+      proj[slot] = parseFloat((teamCaps[slot] - outgoing + incoming).toFixed(2))
+    })
+    return proj
+  }, [teamCaps, tradingPlayers, sendTo, threeWay, activeSlots])
+
+  const capViolations = activeSlots.filter(s => projectedCaps[s] > CONSTS.hardCap && teams[s])
+
+  function togglePlayer(slot, contract) {
+    setTradingPlayers(prev => {
+      const cur    = prev[slot]
+      const exists = cur.some(c=>c.id===contract.id)
+      return { ...prev, [slot]: exists ? cur.filter(c=>c.id!==contract.id) : [...cur, contract] }
+    })
+  }
+
+  function togglePick(slot, pick) {
+    setTradingPicks(prev => {
+      const cur    = prev[slot]
+      const exists = cur.some(p=>p.id===pick.id)
+      return { ...prev, [slot]: exists ? cur.filter(p=>p.id!==pick.id) : [...cur, pick] }
+    })
+  }
+
+  function setSbAmount(slot, amount) {
+    setTradingSb(prev => ({ ...prev, [slot]: amount }))
+  }
+
+  function setTeamSlot(slot, abbrev) {
+    setTeams(prev => { const n=[...prev]; n[slot]=abbrev||null; return n })
+    setTradingPlayers(prev => ({ ...prev, [slot]:[] }))
+    setTradingPicks(prev => ({ ...prev, [slot]:[] }))
+    setTradingSb(prev => ({ ...prev, [slot]:0 }))
+    setTeamCaps(prev => ({ ...prev, [slot]:0 }))
+  }
+
+  const assets = useMemo(() => {
+    const a = []
+    if (!threeWay) {
+      const [t0,t1] = teams
+      if (!t0||!t1) return []
+      tradingPlayers[0].forEach(c=>a.push({asset_type:'player',from_team:t0,to_team:t1,sleeper_id:c.players?.sleeper_id,contract_id:c.id}))
+      tradingPlayers[1].forEach(c=>a.push({asset_type:'player',from_team:t1,to_team:t0,sleeper_id:c.players?.sleeper_id,contract_id:c.id}))
+      tradingPicks[0].forEach(p=>a.push({asset_type:'pick',from_team:t0,to_team:t1,pick_id:p.id}))
+      tradingPicks[1].forEach(p=>a.push({asset_type:'pick',from_team:t1,to_team:t0,pick_id:p.id}))
+      if(tradingSb[0]>0) a.push({asset_type:'sb_budget',from_team:t0,to_team:t1,sb_amount:tradingSb[0]})
+      if(tradingSb[1]>0) a.push({asset_type:'sb_budget',from_team:t1,to_team:t0,sb_amount:tradingSb[1]})
+    } else {
+      activeSlots.forEach(slot => {
+        const fromTeam = teams[slot]
+        if (!fromTeam) return
+        tradingPlayers[slot].forEach(c => {
+          const toSlot = sendTo[`p_${c.id}`]
+          const toTeam = teams[toSlot]
+          if (toTeam) a.push({asset_type:'player',from_team:fromTeam,to_team:toTeam,sleeper_id:c.players?.sleeper_id,contract_id:c.id})
+        })
+        tradingPicks[slot].forEach(p => {
+          const toSlot = sendTo[`pk_${p.id}`]
+          const toTeam = teams[toSlot]
+          if (toTeam) a.push({asset_type:'pick',from_team:fromTeam,to_team:toTeam,pick_id:p.id})
+        })
+        if(tradingSb[slot]>0) {
+          const toSlot = sendTo[`sb_${slot}`]
+          const toTeam = teams[toSlot]
+          if(toTeam) a.push({asset_type:'sb_budget',from_team:fromTeam,to_team:toTeam,sb_amount:tradingSb[slot]})
+        }
+      })
+    }
+    return a
+  }, [tradingPlayers, tradingPicks, tradingSb, teams, threeWay, sendTo, activeSlots])
+
+  const hasAnyAssets       = activeSlots.some(s => tradingPlayers[s].length > 0 || tradingPicks[s].length > 0 || tradingSb[s] > 0)
+  const threeWayMissingDest = threeWay && assets.some(a => a.asset_type === 'player' && !a.to_team)
+
+  const canSubmit = useMemo(() => {
+    const validTeams    = activeSlots.every(s => teams[s])
+    const hasAssets     = assets.length > 0
+    const noViolation   = capViolations.length === 0
+    const noMissingDest = !threeWayMissingDest
+    return validTeams && hasAssets && noViolation && noMissingDest && !submitting
+  }, [activeSlots, teams, assets, capViolations, threeWayMissingDest, submitting])
+
+  async function handleSubmit() {
+    if (!canSubmit) return
+    setSubmitting(true); setResult(null)
+    const validTeams = activeSlots.map(s=>teams[s]).filter(Boolean)
+    const r = await fetch(`${API}/trades`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ teams: validTeams, assets, notes: notes||null, proposed_by: manager?.team_abbrev })
+    })
+    const data = await r.json()
+    setSubmitting(false)
+    if (r.ok) {
+      setResult({ ok:true, msg:'Trade proposal submitted! The other team(s) will need to accept before it goes to the commissioner.' })
+      setTradingPlayers({0:[],1:[],2:[]}); setTradingPicks({0:[],1:[],2:[]}); setTradingSb({0:0,1:0,2:0}); setNotes(''); setSendTo({})
+    } else {
+      setResult({ ok:false, msg: data.error||'Submission failed' })
+    }
+  }
+
+  useEffect(() => {
+    if (activeTab==='history' && manager?.team_abbrev) {
+      fetch(`${API}/trades?team=${manager.team_abbrev}`)
+        .then(r=>r.ok?r.json():[]).then(setTrades)
+    }
+  },[activeTab, manager])
+
+  async function handleAccept(tradeId) {
+    const r = await fetch(`${API}/trades/${tradeId}/accept`,{
+      method:'PATCH', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({team_abbrev:manager?.team_abbrev})
+    })
+    const d = await r.json()
+    if (r.ok) setTrades(prev=>prev.map(t=>t.id===tradeId?{...t,status:d.trade?.status||t.status}:t))
+  }
+
+  async function handleDecline(tradeId) {
+    await fetch(`${API}/trades/${tradeId}/decline`,{
+      method:'PATCH', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({team_abbrev:manager?.team_abbrev})
+    })
+    setTrades(prev=>prev.map(t=>t.id===tradeId?{...t,status:'declined'}:t))
+  }
+
+  async function handleAdminProcess(tradeId, action) {
+    const r = await fetch(`${API}/trades/${tradeId}/process`,{
+      method:'PATCH',
+      headers:{'Content-Type':'application/json','x-admin-password':'brethart'},
+      body:JSON.stringify({action})
+    })
+    const d = await r.json()
+    if (r.ok) setTrades(prev=>prev.map(t=>t.id===tradeId?{...t,status:action==='approve'?'approved':'denied'}:t))
+    else alert(d.error)
+  }
+
+  const STATUS_LABEL = {
+    proposed:'Pending Response', pending_admin:'Awaiting Commissioner',
+    approved:'Approved ✓', denied:'Denied ✗', declined:'Declined ✗', countered:'Countered'
+  }
+  const STATUS_COLOR = {
+    proposed:'var(--gold)', pending_admin:'var(--orange)',
+    approved:'var(--green)', denied:'var(--red)', declined:'var(--red)', countered:'var(--blue)'
+  }
+
+  return (
+    <div className="tm-root">
+      <div className="tm-header">
+        <div>
+          <h1 className="tm-title">Trade Machine</h1>
+          <p className="tm-sub">Build, propose, accept or counter trades</p>
+        </div>
+        <div className="tm-tabs">
+          <button className={`tm-tab ${activeTab==='build'?'tm-tab--active':''}`} onClick={()=>setActiveTab('build')}>Build Trade</button>
+          <button className={`tm-tab ${activeTab==='history'?'tm-tab--active':''}`} onClick={()=>setActiveTab('history')}>Trade History</button>
+        </div>
+      </div>
+
+      {activeTab === 'build' ? (<>
+        <div className="tm-controls">
+          <div className="tm-way-toggle">
+            <button className={`tm-way-btn ${!threeWay?'tm-way-btn--active':''}`}
+              onClick={()=>{setThreeWay(false);setTeams(t=>[t[0],t[1],null])}}>2-Team Trade</button>
+            <button className={`tm-way-btn ${threeWay?'tm-way-btn--active':''}`}
+              onClick={()=>setThreeWay(true)}>3-Team Trade</button>
+          </div>
+          <div className="tm-pos-filter">
+            {['ALL','QB','RB','WR','TE'].map(pos=>(
+              <button key={pos} className={`tm-pos-btn ${posFilter===pos?'tm-pos-btn--active':''}`}
+                onClick={()=>setPosFilter(pos)}>{pos}</button>
+            ))}
+          </div>
+        </div>
+
+        {counterTradeId && (
+          <div className="tm-counter-banner">
+            ↩ Counter proposal mode — build your offer below and submit to send it back
+          </div>
+        )}
+
+        <div className={`tm-panels ${threeWay?'tm-panels--3':'tm-panels--2'}`}>
+          {activeSlots.map(slot=>(
+            <TeamPanel key={slot} slot={slot}
+              selectedTeam={teams[slot]}
+              onSelectTeam={abbrev=>setTeamSlot(slot,abbrev)}
+              tradingPlayers={tradingPlayers[slot]}
+              tradingPicks={tradingPicks[slot]}
+              tradingSb={tradingSb[slot]}
+              onTogglePlayer={togglePlayer}
+              onTogglePick={togglePick}
+              onSbChange={setSbAmount}
+              posFilter={posFilter}
+              otherTeams={activeSlots.filter(s=>s!==slot).map(s=>teams[s]).filter(Boolean)}
+              allTeams={teams}
+              threeWay={threeWay}
+              onCapLoaded={handleCapLoaded}
+              projectedCap={projectedCaps[slot]}
+              sendTo={sendTo}
+              onSetSendTo={handleSetSendTo}
+              activeSlots={activeSlots}
+            />
+          ))}
+          {/* Messaging sidebar — placeholder */}
+          <div className="tm-sidebar">
+            <div className="tm-sidebar-title">Trade Chat</div>
+            <div className="tm-sidebar-placeholder">
+              <div className="tm-sidebar-icon">💬</div>
+              <div className="tm-sidebar-msg">Trade messaging coming soon</div>
+              <div className="tm-sidebar-sub">Negotiate and discuss trades directly with other managers in this sidebar</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="tm-footer">
+          {hasAnyAssets && (
+            <div className="tm-cap-bars">
+              {activeSlots.map(slot => {
+                const t = teams[slot]
+                if (!t) return null
+                const before = teamCaps[slot]
+                const after  = projectedCaps[slot]
+                const isOver = after > CONSTS.hardCap
+                const isLux  = after > CONSTS.ltl
+                const pctB   = Math.min(100,(before/CONSTS.hardCap)*100)
+                const pctA   = Math.min(100,(after/CONSTS.hardCap)*100)
+                return (
+                  <div key={slot} className={`tm-cap-bar-wrap ${isOver?'tm-cap-over':''}`}>
+                    <div className="tm-cap-bar-team">{t}</div>
+                    <div className="tm-cap-bar-track">
+                      <div className="tm-cap-bar-before" style={{width:`${pctB.toFixed(1)}%`}}/>
+                      <div className={`tm-cap-bar-after ${isOver?'tm-bar-over':isLux?'tm-bar-lux':'tm-bar-ok'}`}
+                        style={{width:`${pctA.toFixed(1)}%`}}/>
+                      <div className="tm-cap-bar-ltl" style={{left:`${(CONSTS.ltl/CONSTS.hardCap*100).toFixed(1)}%`}}/>
+                    </div>
+                    <div className="tm-cap-bar-nums">
+                      <span className={isOver?'tm-num-red':isLux?'tm-num-gold':''}>${after.toFixed(2)}</span>
+                      <span className="tm-cap-bar-delta" style={{color:after>before?'var(--red)':'var(--green)'}}>
+                        {after>before?'+':''}{(after-before).toFixed(2)}
+                      </span>
+                      {isOver && <span className="tm-cap-bar-warn">⚠ CAP VIOLATION</span>}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          <div className="tm-submit-section">
+            <div className="tm-submit-left">
+              <textarea className="tm-notes" placeholder="Add a note to your trade proposal (optional)…"
+                value={notes} onChange={e=>setNotes(e.target.value)} rows={2}/>
+              {capViolations.length > 0 && (
+                <div className="tm-warn-msg">⚠ {capViolations.map(s=>teams[s]).join(', ')} would exceed the hard cap — trade cannot be submitted</div>
+              )}
+              {threeWayMissingDest && (
+                <div className="tm-warn-msg">⚠ In a 3-team trade, select a destination team for each asset in the SENDING zone</div>
+              )}
+              {result && (
+                <div className={`tm-result ${result.ok?'tm-result--ok':'tm-result--err'}`}>{result.msg}</div>
+              )}
+            </div>
+            <button className="tm-submit" onClick={handleSubmit}
+              disabled={!canSubmit || !hasAnyAssets}>
+              {submitting ? 'Submitting…' : !hasAnyAssets ? 'Add players or picks to trade' : 'Submit Trade Proposal →'}
+            </button>
+          </div>
+        </div>
+      </>) : (
+        <div className="tm-history">
+          {trades.length === 0 ? (
+            <div className="tm-history-empty">No trades found for your team.</div>
+          ) : trades.map(trade => {
+            const myTeam         = manager?.team_abbrev
+            const myTT           = trade.trade_teams?.find(t=>t.team_abbrev===myTeam)
+            const needsAction    = trade.status==='proposed' && myTT && !myTT.has_accepted
+            const isAdminPending = isAdmin && trade.status==='pending_admin'
+            return (
+              <div key={trade.id} className={`tm-trade-card ${needsAction?'tm-trade-card--action':''}`}>
+                <div className="tm-tc-header">
+                  <div className="tm-tc-teams">{trade.trade_teams?.map(t=>t.team_abbrev).join(' ↔ ')}</div>
+                  <div className="tm-tc-status" style={{color:STATUS_COLOR[trade.status]||'var(--text-muted)'}}>
+                    {STATUS_LABEL[trade.status]||trade.status}
+                  </div>
+                  <div className="tm-tc-date">{new Date(trade.created_at).toLocaleDateString()}</div>
+                </div>
+                {trade.notes      && <div className="tm-tc-notes">"{trade.notes}"</div>}
+                {trade.admin_notes && <div className="tm-tc-admin-notes">Commissioner: {trade.admin_notes}</div>}
+                <div className="tm-tc-assets">
+                  {trade.trade_teams?.map(tt => {
+                    const sending = trade.trade_assets?.filter(a=>a.from_team===tt.team_abbrev)
+                    if (!sending?.length) return null
+                    return (
+                      <div key={tt.team_abbrev} className="tm-tc-side">
+                        <div className="tm-tc-side-team">
+                          {tt.team_abbrev} sends {tt.has_accepted && <span className="tm-tc-accepted">✓</span>}
+                        </div>
+                        {sending.map((a,i) => (
+                          <div key={i} className="tm-tc-asset">
+                            {a.asset_type==='player'    && `👤 ${a.sleeper_id} → ${a.to_team}`}
+                            {a.asset_type==='pick'      && `🏈 Pick → ${a.to_team}`}
+                            {a.asset_type==='sb_budget' && `💰 $${a.sb_amount} SB → ${a.to_team}`}
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  })}
+                </div>
+                {needsAction && (
+                  <div className="tm-tc-actions">
+                    <button className="tm-tc-btn tm-tc-btn--accept" onClick={()=>handleAccept(trade.id)}>Accept</button>
+                    <button className="tm-tc-btn tm-tc-btn--decline" onClick={()=>handleDecline(trade.id)}>Decline</button>
+                  </div>
+                )}
+                {isAdminPending && (
+                  <div className="tm-tc-actions">
+                    <span className="tm-tc-admin-label">Admin:</span>
+                    <button className="tm-tc-btn tm-tc-btn--accept" onClick={()=>handleAdminProcess(trade.id,'approve')}>Approve & Execute</button>
+                    <button className="tm-tc-btn tm-tc-btn--decline" onClick={()=>handleAdminProcess(trade.id,'deny')}>Deny</button>
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}

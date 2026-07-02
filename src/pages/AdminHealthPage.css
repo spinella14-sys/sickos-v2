@@ -1,0 +1,109 @@
+.ah-root { background: var(--bg0); min-height: calc(100vh - 56px); }
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+.ah-header { background: var(--bg1); border-bottom: 1px solid var(--border); padding: 28px 40px 20px; }
+.ah-header-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+.ah-title { font-family: var(--font-display); font-size: 36px; letter-spacing: 0.04em; }
+.ah-sub   { font-family: var(--font-ui); font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); margin-top: 4px; }
+
+.ah-header-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+.ah-override { display: flex; align-items: center; gap: 6px; }
+.ah-override label { font-family: var(--font-ui); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+.ah-override-input { background: var(--bg2); border: 1px solid var(--border); color: var(--text-primary); font-family: var(--font-ui); font-size: 12px; padding: 5px 8px; width: 64px; text-align: center; outline: none; }
+.ah-override-input:focus { border-color: var(--orange); }
+
+.ah-refresh-btn { background: var(--bg3); border: 1px solid var(--border-bright); color: var(--text-secondary); font-family: var(--font-ui); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; padding: 8px 16px; cursor: pointer; transition: all 0.15s; }
+.ah-refresh-btn:hover { border-color: var(--orange); color: var(--orange); }
+.ah-refresh-btn:disabled { opacity: 0.5; cursor: wait; }
+
+.ah-error { max-width: 1200px; margin: 12px auto 0; background: rgba(217,79,79,0.12); border: 1px solid var(--red); color: var(--red); font-family: var(--font-ui); font-size: 12px; padding: 10px 16px; }
+
+/* ── Body ───────────────────────────────────────────────────────────────── */
+.ah-body { max-width: 1200px; margin: 0 auto; padding: 24px 40px 80px; }
+
+/* ── Status cards ───────────────────────────────────────────────────────── */
+.ah-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; margin-bottom: 24px; }
+
+.ah-card { background: var(--bg1); border: 1px solid var(--border); border-top: 3px solid; padding: 16px; }
+.ah-card--green  { border-top-color: var(--green); }
+.ah-card--yellow { border-top-color: var(--gold); }
+.ah-card--red    { border-top-color: var(--red); }
+.ah-card--gray   { border-top-color: var(--border-bright); }
+
+.ah-card-title { font-family: var(--font-ui); font-size: 9px; font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; display: flex; align-items: center; gap: 7px; }
+
+.ah-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.ah-dot--green  { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.ah-dot--yellow { background: var(--gold); }
+.ah-dot--red    { background: var(--red); animation: ah-pulse 1.5s infinite; }
+.ah-dot--gray   { background: var(--border-bright); }
+@keyframes ah-pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+.ah-card-body { display: flex; flex-direction: column; gap: 6px; }
+.ah-stat { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.ah-stat span { font-family: var(--font-ui); font-size: 11px; color: var(--text-muted); }
+.ah-stat strong { font-family: var(--font-ui); font-size: 12px; font-weight: 700; color: var(--text-primary); text-align: right; }
+.ah-na { font-family: var(--font-ui); font-size: 11px; color: var(--text-muted); font-style: italic; }
+
+/* ── Main content ───────────────────────────────────────────────────────── */
+.ah-main { display: flex; flex-direction: column; gap: 2px; }
+
+.ah-section { background: var(--bg1); border: 1px solid var(--border); padding: 20px 24px; }
+.ah-section--dim { opacity: 0.7; }
+.ah-section-title { font-family: var(--font-ui); font-size: 11px; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 16px; display: flex; align-items: baseline; gap: 10px; }
+.ah-section-sub { font-family: var(--font-ui); font-size: 10px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.1em; }
+.ah-empty { font-family: var(--font-ui); font-size: 12px; color: var(--text-muted); padding: 16px 0; text-align: center; }
+
+/* ── Matchup grid ───────────────────────────────────────────────────────── */
+.ah-matchup-grid { display: flex; flex-direction: column; gap: 1px; }
+.ah-matchup-row {
+  display: grid; grid-template-columns: 1fr 80px 1fr;
+  align-items: center; gap: 12px; padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.ah-matchup-row:last-child { border-bottom: none; }
+.ah-matchup-team { display: flex; align-items: center; gap: 10px; }
+.ah-matchup-team--right { flex-direction: row-reverse; }
+.ah-matchup-logo { width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; }
+.ah-matchup-team span { font-family: var(--font-ui); font-size: 12px; font-weight: 700; color: var(--text-muted); }
+.ah-matchup-team strong { font-family: var(--font-display); font-size: 18px; color: var(--text-muted); }
+.ah-team--win span, .ah-team--win strong { color: var(--text-primary); }
+.ah-matchup-status { font-family: var(--font-ui); font-size: 9px; font-weight: 800; letter-spacing: 0.14em; text-align: center; }
+.ah-ms--in_progress { color: var(--orange); animation: ah-pulse 1.5s infinite; }
+.ah-ms--final       { color: var(--text-muted); }
+.ah-ms--upcoming    { color: var(--border-bright); }
+
+/* ── Controls ───────────────────────────────────────────────────────────── */
+.ah-controls-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.ah-control-group { display: flex; flex-direction: column; gap: 8px; }
+.ah-control-group-label { font-family: var(--font-ui); font-size: 9px; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
+
+.ah-action-wrap { display: flex; flex-direction: column; gap: 4px; }
+.ah-action-btn {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  background: var(--bg2); border: 1px solid var(--border); color: var(--text-secondary);
+  font-family: var(--font-ui); font-size: 12px; font-weight: 700; letter-spacing: 0.06em;
+  padding: 10px 14px; cursor: pointer; transition: all 0.12s; text-align: left;
+}
+.ah-action-btn:hover:not(:disabled) { border-color: var(--border-bright); color: var(--text-primary); }
+.ah-action-btn:disabled { opacity: 0.5; cursor: wait; }
+.ah-action-btn--orange { border-color: rgba(232,130,42,0.4); color: var(--orange); }
+.ah-action-btn--orange:hover:not(:disabled) { background: rgba(232,130,42,0.08); border-color: var(--orange); }
+.ah-action-btn--green  { border-color: rgba(61,186,110,0.4); color: var(--green); }
+.ah-action-btn--green:hover:not(:disabled)  { background: rgba(61,186,110,0.08); border-color: var(--green); }
+.ah-action-btn--danger { border-color: rgba(217,79,79,0.4); color: var(--red); }
+.ah-action-btn--danger:hover:not(:disabled) { background: rgba(217,79,79,0.08); border-color: var(--red); }
+.ah-action-icon { font-size: 14px; flex-shrink: 0; }
+
+.ah-action-result { font-family: var(--font-ui); font-size: 10px; letter-spacing: 0.04em; padding: 4px 8px; }
+.ah-result--ok  { color: var(--green); background: rgba(61,186,110,0.08); }
+.ah-result--err { color: var(--red);   background: rgba(217,79,79,0.08); }
+
+/* ── Cron table ─────────────────────────────────────────────────────────── */
+.ah-cron-table { display: flex; flex-direction: column; gap: 8px; }
+.ah-cron-row { display: grid; grid-template-columns: 180px 130px 1fr 1fr; align-items: center; gap: 16px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.ah-cron-row:last-child { border-bottom: none; }
+.ah-cron-expr  { font-family: 'Courier New', monospace; font-size: 11px; color: var(--orange); background: var(--bg2); padding: 3px 8px; }
+.ah-cron-label { font-family: var(--font-ui); font-size: 12px; font-weight: 700; color: var(--text-secondary); }
+.ah-cron-desc  { font-family: var(--font-ui); font-size: 11px; color: var(--text-muted); }
+.ah-cron-note  { font-family: var(--font-ui); font-size: 10px; color: var(--border-bright); font-style: italic; }

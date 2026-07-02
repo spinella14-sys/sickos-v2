@@ -1,0 +1,110 @@
+/* ── ROOT ─────────────────────────────────────────────────────────────────── */
+.ptw-root { display:flex; flex-direction:column; gap:0; }
+
+/* ── NOTIFICATION BAR ────────────────────────────────────────────────────── */
+.ptw-notify-bar {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 20px;
+  background: linear-gradient(90deg, rgba(232,130,42,0.18) 0%, rgba(232,130,42,0.06) 100%);
+  border-bottom:1px solid rgba(232,130,42,0.3);
+  border-left:3px solid var(--orange);
+}
+.ptw-notify-left  { display:flex; align-items:center; gap:10px; }
+.ptw-notify-dot   {
+  width:10px; height:10px; border-radius:50%; background:var(--orange);
+  box-shadow: 0 0 0 3px rgba(232,130,42,0.25), 0 0 10px rgba(232,130,42,0.4);
+  animation: ptw-pulse 2s ease-in-out infinite;
+  flex-shrink:0;
+}
+@keyframes ptw-pulse {
+  0%,100% { box-shadow:0 0 0 3px rgba(232,130,42,0.25),0 0 10px rgba(232,130,42,0.4); }
+  50%      { box-shadow:0 0 0 5px rgba(232,130,42,0.1),0 0 20px rgba(232,130,42,0.6); }
+}
+.ptw-notify-text  { font-family:var(--font-ui); font-size:12px; font-weight:700;
+  letter-spacing:0.06em; color:var(--orange); text-transform:uppercase; }
+.ptw-notify-count { font-family:var(--font-display); font-size:22px; color:var(--orange);
+  font-weight:900; letter-spacing:0.02em; }
+
+/* ── TRADE CARD ──────────────────────────────────────────────────────────── */
+.ptw-card       { border-bottom:1px solid var(--border); background:var(--bg1); }
+.ptw-card--admin{ background:rgba(232,130,42,0.04); }
+
+.ptw-card-header { display:flex; align-items:center; justify-content:space-between;
+  padding:12px 20px; cursor:pointer; transition:background 0.12s; }
+.ptw-card-header:hover { background:var(--bg2); }
+.ptw-card-header-left  { display:flex; align-items:center; gap:10px; }
+.ptw-card-header-right { display:flex; align-items:center; gap:12px; }
+
+.ptw-badge { font-family:var(--font-ui); font-size:9px; font-weight:800;
+  letter-spacing:0.15em; text-transform:uppercase; padding:3px 8px; border:1px solid; }
+.ptw-badge--offer { color:var(--orange); border-color:var(--orange);
+  background:rgba(232,130,42,0.1); }
+.ptw-badge--admin { color:var(--gold); border-color:var(--gold);
+  background:rgba(212,168,67,0.1); }
+
+.ptw-card-teams { font-family:var(--font-ui); font-size:13px; font-weight:700;
+  color:var(--text-primary); letter-spacing:0.04em; }
+.ptw-card-from  { font-family:var(--font-body); font-size:12px; color:var(--text-muted); }
+.ptw-card-date  { font-family:var(--font-body); font-size:11px; color:var(--text-muted); }
+.ptw-expand-btn { font-family:var(--font-ui); font-size:10px; color:var(--text-muted);
+  font-weight:700; }
+
+.ptw-card-note  { padding:6px 20px; font-family:var(--font-body); font-size:12px;
+  color:var(--text-muted); font-style:italic; border-bottom:1px solid var(--border); }
+
+/* ── CARD BODY ───────────────────────────────────────────────────────────── */
+.ptw-card-body  { display:flex; align-items:stretch; border-bottom:1px solid var(--border); }
+.ptw-card-body--admin { flex-wrap:wrap; }
+.ptw-arrow { display:flex; align-items:center; justify-content:center;
+  padding:0 16px; color:var(--text-muted); font-size:18px; font-weight:300; flex-shrink:0; }
+
+.ptw-side         { flex:1; min-width:0; padding:12px 20px; }
+.ptw-card-body--admin .ptw-side { border-right:1px solid var(--border); min-width:160px; }
+.ptw-card-body--admin .ptw-side:last-child { border-right:none; }
+
+.ptw-side-label   { font-family:var(--font-ui); font-size:9px; font-weight:800;
+  letter-spacing:0.18em; text-transform:uppercase; margin-bottom:8px; }
+.ptw-side-label--receive { color:var(--green); }
+.ptw-side-label--send    { color:var(--red); }
+.ptw-side-assets  { display:flex; flex-direction:column; gap:6px; }
+.ptw-side-empty   { font-family:var(--font-body); font-size:12px; color:var(--text-muted);
+  font-style:italic; }
+
+/* ── ASSET ROW ───────────────────────────────────────────────────────────── */
+.ptw-asset        { display:flex; align-items:center; gap:8px; }
+.ptw-asset-shot   { width:32px; height:32px; border-radius:50%; object-fit:cover;
+  background:var(--bg3); flex-shrink:0; }
+.ptw-asset-pick-icon { font-size:20px; flex-shrink:0; }
+.ptw-asset-info   { display:flex; flex-direction:column; gap:1px; min-width:0; }
+.ptw-asset-name   { font-family:var(--font-ui); font-size:12px; font-weight:600;
+  color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ptw-asset-pos    { font-family:var(--font-ui); font-size:10px; font-weight:700;
+  letter-spacing:0.06em; }
+.ptw-asset-nfl    { font-family:var(--font-body); font-size:10px; color:var(--text-muted); }
+
+/* ── ACCEPTANCE STATUS ───────────────────────────────────────────────────── */
+.ptw-acceptance { display:flex; align-items:center; gap:6px;
+  padding:8px 20px; border-bottom:1px solid var(--border);
+  background:var(--bg2); }
+.ptw-accept-badge { font-family:var(--font-ui); font-size:10px; font-weight:700;
+  letter-spacing:0.08em; padding:2px 8px; border:1px solid; }
+.ptw-accept-badge--yes     { border-color:var(--green); color:var(--green); background:rgba(61,186,110,0.08); }
+.ptw-accept-badge--pending { border-color:var(--border); color:var(--text-muted); }
+
+/* ── ACTIONS ─────────────────────────────────────────────────────────────── */
+.ptw-actions { display:flex; align-items:center; gap:8px;
+  padding:10px 20px; background:var(--bg2); flex-wrap:wrap; }
+.ptw-admin-label { font-family:var(--font-ui); font-size:10px; font-weight:700;
+  letter-spacing:0.1em; color:var(--text-muted); text-transform:uppercase; }
+.ptw-waiting { font-family:var(--font-body); font-size:12px; color:var(--text-muted); font-style:italic; }
+
+.ptw-btn { font-family:var(--font-ui); font-size:11px; font-weight:700; letter-spacing:0.08em;
+  text-transform:uppercase; border:1px solid; padding:8px 16px; cursor:pointer;
+  transition:all 0.15s; background:none; }
+.ptw-btn:disabled { opacity:0.45; cursor:default; }
+.ptw-btn--accept  { background:var(--green); border-color:var(--green); color:#000; }
+.ptw-btn--accept:hover:not(:disabled)  { opacity:0.85; }
+.ptw-btn--decline { border-color:var(--red); color:var(--red); }
+.ptw-btn--decline:hover:not(:disabled) { background:rgba(217,79,79,0.1); }
+.ptw-btn--counter { border-color:var(--blue); color:var(--blue); }
+.ptw-btn--counter:hover { background:rgba(58,159,212,0.1); }

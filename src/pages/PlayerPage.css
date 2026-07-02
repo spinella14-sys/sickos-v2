@@ -1,0 +1,610 @@
+/* ─── Root & loading ─────────────────────────────────────────────────────── */
+.pp-root { display: flex; flex-direction: column; min-height: 100vh; background: var(--bg0); }
+.pp-loading { align-items: center; justify-content: center; }
+.pp-loading-text { font-family: var(--font-ui); font-size: 18px; color: var(--text-muted); letter-spacing: 0.08em; }
+.pp-inner-loading { padding: 48px; text-align: center; color: var(--text-muted); font-family: var(--font-ui); letter-spacing: 0.08em; }
+.pp-no-data { padding: 48px; text-align: center; color: var(--text-muted); font-family: var(--font-ui); font-size: 14px; }
+
+/* ─── Hero header ────────────────────────────────────────────────────────── */
+.pp-header {
+  position: relative; overflow: hidden;
+  background: linear-gradient(135deg, #1c2a3d 0%, #0d1117 100%);
+  border-bottom: 1px solid var(--border-bright); min-height: 200px;
+}
+.pp-team-watermark {
+  position: absolute; right: 180px; top: 50%; transform: translateY(-50%);
+  height: 220px; width: auto; opacity: 0.15; z-index: 0; pointer-events: none;
+  filter: saturate(0.2) brightness(1.6) contrast(0.75);
+}
+.pp-team-bar { position: absolute; top: 0; left: 0; width: 6px; height: 100%; z-index: 1; }
+.pp-header-inner {
+  position: relative; z-index: 2;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 24px; padding: 24px 32px;
+}
+
+/* ─── Identity ───────────────────────────────────────────────────────────── */
+.pp-identity { display: flex; align-items: flex-start; gap: 20px; }
+.pp-headshot-wrap {
+  position: relative; flex-shrink: 0;
+  width: 150px; height: 150px;
+  border: 2px solid var(--border-bright); overflow: hidden; background: var(--bg3);
+}
+.pp-headshot { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
+.pp-nfl-logo {
+  position: absolute; bottom: 8px; right: 8px;
+  width: 38px; height: 38px; object-fit: contain; z-index: 10;
+  background: rgba(0,0,0,0.55); border-radius: 50%; padding: 4px;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.12);
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.9));
+}
+.pp-bio { display: flex; flex-direction: column; gap: 5px; padding-top: 4px; }
+.pp-pos-tag {
+  font-family: var(--font-ui); font-size: 10px; font-weight: 800;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 3px; display: inline-block; width: fit-content;
+}
+.pp-name {
+  font-family: var(--font-display); font-size: 40px; font-weight: 900;
+  letter-spacing: 0.02em; text-transform: uppercase; color: #fff; line-height: 1;
+}
+.pp-meta-row { display: flex; align-items: center; gap: 8px; font-family: var(--font-ui); font-size: 13px; color: rgba(255,255,255,0.65); }
+.pp-nfl-team { font-weight: 700; color: rgba(255,255,255,0.85); letter-spacing: 0.06em; }
+.pp-dot { opacity: 0.35; }
+.pp-detail { color: rgba(255,255,255,0.55); }
+.pp-physical { font-size: 12px; }
+.pp-quick-info { gap: 10px; margin-top: 2px; }
+.pp-owned-badge {
+  font-family: var(--font-ui); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  background: rgba(61,186,110,0.15); color: #3dba6e; border: 1px solid rgba(61,186,110,0.3);
+  padding: 2px 8px; border-radius: 10px;
+}
+.pp-bye-badge {
+  font-family: var(--font-ui); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  background: rgba(58,159,212,0.15); color: #3a9fd4; border: 1px solid rgba(58,159,212,0.3);
+  padding: 2px 8px; border-radius: 10px;
+}
+
+/* ─── Badges row ─────────────────────────────────────────────────────────── */
+.pp-badges-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
+.pp-badge {
+  font-family: var(--font-ui); font-size: 9px; font-weight: 800;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 4px; border: 1px solid transparent;
+  display: inline-flex; align-items: center; gap: 3px;
+}
+.pp-badge--injury  { color: #d94f4f; background: rgba(217,79,79,0.15);  border-color: rgba(217,79,79,0.35); }
+.pp-badge--boom    { color: #e8822a; background: rgba(232,130,42,0.15); border-color: rgba(232,130,42,0.35); }
+.pp-badge--rising  { color: #3dba6e; background: rgba(61,186,110,0.15); border-color: rgba(61,186,110,0.35); }
+.pp-badge--falling { color: #d94f4f; background: rgba(217,79,79,0.15);  border-color: rgba(217,79,79,0.35); }
+
+/* ─── Action row ─────────────────────────────────────────────────────────── */
+.pp-action-row {
+  display: flex; align-items: center; flex-wrap: wrap;
+  gap: 8px; margin-top: 6px;
+  font-family: var(--font-ui); font-size: 12px; color: rgba(255,255,255,0.6);
+}
+.pp-fl { color: rgba(255,255,255,0.45); font-size: 11px; }
+.pp-team-link { font-weight: 700; color: #e8822a; text-decoration: none; }
+.pp-team-link:hover { text-decoration: underline; }
+.pp-fa-badge {
+  font-family: var(--font-ui); font-size: 10px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 3px; background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.5);
+}
+.pp-trade-btn-sm {
+  font-family: var(--font-ui); font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 4px 10px; border-radius: 4px;
+  background: rgba(232,130,42,0.15); color: #e8822a; border: 1px solid rgba(232,130,42,0.4);
+  text-decoration: none; cursor: pointer; transition: all 0.15s;
+}
+.pp-trade-btn-sm:hover { background: rgba(232,130,42,0.25); }
+.pp-bid-btn-sm {
+  font-family: var(--font-ui); font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 4px 10px; border-radius: 4px;
+  background: rgba(61,186,110,0.15); color: #3dba6e; border: 1px solid rgba(61,186,110,0.4);
+  text-decoration: none; transition: all 0.15s;
+}
+.pp-watchlist-btn-sm {
+  font-family: var(--font-ui); font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+  padding: 4px 10px; border-radius: 4px;
+  background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6);
+  border: 1px solid rgba(255,255,255,0.2); cursor: pointer; transition: all 0.12s;
+}
+.pp-watchlist-btn-sm:hover { border-color: #e8822a; color: #e8822a; background: rgba(232,130,42,0.12); }
+.pp-watchlist-btn-sm--active { color: #e8822a; border-color: #e8822a; background: rgba(232,130,42,0.15); }
+.pp-watchlist-btn-sm:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ─── Trade block picker ─────────────────────────────────────────────────── */
+.pp-tb-wrap { display: inline-flex; align-items: center; }
+.pp-tb-picker { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.pp-tb-opt {
+  font-family: var(--font-ui); font-size: 9px; font-weight: 700; letter-spacing: 0.06em;
+  padding: 3px 9px; border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.7); cursor: pointer; transition: all 0.12s;
+}
+.pp-tb-opt:hover { border-color: rgba(255,255,255,0.5); color: #fff; }
+.pp-tb-opt--remove { color: rgba(217,79,79,0.8); border-color: rgba(217,79,79,0.3); background: rgba(217,79,79,0.08); }
+.pp-tb-opt--remove:hover { background: rgba(217,79,79,0.15); }
+.pp-tb-opt:disabled { opacity: 0.5; cursor: not-allowed; }
+.pp-tb-cancel { font-family: var(--font-ui); font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.4); background: none; border: none; cursor: pointer; padding: 3px 6px; }
+.pp-tb-cancel:hover { color: rgba(255,255,255,0.8); }
+
+/* ─── Vertical rank bars ─────────────────────────────────────────────────── */
+.pp-ranks {
+  display: flex; align-items: flex-end; gap: 20px;
+  padding: 16px 20px;
+  background: rgba(0,0,0,0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); flex-shrink: 0;
+}
+.pp-vbar-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 58px; }
+.pp-vbar-track { width: 22px; height: 90px; background: rgba(255,255,255,0.08); border-radius: 11px; display: flex; align-items: flex-end; overflow: hidden; }
+.pp-vbar-fill { width: 100%; border-radius: 11px; transition: height 0.7s cubic-bezier(0.34,1.56,0.64,1); min-height: 4px; }
+.pp-vbar-val { font-family: var(--font-display); font-size: 18px; font-weight: 900; letter-spacing: 0.02em; line-height: 1; color: #fff; }
+.pp-vbar-label { font-family: var(--font-ui); font-size: 8px; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.5); text-align: center; }
+
+/* ─── Tabs ───────────────────────────────────────────────────────────────── */
+.pp-tabs-bar { background: var(--bg1); border-bottom: 1px solid var(--border); position: sticky; top: 60px; z-index: 40; }
+.pp-tabs-inner { display: flex; align-items: center; justify-content: space-between; padding: 0 24px; }
+.pp-tabs { display: flex; }
+.pp-tab {
+  font-family: var(--font-ui); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 14px 16px; background: none; border: none; border-bottom: 2px solid transparent;
+  cursor: pointer; color: var(--text-muted); transition: all 0.15s;
+}
+.pp-tab:hover { color: var(--text-secondary); }
+.pp-tab--active { color: var(--text-primary); border-bottom-color: var(--orange); }
+.pp-tabs-season { display: flex; align-items: center; gap: 4px; }
+.pp-season-select { font-family: var(--font-ui); font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 5px; background: var(--bg2); border: 1px solid var(--border-bright); color: var(--text-secondary); cursor: pointer; }
+.pp-season-arrow { background: none; border: none; cursor: pointer; font-size: 16px; color: var(--text-muted); padding: 4px 6px; transition: color 0.15s; }
+.pp-season-arrow:hover { color: var(--orange); }
+
+/* ─── Tab content ────────────────────────────────────────────────────────── */
+.pp-tab-content { padding: 24px 24px 48px; max-width: 1200px; }
+
+/* ─── Season Stats ───────────────────────────────────────────────────────── */
+.pp-season-header {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.pp-season-summary { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.pp-season-label { font-family: var(--font-ui); font-size: 9px; font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); }
+.pp-season-games { font-family: var(--font-ui); font-size: 12px; font-weight: 700; background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 2px 8px; color: var(--text-muted); }
+.pp-season-pts  { font-family: var(--font-display); font-size: 22px; font-weight: 900; letter-spacing: 0.02em; }
+.pp-season-ppg  { font-family: var(--font-display); font-size: 18px; font-weight: 700; }
+.pp-season-boom { font-family: var(--font-ui); font-size: 10px; font-weight: 700; color: #e8822a; }
+
+.pp-view-toggle { display: flex; border: 1px solid var(--border-bright); border-radius: 6px; overflow: hidden; }
+.pp-toggle-btn {
+  font-family: var(--font-ui); font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+  color: var(--text-muted); background: none; border: none;
+  padding: 6px 14px; cursor: pointer; transition: background 0.1s, color 0.1s;
+}
+.pp-toggle-btn--active { background: var(--orange); color: #fff; }
+
+/* ─── Stat panel (card wrapper) ──────────────────────────────────────────── */
+.pp-stat-panel {
+  background: var(--bg1); border: 1px solid var(--border); border-radius: 10px;
+  padding: 20px 20px 16px;
+  margin-bottom: 16px;
+}
+.pp-stat-panel-label {
+  font-family: var(--font-ui); font-size: 9px; font-weight: 800;
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+/* ─── Single horizontal row of stat bars ────────────────────────────────── */
+.pp-sbars-row {
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.pp-sbars-row::-webkit-scrollbar { display: none; }
+
+/* ─── Individual stat bar — narrow Fantrax-style ────────────────────────── */
+.pp-sbar {
+  flex: 0 0 52px;        /* fixed narrow width */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 0 4px;
+}
+
+/* Section divider: extra right margin + subtle line */
+.pp-sbar--section-end {
+  margin-right: 16px;
+  position: relative;
+}
+.pp-sbar--section-end::after {
+  content: '';
+  position: absolute;
+  right: -9px;
+  top: 10%;
+  height: 80%;
+  width: 1px;
+  background: var(--border);
+}
+
+/* Dimmed state for zero stats */
+.pp-sbar--zero { opacity: 0.35; }
+.pp-sbar--zero .pp-sbar-lbl { color: var(--text-muted); }
+.pp-sbar--zero .pp-sbar-val { color: var(--text-muted); }
+
+.pp-sbar-pct {
+  font-family: var(--font-ui); font-size: 9px; font-weight: 800;
+  line-height: 1; min-height: 12px; letter-spacing: 0.02em;
+  text-align: center;
+}
+.pp-sbar-track {
+  width: 100%; height: 60px;
+  background: var(--bg2); border-radius: 3px;
+  overflow: hidden; display: flex; align-items: flex-end;
+  border: 1px solid var(--border);
+}
+.pp-sbar-fill {
+  width: 100%; border-radius: 3px 3px 0 0;
+  transition: height 0.35s cubic-bezier(0.34, 1.2, 0.64, 1);
+  min-height: 0;
+}
+.pp-sbar-lbl {
+  font-family: var(--font-ui); font-size: 11px; font-weight: 800;
+  letter-spacing: 0.1em; color: var(--text-primary);
+  text-transform: uppercase; text-align: center; line-height: 1.2;
+  order: 1;
+}
+.pp-sbar-val {
+  font-family: var(--font-ui); font-size: 11px; font-weight: 600;
+  color: var(--text-secondary); line-height: 1;
+  white-space: nowrap; text-align: center;
+  order: 2;
+}
+
+/* ─── Fantasy summary ────────────────────────────────────────────────────── */
+.pp-fantasy-panel { }
+.pp-fantasy-summary { display: flex; gap: 10px; flex-wrap: wrap; }
+.pp-fant-cell {
+  flex: 1; min-width: 80px;
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 12px 10px; text-align: center;
+}
+.pp-fant-val { font-family: var(--font-display); font-size: 24px; font-weight: 900; line-height: 1; margin-bottom: 5px; }
+.pp-fant-lbl { font-family: var(--font-ui); font-size: 8px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); }
+
+/* ─── Game Log ───────────────────────────────────────────────────────────── */
+.pp-gl-wrap { overflow-x: auto; }
+.pp-gl-table { width: 100%; border-collapse: collapse; font-family: var(--font-ui); font-size: 13px; }
+.pp-gl-table th { padding: 10px 14px; text-align: left; font-size: 9px; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-muted); background: var(--bg1); border-bottom: 1px solid var(--border); white-space: nowrap; }
+.pp-gl-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text-secondary); }
+.pp-gl-row:hover td { background: var(--bg2); }
+.pp-gl-week { font-weight: 700; color: var(--text-muted); }
+.pp-gl-opp  { font-weight: 700; color: var(--text-secondary); }
+.pp-gl-pts  { font-weight: 800; font-size: 14px; }
+.pp-gl-totals td { font-weight: 800; color: var(--text-primary); background: var(--bg2); border-top: 2px solid var(--border-bright); font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; }
+.pp-gl-bye td { background: var(--bg2); color: var(--text-muted); font-style: italic; }
+
+/* ─── Trends ─────────────────────────────────────────────────────────────── */
+.pp-trends-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.pp-trends-title { font-family: var(--font-ui); font-size: 13px; font-weight: 700; letter-spacing: 0.06em; color: var(--text-secondary); }
+.pp-trends-legend { display: flex; align-items: center; gap: 12px; font-family: var(--font-ui); font-size: 11px; color: var(--text-muted); }
+.pp-legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; }
+.pp-legend-dot--dashed { width: 16px; height: 2px; border-radius: 1px; background: rgba(255,255,255,0.3); }
+.pp-trends-chart { background: var(--bg1); border: 1px solid var(--border); border-radius: 10px; padding: 16px 8px 8px; margin-bottom: 20px; }
+.pp-tooltip { background: var(--bg2); border: 1px solid var(--border-bright); border-radius: 8px; padding: 10px 14px; font-family: var(--font-ui); font-size: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+.pp-tooltip-week { font-weight: 800; color: var(--text-muted); letter-spacing: 0.08em; margin-bottom: 6px; text-transform: uppercase; font-size: 10px; }
+.pp-tooltip-row { display: flex; justify-content: space-between; gap: 20px; font-weight: 700; }
+.pp-trends-form { background: var(--bg1); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+.pp-form-title { font-family: var(--font-ui); font-size: 9px; font-weight: 800; letter-spacing: 0.2em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 12px; }
+.pp-form-games { display: flex; gap: 12px; margin-bottom: 16px; }
+.pp-form-game { text-align: center; flex: 1; max-width: 80px; }
+.pp-form-week { font-family: var(--font-ui); font-size: 9px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 4px; }
+.pp-form-pts { font-family: var(--font-display); font-size: 24px; font-weight: 900; }
+.pp-form-stats { display: flex; gap: 0; border-top: 1px solid var(--border); padding-top: 14px; }
+.pp-form-stat { flex: 1; display: flex; flex-direction: column; gap: 4px; padding: 0 12px; border-right: 1px solid var(--border); }
+.pp-form-stat:first-child { padding-left: 0; }
+.pp-form-stat:last-child { border-right: none; }
+.pp-form-stat span:first-child { font-family: var(--font-ui); font-size: 9px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; }
+.pp-form-stat span:last-child { font-family: var(--font-display); font-size: 22px; font-weight: 900; color: var(--text-primary); }
+
+/* ─── News ───────────────────────────────────────────────────────────────── */
+.pp-news-list { display: flex; flex-direction: column; gap: 10px; }
+.pp-news-item { background: var(--bg1); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; transition: background 0.1s; }
+.pp-news-item:hover { background: var(--bg2); }
+.pp-news-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.pp-news-source { font-family: var(--font-ui); font-size: 9px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--orange); }
+.pp-news-time { font-family: var(--font-ui); font-size: 10px; color: var(--text-muted); }
+.pp-news-title { font-family: var(--font-ui); font-size: 14px; font-weight: 700; color: var(--text-primary); line-height: 1.4; margin-bottom: 6px; }
+.pp-news-body { font-family: 'Barlow', sans-serif; font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+/* ─── Career ─────────────────────────────────────────────────────────────── */
+.pp-career-wrap { overflow-x: auto; }
+.pp-career-table { width: 100%; border-collapse: collapse; font-family: var(--font-ui); font-size: 13px; }
+.pp-career-table th { padding: 10px 16px; text-align: left; font-size: 9px; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-muted); background: var(--bg1); border-bottom: 2px solid var(--border-bright); white-space: nowrap; }
+.pp-career-table td { padding: 11px 16px; border-bottom: 1px solid var(--border); color: var(--text-secondary); }
+.pp-career-row:hover td { background: var(--bg2); }
+.pp-career-row--current td { background: rgba(232,130,42,0.06); }
+.pp-career-year { font-weight: 800; color: var(--text-primary); font-size: 14px; }
+.pp-career-note { margin-top: 16px; font-family: var(--font-ui); font-size: 11px; color: var(--text-muted); }
+
+/* ─── Contract ───────────────────────────────────────────────────────────── */
+.pp-contract-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.pp-contract-card { background: var(--bg1); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; }
+.pp-contract-label { font-family: var(--font-ui); font-size: 9px; font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
+.pp-contract-val { font-family: var(--font-display); font-size: 28px; font-weight: 900; color: var(--text-primary); }
+.pp-contract-money { color: var(--green); }
+
+/* â”€â”€ Add to PlayerPage.css â€” position rank label on stat bars â”€â”€ */
+
+/* Sits above the percentile number, same color as the bar fill */
+.pp-sbar-posrank {
+  font-family: var(--font-ui);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-align: center;
+  min-height: 11px;
+  line-height: 1;
+  opacity: 0.85;
+}
+
+/* â”€â”€ Paste at bottom of PlayerPage.css â”€â”€ */
+
+/* Analytics panel */
+.pp-analytics-panel { margin-top: 12px; }
+
+.pp-analytics-note {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  margin-bottom: 10px;
+  font-style: italic;
+}
+
+.pp-analytics-group { margin-bottom: 14px; }
+
+.pp-analytics-group-title {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.pp-analytics-cells {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border: 1px solid var(--border);
+}
+
+.pp-ac-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 10px;
+  border-right: 1px solid var(--border);
+  min-width: 72px;
+  flex: 1;
+}
+
+.pp-ac-cell:last-child { border-right: none; }
+
+.pp-ac-label {
+  font-family: var(--font-ui);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.pp-ac-val {
+  font-family: var(--font-ui);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+/* â”€â”€ Paste at bottom of PlayerPage.css â”€â”€ */
+
+/* Analytics panel */
+.pp-analytics-panel { margin-top: 12px; }
+
+.pp-analytics-note {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  margin-bottom: 10px;
+  font-style: italic;
+}
+
+.pp-analytics-group { margin-bottom: 14px; }
+
+.pp-analytics-group-title {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.pp-analytics-cells {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border: 1px solid var(--border);
+}
+
+.pp-ac-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 10px;
+  border-right: 1px solid var(--border);
+  min-width: 72px;
+  flex: 1;
+}
+
+.pp-ac-cell:last-child { border-right: none; }
+
+.pp-ac-label {
+  font-family: var(--font-ui);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.pp-ac-val {
+  font-family: var(--font-ui);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+/* Position rank label â€” sits above the percentile number */
+.pp-sbar-posrank {
+  font-family: var(--font-ui);
+  font-size: 7.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-align: center;
+  height: 11px;
+  line-height: 11px;
+  white-space: nowrap;
+}
+
+/* â”€â”€ Paste at bottom of PlayerPage.css â”€â”€ */
+
+/* Analytics panel */
+.pp-analytics-panel { margin-top: 12px; }
+
+.pp-analytics-note {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  margin-bottom: 10px;
+  font-style: italic;
+}
+
+.pp-analytics-group { margin-bottom: 14px; }
+
+.pp-analytics-group-title {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.pp-analytics-cells {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border: 1px solid var(--border);
+}
+
+.pp-ac-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 10px;
+  border-right: 1px solid var(--border);
+  min-width: 72px;
+  flex: 1;
+}
+
+.pp-ac-cell:last-child { border-right: none; }
+
+.pp-ac-label {
+  font-family: var(--font-ui);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.pp-ac-val {
+  font-family: var(--font-ui);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+/* Position rank label â€” sits above the percentile number */
+.pp-sbar-posrank {
+  font-family: var(--font-ui);
+  font-size: 7.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-align: center;
+  height: 11px;
+  line-height: 11px;
+  white-space: nowrap;
+}
+
+/* â”€â”€ News & Notes tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.pp-news-filters {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.pp-news-filter-btn {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 6px 14px;
+  border: 1px solid var(--border-bright);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.pp-news-filter-btn--active {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: #fff;
+}
+
+.pp-news-type {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.pp-news-type--urgent { color: #d94f4f; }
+
+.pp-news-new {
+  font-family: var(--font-ui);
+  font-size: 8px;
+  font-weight: 800;
+  padding: 1px 5px;
+  background: var(--orange);
+  color: #fff;
+  border-radius: 3px;
+}

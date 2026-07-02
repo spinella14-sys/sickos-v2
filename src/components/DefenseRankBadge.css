@@ -1,0 +1,110 @@
+/* DefenseRankBadge.css */
+
+.drb-wrap { position: relative; display: inline-block; }
+
+.drb-trigger {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 2px 4px;
+  text-decoration: underline;
+  text-decoration-color: var(--border-bright);
+  text-underline-offset: 2px;
+}
+.drb-trigger:hover {
+  color: var(--orange);
+  text-decoration-color: var(--orange);
+}
+
+.drb-bye, .drb-dash {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.drb-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 998;
+}
+
+.drb-popover {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999;
+  background: var(--bg1);
+  border: 1px solid var(--border-bright);
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  padding: 8px 10px;
+  min-width: 200px;
+  text-align: left;
+}
+
+.drb-popover-hd {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.drb-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 2px;
+}
+.drb-close:hover { color: var(--text-primary); }
+
+.drb-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+  font-family: var(--font-ui);
+  font-size: 11px;
+}
+
+.drb-row-pos {
+  font-weight: 800;
+  width: 24px;
+  color: var(--text-muted);
+}
+
+.drb-row-rank {
+  font-weight: 700;
+  width: 36px;
+}
+
+.drb-row-ppg {
+  color: var(--text-muted);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+/* Newspaper icon for recent transaction news (used on FA/roster rows) */
+.fa-news-icon, .rtr-news-icon {
+  cursor: pointer;
+  font-size: 12px;
+  margin-left: 4px;
+  opacity: 0.85;
+}
+.fa-news-icon:hover, .rtr-news-icon:hover { opacity: 1; }

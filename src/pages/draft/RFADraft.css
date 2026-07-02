@@ -1,0 +1,826 @@
+/* RFA Draft Room styles
+   Inherits dark base from RookieDraft.css
+   Accent: Gold/Amber — same draft module family
+   RFA-specific overrides and additions
+*/
+
+.rfa-room {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--draft-bg);
+  color: var(--draft-text);
+  font-family: 'Barlow Condensed', sans-serif;
+  overflow: hidden;
+}
+
+/* ─── RFA Hero ───────────────────────────────────────────────────────────── */
+.rfa-hero {
+  height: 72px;
+  background: var(--draft-surface);
+  border-bottom: 2px solid var(--draft-amber);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 24px;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.rfa-hero__wave {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 160px;
+}
+
+.rfa-hero__wave-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--draft-text-muted);
+  text-transform: uppercase;
+}
+
+.rfa-hero__wave-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--draft-amber);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.rfa-hero__center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.rfa-hero__status {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--draft-text-muted);
+  text-transform: uppercase;
+}
+
+.rfa-hero__clock {
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  font-variant-numeric: tabular-nums;
+  color: var(--draft-text);
+}
+
+.rfa-hero__clock.warning { color: var(--draft-amber); }
+.rfa-hero__clock.urgent {
+  color: var(--draft-red);
+  animation: pulse-red 1s ease-in-out infinite;
+}
+
+.rfa-hero__clock-label {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--draft-text-muted);
+  text-transform: uppercase;
+}
+
+.rfa-hero__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 200px;
+  justify-content: flex-end;
+}
+
+.rfa-hero__match-alert {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(232, 69, 69, 0.15);
+  border: 1px solid var(--draft-red);
+  color: var(--draft-red);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  padding: 6px 12px;
+  border-radius: 6px;
+  animation: pulse-red 1.5s ease-in-out infinite;
+}
+
+.rfa-hero__trade-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--draft-surface-2);
+  border: 1px solid var(--draft-border);
+  color: var(--draft-text-muted);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.rfa-hero__trade-btn:hover {
+  border-color: var(--draft-amber);
+  color: var(--draft-amber);
+}
+
+.rfa-hero__trade-badge {
+  background: var(--draft-surface);
+  border: 1px solid var(--draft-border);
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 2px;
+  color: var(--draft-text-muted);
+}
+
+/* ─── My Bids Panel (Left) ───────────────────────────────────────────────── */
+.rfa-my-bids {
+  background: var(--draft-surface);
+  border-right: 1px solid var(--draft-border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  width: 260px;
+}
+
+.rfa-my-bids__header {
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid var(--draft-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.rfa-my-bids__title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--draft-text-muted);
+  text-transform: uppercase;
+}
+
+.rfa-my-bids__count {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--draft-amber);
+  background: var(--draft-amber-dim);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.rfa-my-bids__list {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.rfa-my-bids__empty {
+  padding: 24px 14px;
+  font-size: 12px;
+  color: var(--draft-text-muted);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.rfa-bid-card {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--draft-border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: grab;
+  transition: background 0.1s;
+}
+
+.rfa-bid-card:hover { background: var(--draft-surface-2); }
+
+.rfa-bid-card__top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rfa-bid-card__rank {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--draft-amber);
+  width: 20px;
+  flex-shrink: 0;
+}
+
+.rfa-bid-card__player {
+  flex: 1;
+  min-width: 0;
+}
+
+.rfa-bid-card__name {
+  font-size: 13px;
+  font-weight: 700;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rfa-bid-card__meta {
+  font-size: 10px;
+  color: var(--draft-text-muted);
+}
+
+.rfa-bid-card__contract {
+  font-size: 11px;
+  color: var(--draft-text-muted);
+  padding-left: 28px;
+}
+
+.rfa-bid-card__contract span {
+  color: var(--draft-amber);
+  font-weight: 700;
+}
+
+.rfa-bid-card__toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-left: 28px;
+}
+
+.rfa-bid-card__toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: var(--draft-text-muted);
+  cursor: pointer;
+}
+
+.rfa-bid-card__toggle input[type="checkbox"] {
+  accent-color: var(--draft-amber);
+}
+
+.rfa-bid-card__actions {
+  display: flex;
+  gap: 6px;
+  padding-left: 28px;
+}
+
+.rfa-bid-card__withdraw {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--draft-red);
+  background: none;
+  border: 1px solid var(--draft-red);
+  padding: 2px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.06em;
+  transition: all 0.15s;
+}
+
+.rfa-bid-card__withdraw:hover {
+  background: rgba(232, 69, 69, 0.1);
+}
+
+/* Match window cards */
+.rfa-match-card {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--draft-red);
+  background: rgba(232, 69, 69, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rfa-match-card__header {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--draft-red);
+  text-transform: uppercase;
+}
+
+.rfa-match-card__player {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.rfa-match-card__offer {
+  font-size: 12px;
+  color: var(--draft-text-muted);
+  line-height: 1.6;
+}
+
+.rfa-match-card__offer strong {
+  color: var(--draft-text);
+}
+
+.rfa-match-card__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.rfa-match-card__match {
+  flex: 1;
+  background: var(--draft-amber);
+  color: #000;
+  border: none;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 7px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.rfa-match-card__match:hover { background: #FFB83F; }
+
+.rfa-match-card__decline {
+  flex: 1;
+  background: none;
+  color: var(--draft-red);
+  border: 1px solid var(--draft-red);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 7px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.rfa-match-card__decline:hover { background: rgba(232, 69, 69, 0.1); }
+
+/* ─── RFA Pool (Center) ──────────────────────────────────────────────────── */
+.rfa-pool {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--draft-bg);
+  flex: 1;
+}
+
+.rfa-pool__header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--draft-border);
+  background: var(--draft-surface);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.rfa-pool__title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rfa-pool__title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--draft-text-muted);
+}
+
+.rfa-pool__wave-badge {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  background: var(--draft-amber-dim);
+  color: var(--draft-amber);
+  border: 1px solid var(--draft-amber);
+  padding: 3px 10px;
+  border-radius: 10px;
+  text-transform: uppercase;
+}
+
+.rfa-pool__filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rfa-pool__search {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--draft-surface-2);
+  border: 1px solid var(--draft-border);
+  border-radius: 6px;
+  padding: 6px 12px;
+  color: var(--draft-text-muted);
+}
+
+.rfa-pool__search input {
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--draft-text);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 14px;
+  width: 100%;
+}
+
+.rfa-pool__search input::placeholder { color: var(--draft-text-muted); }
+
+.rfa-pool__col-headers {
+  display: grid;
+  grid-template-columns: 40px 1fr 60px 100px 80px 80px 100px;
+  padding: 7px 16px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--draft-text-muted);
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--draft-border);
+  background: var(--draft-surface);
+  flex-shrink: 0;
+}
+
+.rfa-pool__list {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.rfa-pool__empty {
+  padding: 60px 40px;
+  text-align: center;
+  color: var(--draft-text-muted);
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.rfa-pool__empty-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--draft-text);
+  margin-bottom: 8px;
+}
+
+/* RFA Player Row */
+.rfa-player-row {
+  display: grid;
+  grid-template-columns: 40px 1fr 60px 100px 80px 80px 100px;
+  align-items: center;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--draft-border);
+  transition: background 0.1s;
+  cursor: pointer;
+}
+
+.rfa-player-row:hover { background: var(--draft-surface-2); }
+
+.rfa-player-row--my-player {
+  border-left: 3px solid var(--draft-amber);
+}
+
+.rfa-player-row--match-open {
+  border-left: 3px solid var(--draft-red);
+  background: rgba(232, 69, 69, 0.04);
+}
+
+.rfa-player-row--signed {
+  opacity: 0.45;
+}
+
+.rfa-round-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.rfa-round-badge--1 {
+  background: rgba(245, 166, 35, 0.2);
+  color: var(--draft-amber);
+  border: 1px solid var(--draft-amber);
+}
+
+.rfa-round-badge--2 {
+  background: rgba(52, 152, 219, 0.2);
+  color: #3498DB;
+  border: 1px solid #3498DB;
+}
+
+.rfa-player-row__identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rfa-player-row__headshot {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--draft-surface-2);
+  border: 1px solid var(--draft-border);
+  flex-shrink: 0;
+}
+
+.rfa-player-row__name {
+  font-size: 14px;
+  font-weight: 700;
+  display: block;
+}
+
+.rfa-player-row__meta {
+  font-size: 10px;
+  color: var(--draft-text-muted);
+}
+
+.rfa-incumbent {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rfa-incumbent__logo {
+  width: 22px;
+  height: 22px;
+  object-fit: cover;
+  border-radius: 3px;
+}
+
+.rfa-incumbent__name {
+  font-size: 11px;
+  color: var(--draft-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rfa-my-player-badge {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  background: var(--draft-amber);
+  color: #000;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.rfa-bid-count {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--draft-text-muted);
+}
+
+.rfa-bid-count__num {
+  font-weight: 800;
+  color: var(--draft-text);
+}
+
+.rfa-action-btn {
+  background: var(--draft-amber);
+  color: #000;
+  border: none;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  padding: 6px 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-transform: uppercase;
+}
+
+.rfa-action-btn:hover:not(:disabled) { background: #FFB83F; }
+.rfa-action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: var(--draft-surface-2);
+  color: var(--draft-text-muted);
+  border: 1px solid var(--draft-border);
+}
+
+.rfa-action-btn--retain {
+  background: var(--draft-amber);
+}
+
+.rfa-action-btn--bid {
+  background: #3498DB;
+  color: #fff;
+}
+
+.rfa-action-btn--bid:hover:not(:disabled) { background: #2980B9; }
+
+.rfa-action-btn--signed {
+  background: none;
+  color: var(--draft-green);
+  border: 1px solid var(--draft-green);
+  cursor: default;
+  font-size: 10px;
+}
+
+/* ─── Bid Form Modal ─────────────────────────────────────────────────────── */
+.rfa-bid-form-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.rfa-bid-form {
+  background: var(--draft-surface);
+  border: 1px solid var(--draft-border);
+  border-radius: 12px;
+  padding: 24px;
+  width: 420px;
+  max-height: 80vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.rfa-bid-form__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.rfa-bid-form__title {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.rfa-bid-form__player {
+  font-size: 13px;
+  color: var(--draft-amber);
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.rfa-bid-form__close {
+  background: none;
+  border: none;
+  color: var(--draft-text-muted);
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  padding: 0;
+}
+
+.rfa-bid-form__section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rfa-bid-form__label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--draft-text-muted);
+  text-transform: uppercase;
+}
+
+.rfa-bid-form__input {
+  background: var(--draft-surface-2);
+  border: 1px solid var(--draft-border);
+  color: var(--draft-text);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 16px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.rfa-bid-form__input:focus { border-color: var(--draft-amber); }
+
+.rfa-bid-form__hint {
+  font-size: 11px;
+  color: var(--draft-text-muted);
+}
+
+.rfa-bid-form__hint.error { color: var(--draft-red); }
+.rfa-bid-form__hint.success { color: var(--draft-green); }
+
+.rfa-bid-form__contract-preview {
+  background: var(--draft-surface-2);
+  border: 1px solid var(--draft-border);
+  border-radius: 6px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rfa-bid-form__contract-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.rfa-bid-form__contract-row span:last-child {
+  font-weight: 700;
+  color: var(--draft-amber);
+}
+
+.rfa-bid-form__contract-row.non-gtd span:last-child {
+  color: var(--draft-red);
+}
+
+.rfa-bid-form__toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--draft-text-muted);
+  cursor: pointer;
+}
+
+.rfa-bid-form__toggle-row input[type="checkbox"] {
+  accent-color: var(--draft-amber);
+  width: 14px;
+  height: 14px;
+}
+
+.rfa-bid-form__gtd-toggle {
+  display: flex;
+  gap: 8px;
+}
+
+.rfa-bid-form__gtd-btn {
+  flex: 1;
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid var(--draft-border);
+  background: none;
+  color: var(--draft-text-muted);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.rfa-bid-form__gtd-btn--active {
+  border-color: var(--draft-amber);
+  background: var(--draft-amber-dim);
+  color: var(--draft-amber);
+}
+
+.rfa-bid-form__submit {
+  background: var(--draft-amber);
+  color: #000;
+  border: none;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-transform: uppercase;
+}
+
+.rfa-bid-form__submit:hover:not(:disabled) { background: #FFB83F; }
+.rfa-bid-form__submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.rfa-bid-form__error {
+  color: var(--draft-red);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* ─── Scrollbars ─────────────────────────────────────────────────────────── */
+.rfa-my-bids__list::-webkit-scrollbar,
+.rfa-pool__list::-webkit-scrollbar { width: 4px; }
+
+.rfa-my-bids__list::-webkit-scrollbar-track,
+.rfa-pool__list::-webkit-scrollbar-track { background: var(--draft-bg); }
+
+.rfa-my-bids__list::-webkit-scrollbar-thumb,
+.rfa-pool__list::-webkit-scrollbar-thumb { background: var(--draft-border); border-radius: 2px; }

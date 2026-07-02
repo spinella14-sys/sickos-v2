@@ -1,0 +1,60 @@
+.tbw-root { display:flex; flex-direction:column; gap:0; }
+
+/* Header */
+.tbw-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.tbw-header-left { display:flex; align-items:center; gap:8px; }
+.tbw-dot   { width:8px; height:8px; border-radius:50%; background:var(--orange);
+  flex-shrink:0; box-shadow:0 0 0 2px rgba(232,130,42,0.25); }
+.tbw-title { font-family:var(--font-ui); font-size:9px; font-weight:800;
+  letter-spacing:0.2em; text-transform:uppercase; opacity:0.85; }
+.tbw-header-actions { display:flex; gap:6px; }
+.tbw-action-btn { font-family:var(--font-ui); font-size:10px; font-weight:700;
+  letter-spacing:0.08em; text-transform:uppercase; text-decoration:none;
+  padding:4px 10px; border:1px solid rgba(255,255,255,0.12); color:var(--text-muted);
+  background:none; cursor:pointer; transition:all 0.15s; }
+.tbw-action-btn:hover { border-color:var(--orange); color:var(--orange); }
+.tbw-action-btn--view { color:var(--orange); border-color:rgba(232,130,42,0.3); }
+
+.tbw-loading { font-family:var(--font-body); font-size:12px; color:var(--text-muted); padding:8px 0; }
+.tbw-empty  { display:flex; align-items:center; justify-content:space-between;
+  padding:12px 0; font-family:var(--font-body); font-size:13px; color:var(--text-muted); }
+.tbw-empty-link { font-family:var(--font-ui); font-size:11px; font-weight:700;
+  letter-spacing:0.08em; color:var(--orange); text-decoration:none; }
+
+/* Team rows */
+.tbw-list { display:flex; flex-direction:column; gap:2px; }
+.tbw-team-row { display:flex; align-items:center; gap:10px;
+  padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
+.tbw-team-row:last-of-type { border-bottom:none; }
+.tbw-team-row--mine { background:rgba(255,255,255,0.02); border-radius:6px; padding:8px 4px; }
+
+.tbw-team-ident { display:flex; align-items:center; gap:8px; width:90px; flex-shrink:0; }
+.tbw-team-logo  { width:28px; height:28px; object-fit:contain;
+  filter:drop-shadow(0 1px 3px rgba(0,0,0,0.4)); flex-shrink:0; }
+.tbw-team-abbrev { font-family:var(--font-ui); font-size:11px; font-weight:800;
+  letter-spacing:0.1em; color:var(--text-primary); }
+.tbw-pick-badge { font-family:var(--font-body); font-size:9px; margin-top:1px; }
+
+/* Player chips */
+.tbw-players { display:flex; gap:4px; flex:1; flex-wrap:wrap; min-width:0; }
+.tbw-player-chip { display:flex; align-items:center; gap:3px;
+  background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);
+  padding:3px 8px; border-radius:100px; font-family:var(--font-ui);
+  font-size:10px; white-space:nowrap; }
+.tbw-player-chip-name { color:var(--text-secondary); font-weight:600; }
+.tbw-player-chip--more { color:var(--text-muted); background:none;
+  border-color:rgba(255,255,255,0.07); }
+.tbw-listening-dot { font-size:8px; }
+
+/* Propose button */
+.tbw-propose-btn { background:none; border:1px solid; font-family:var(--font-ui);
+  font-size:10px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+  padding:4px 10px; cursor:pointer; transition:all 0.15s; white-space:nowrap;
+  flex-shrink:0; }
+.tbw-propose-btn:hover { background:rgba(232,130,42,0.1); }
+
+.tbw-view-all { display:block; text-align:center; margin-top:10px;
+  padding-top:10px; border-top:1px solid rgba(255,255,255,0.07);
+  font-family:var(--font-ui); font-size:11px; font-weight:700;
+  letter-spacing:0.08em; color:var(--orange); text-decoration:none; }
+.tbw-view-all:hover { opacity:0.8; }

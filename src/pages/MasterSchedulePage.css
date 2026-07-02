@@ -1,0 +1,206 @@
+/* MasterSchedulePage.css */
+
+.msp-root {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.msp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.msp-title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.msp-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.msp-season-btn {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border: 1px solid var(--border-bright);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.msp-season-btn--active {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: #fff;
+}
+
+.msp-expand-btn {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.msp-expand-btn:hover { color: var(--text-primary); }
+
+.msp-loading, .msp-empty {
+  text-align: center;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  color: var(--text-muted);
+  padding: 48px;
+}
+
+/* Week accordion */
+.msp-week {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+.msp-week--playoff {
+  border-color: var(--orange);
+}
+
+.msp-week-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--bg1);
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+.msp-week-header:hover { background: var(--bg2); }
+
+.msp-week-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.msp-week-num {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+.msp-week-num--playoff { color: var(--orange); }
+
+.msp-week-status {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.msp-week-status--final   { color: var(--text-muted); }
+.msp-week-status--live    { color: var(--orange); }
+.msp-week-status--upcoming { color: var(--text-muted); }
+
+.msp-week-toggle {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.msp-week-body {
+  border-top: 1px solid var(--border);
+  background: var(--bg0, var(--bg1));
+}
+
+/* Individual matchup row */
+.msp-matchup-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  text-decoration: none;
+  transition: background 0.1s;
+}
+.msp-matchup-row:last-child { border-bottom: none; }
+.msp-matchup-row:hover { background: var(--bg2); }
+
+.msp-team-side {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+.msp-team-side--away {
+  flex-direction: row-reverse;
+}
+.msp-team-side--win .msp-chip-name {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.msp-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.msp-chip-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.msp-chip-name {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.msp-score {
+  font-family: var(--font-display);
+  font-size: 16px;
+  color: var(--text-muted);
+  min-width: 60px;
+  text-align: center;
+}
+.msp-score--win  { color: var(--text-primary); font-weight: 700; }
+.msp-score--loss { color: var(--text-muted); }
+
+.msp-vs {
+  width: 80px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.msp-vs-label {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+.msp-final-badge {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+.msp-live-badge {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--orange);
+}

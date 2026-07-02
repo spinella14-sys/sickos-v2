@@ -1,0 +1,141 @@
+/* NewsCard.css */
+
+.nc-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 998;
+}
+
+.nc-card {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 999;
+  width: 380px;
+  max-width: 90vw;
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg1);
+  border: 1px solid var(--border-bright);
+  border-radius: 8px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+
+.nc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.nc-title {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.nc-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+}
+.nc-close:hover { color: var(--text-primary); }
+
+.nc-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+}
+
+.nc-tab {
+  flex: 1;
+  padding: 10px 8px;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.nc-tab--active {
+  color: var(--orange);
+  border-bottom-color: var(--orange);
+}
+
+.nc-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.nc-loading, .nc-empty {
+  padding: 24px 16px;
+  text-align: center;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.nc-item {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.nc-item:last-child { border-bottom: none; }
+
+.nc-item-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.nc-type-tag {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.nc-type-tag--urgent {
+  color: #d94f4f;
+}
+
+.nc-new-badge {
+  font-family: var(--font-ui);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  padding: 1px 5px;
+  background: var(--orange);
+  color: #fff;
+  border-radius: 3px;
+}
+
+.nc-headline {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--text-primary);
+  line-height: 1.4;
+  margin-bottom: 3px;
+}
+
+.nc-time {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  color: var(--text-muted);
+}

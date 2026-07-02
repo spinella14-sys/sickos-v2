@@ -1,0 +1,149 @@
+.sb-root { background: var(--bg0); min-height: calc(100vh - 56px); }
+
+.sb-header { background: var(--bg1); border-bottom: 1px solid var(--border); padding: 32px 40px; }
+.sb-header-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+.sb-title { font-family: var(--font-display); font-size: 42px; letter-spacing: 0.04em; }
+.sb-sub { font-family: var(--font-ui); font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); margin-top: 4px; }
+
+.sb-stats { display: flex; gap: 32px; }
+.sb-stat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.sb-stat-label { font-family: var(--font-ui); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-muted); }
+.sb-stat-val { font-family: var(--font-display); font-size: 26px; letter-spacing: 0.02em; color: var(--text-primary); }
+.sb-stat-val--orange { color: var(--orange); }
+
+.sb-week-bar { background: var(--bg1); border-bottom: 1px solid var(--border); padding: 12px 40px; overflow-x: auto; position: sticky; top: 56px; z-index: 50; }
+.sb-week-bar-inner { max-width: 1200px; margin: 0 auto; display: flex; gap: 4px; }
+
+.sb-week-btn {
+  background: var(--bg3); border: 1px solid var(--border);
+  color: var(--text-muted); font-family: var(--font-ui); font-size: 12px; font-weight: 700;
+  letter-spacing: 0.08em; padding: 6px 12px; cursor: pointer; transition: all 0.15s; min-width: 36px;
+}
+.sb-week-btn:hover { color: var(--text-primary); }
+.sb-week-btn--active { background: var(--orange); border-color: var(--orange); color: #000; }
+
+.sb-content { max-width: 1200px; margin: 0 auto; padding: 32px 40px; }
+
+.sb-empty {
+  text-align: center; padding: 80px 0; color: var(--text-muted);
+  font-family: var(--font-ui); font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase;
+}
+.sb-empty p { font-size: 12px; margin-top: 8px; font-family: var(--font-body); text-transform: none; }
+
+.sb-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px; }
+
+/* Matchup card */
+.mc-card {
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+.mc-card:hover { border-color: var(--border-bright); }
+
+.mc-status-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 16px; background: var(--bg2); border-bottom: 1px solid var(--border);
+}
+.mc-status { font-family: var(--font-ui); font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); }
+.mc-diff { font-family: var(--font-accent); font-size: 12px; color: var(--text-muted); }
+
+.mc-body {
+  display: grid;
+  grid-template-columns: 1fr 40px 1fr;
+  align-items: center;
+  padding: 20px 16px;
+  gap: 8px;
+}
+
+.mc-team { display: flex; align-items: center; gap: 12px; }
+.mc-team--away { flex-direction: row-reverse; }
+.mc-team--winner .mc-tname { color: var(--text-primary); }
+
+.sb-logo { object-fit: contain; flex-shrink: 0; border-radius: 2px; }
+.sb-logo-ph { display: inline-block; background: var(--bg3); border-radius: 2px; flex-shrink: 0; }
+
+.mc-team-info { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.mc-team-info--right { text-align: right; }
+
+.mc-tname {
+  font-family: var(--font-ui); font-size: 13px; font-weight: 700; letter-spacing: 0.04em;
+  color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.mc-mgr { font-family: var(--font-body); font-size: 11px; color: var(--text-muted); }
+
+.mc-score {
+  font-family: var(--font-display); font-size: 32px; letter-spacing: 0.02em;
+  color: var(--text-muted); flex-shrink: 0;
+}
+.mc-score--win { color: var(--orange); }
+
+.mc-vs {
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-ui); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.15em; color: var(--text-muted); text-transform: uppercase;
+}
+
+/* â”€â”€ Paste these additions into ScoreboardPage.css â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
+/* Clickable card */
+.mc-card--link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.mc-card--link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+}
+
+/* Status variants */
+.mc-status--live     { color: var(--orange); }
+.mc-status--final    { color: var(--text-muted); }
+.mc-status--upcoming { color: var(--text-muted); }
+.mc-live-dot {
+  display: inline-block; width: 7px; height: 7px;
+  background: var(--orange); border-radius: 50%;
+  margin-right: 4px; animation: sb-pulse 1.4s infinite;
+}
+@keyframes sb-pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* Score states */
+.mc-score--win  { color: var(--green,#3dba6e) !important; }
+.mc-score--loss { color: var(--text-muted) !important; opacity: 0.6; }
+
+/* Season selector */
+.sb-season-group { display: flex; gap: 4px; flex-shrink: 0; }
+.sb-season-btn {
+  background: none; border: 1px solid var(--border); color: var(--text-muted);
+  font-family: var(--font-ui); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.1em; padding: 4px 10px; cursor: pointer;
+  transition: all 0.12s;
+}
+.sb-season-btn:hover { border-color: var(--orange); color: var(--orange); }
+.sb-season-btn--active { background: var(--orange); border-color: var(--orange); color: #000; }
+
+/* Week groups and divider */
+.sb-week-group { display: flex; align-items: center; gap: 2px; }
+.sb-week-group-label {
+  font-family: var(--font-ui); font-size: 8px; font-weight: 800;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--text-muted); padding-right: 6px; white-space: nowrap;
+}
+.sb-week-divider { width: 1px; background: var(--border); height: 24px; margin: 0 10px; flex-shrink: 0; }
+.sb-week-btn--playoff { color: var(--gold,#d4a843) !important; font-size: 10px !important; }
+.sb-week-btn--playoff.sb-week-btn--active { background: var(--gold,#d4a843) !important; color: #000 !important; border-color: var(--gold,#d4a843) !important; }
+
+/* Loading state */
+.sb-loading {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 60px; font-family: var(--font-ui); font-size: 13px; color: var(--text-muted);
+}
+.sb-spinner {
+  width: 18px; height: 18px; border: 2px solid var(--border);
+  border-top-color: var(--orange); border-radius: 50%;
+  animation: sb-spin 0.8s linear infinite;
+}
+@keyframes sb-spin { to { transform: rotate(360deg); } }
