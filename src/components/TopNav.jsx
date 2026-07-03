@@ -20,13 +20,29 @@ export default function TopNav() {
 
   useEffect(() => {
     if (!manager?.team_abbrev) return
-    function fetchUnread() {
-      fetch(`${API}/messages/unread-count`, {
-        headers: { 'x-team-abbrev': manager.team_abbrev }
-      }).then(r=>r.ok?r.json():null).then(d=>{ if(d) setUnreadCount(d.count||0) })
+    const hdrs = { 'x-team-abbrev': manager.team_abbrev }
+
+    async function fetchUnread() {
+      try {
+        // Aggregate unread from all three sources:
+        // 1. Old messages table
+        // 2. New channel messages
+        // 3. New conversation messages
+        const [msgRes, chRes, convRes] = await Promise.all([
+          fetch(`${API}/messages/unread-count`, { headers: hdrs }).then(r => r.ok ? r.json() : { count: 0 }),
+          fetch(`${API}/channels`, { headers: hdrs }).then(r => r.ok ? r.json() : []),
+          fetch(`${API}/conversations`, { headers: hdrs }).then(r => r.ok ? r.json() : []),
+        ])
+        const msgUnread  = msgRes?.count || 0
+        const chUnread   = Array.isArray(chRes)   ? chRes.reduce((s, c)   => s + (c.unread   || 0), 0) : 0
+        const convUnread = Array.isArray(convRes)  ? convRes.reduce((s, c) => s + (c.unread   || 0), 0) : 0
+        setUnreadCount(msgUnread + chUnread + convUnread)
+      } catch (e) {
+        // silently fail — don't break the nav
+      }
     }
     fetchUnread()
-    const interval = setInterval(fetchUnread, 60000)
+    const interval = setInterval(fetchUnread, 30000) // poll every 30s for faster notification
     return () => clearInterval(interval)
   }, [manager?.team_abbrev])
 
@@ -143,6 +159,28 @@ export default function TopNav() {
             )}
           </li>
 
+          <li style={{ position: 'relative' }}>
+            <NavLink to="/inbox" className={({ isActive }) => isActive ? 'tnl active' : 'tnl'}>
+              Inbox
+              {unreadCount > 0 && (
+                <span style={{
+                  position: 'absolute',
+                  top: -6,
+                  right: -10,
+                  background: 'var(--red, #d94f4f)',
+                  color: '#fff',
+                  fontFamily: 'var(--font-ui)',
+                  fontSize: 9,
+                  fontWeight: 800,
+                  padding: '1px 5px',
+                  borderRadius: 10,
+                  lineHeight: 1.4,
+                  minWidth: 16,
+                  textAlign: 'center',
+                }}>{unreadCount > 99 ? '99+' : unreadCount}</span>
+              )}
+            </NavLink>
+          </li>
           <li>
             <NavLink to="/standings" className={({ isActive }) => isActive ? 'tnl active' : 'tnl'}>Standings</NavLink>
           </li>
