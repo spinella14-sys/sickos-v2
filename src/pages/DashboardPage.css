@@ -302,3 +302,52 @@
   font-size:13px; color:var(--text-muted); }
 .dash-inbox-footer { display:flex; align-items:center; justify-content:center;
   margin-top:12px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.07); }
+
+  /* Paste at the bottom of DashboardPage.css */
+
+.dash-sb-spent {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.dash-sb-next {
+  margin-top: 14px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+.dash-sb-next-label {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.dash-sb-next-scenarios {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.dash-sb-scenario {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-ui);
+  font-size: 12px;
+}
+
+.dash-sb-scenario-label { color: var(--text-muted); }
+.dash-sb-scenario-val   { font-weight: 700; }
+
+.dash-sb-proj {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 8px;
+}

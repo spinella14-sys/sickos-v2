@@ -482,24 +482,31 @@ export default function DashboardPage() {
               </div>
             </GlassCard>
 
-            {/* SB BUDGET */}
+            {/* SB BUDGET — declining balance view */}
             <GlassCard className="dash-sb-card" colors={colors} accent="var(--green)">
-              <WidgetLabel colors={colors}>Signing Bonus</WidgetLabel>
-              <div className="dash-sb-big" style={{color:colors?.primary||'var(--green)'}}>
+              <WidgetLabel colors={colors}>Signing Bonus Budget</WidgetLabel>
+              <div className="dash-sb-big" style={{color:'var(--green)'}}>
                 ${sbData?.balance?.toFixed(2)||'—'}
               </div>
-              <div className="dash-sb-sub">of ${sbData?.startBalance?.toFixed(2)||'—'}</div>
-              <div className="dash-sb-track">
-                <div className="dash-sb-fill" style={{
-                  width:`${sbData?.startBalance?Math.max(0,Math.min(100,sbData.balance/sbData.startBalance*100)):0}%`,
-                  background:'var(--green)',
-                }}/>
-              </div>
-              {sbData?.nextSeason?.atCurrentSpend?.total && (
-                <div className="dash-sb-proj">
-                  {CURRENT_SEASON+1} proj: <strong style={{color:'var(--green)'}}>
-                    ${sbData.nextSeason.atCurrentSpend.total.toFixed(2)}
-                  </strong>
+              <div className="dash-sb-sub">remaining in {CURRENT_SEASON}</div>
+              {sbData?.spent > 0 && (
+                <div className="dash-sb-spent">
+                  ${sbData.spent.toFixed(2)} spent this season
+                </div>
+              )}
+              {sbData?.nextSeason?.atCurrentSpend && (
+                <div className="dash-sb-next">
+                  <div className="dash-sb-next-label">{CURRENT_SEASON+1} projection</div>
+                  <div className="dash-sb-next-scenarios">
+                    {sbData.nextSeason.scenarios?.slice(0,3).map((s,i) => (
+                      <div key={i} className="dash-sb-scenario">
+                        <span className="dash-sb-scenario-label">{s.label}</span>
+                        <span className="dash-sb-scenario-val" style={{color:'var(--green)'}}>
+                          ${s.nextSeasonBudget.toFixed(2)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </GlassCard>
@@ -692,18 +699,20 @@ export default function DashboardPage() {
               </GlassCard>
             )}
 
-            {/* SB BUDGET compact */}
+            {/* SB BUDGET — declining balance, compact */}
             <GlassCard className="dash-sb-card" colors={colors} accent="var(--green)">
               <WidgetLabel colors={colors}>Signing Bonus</WidgetLabel>
               <div className="dash-sb-big" style={{color:'var(--green)'}}>
                 ${sbData?.balance?.toFixed(2)||'—'}
               </div>
-              <div className="dash-sb-track" style={{marginTop:8}}>
-                <div className="dash-sb-fill" style={{
-                  width:`${sbData?.startBalance?Math.max(0,Math.min(100,sbData.balance/sbData.startBalance*100)):0}%`,
-                  background:'var(--green)',
-                }}/>
-              </div>
+              <div className="dash-sb-sub" style={{marginTop:4}}>remaining · {CURRENT_SEASON}</div>
+              {sbData?.nextSeason?.atCurrentSpend?.total && (
+                <div className="dash-sb-proj" style={{marginTop:8}}>
+                  Keep pace → <strong style={{color:'var(--green)'}}>
+                    ${sbData.nextSeason.atCurrentSpend.total.toFixed(2)}
+                  </strong> in {CURRENT_SEASON+1}
+                </div>
+              )}
             </GlassCard>
 
             {/* NEWS TICKER */}
