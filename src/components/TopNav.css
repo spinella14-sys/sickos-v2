@@ -407,3 +407,9 @@
   transition: all 0.15s;
 }
 .tnl-trade-block-link:hover { background: rgba(232,130,42,0.1); }
+
+/* Paste this at the bottom of your TopNav.css file */
+.tnl--unread {
+  color: var(--red, #d94f4f) !important;
+  font-weight: 800 !important;
+}

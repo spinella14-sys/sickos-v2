@@ -52,7 +52,7 @@ export default function TopNav() {
     if (location.pathname === '/inbox') {
       setUnreadCount(0)
     }
-  }, [manager?.team_abbrev])
+  }, [location.pathname])
 
   return (
     <nav className="topnav">
@@ -171,8 +171,9 @@ export default function TopNav() {
 
           <li>
             <NavLink to="/inbox"
-              className={({ isActive }) => isActive ? 'tnl active' : 'tnl'}
-              style={unreadCount > 0 ? { color: 'var(--red, #d94f4f)', fontWeight: 800 } : {}}>
+              className={({ isActive }) =>
+                isActive ? 'tnl active' : unreadCount > 0 ? 'tnl tnl--unread' : 'tnl'
+              }>
               Inbox{unreadCount > 0 ? ' •' : ''}
             </NavLink>
           </li>
