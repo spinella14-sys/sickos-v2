@@ -42,8 +42,16 @@ export default function TopNav() {
       }
     }
     fetchUnread()
-    const interval = setInterval(fetchUnread, 30000) // poll every 30s for faster notification
+    const interval = setInterval(fetchUnread, 30000)
     return () => clearInterval(interval)
+  }, [manager?.team_abbrev])
+
+  // Instantly clear the badge when the user navigates to /inbox
+  // so they don't have to wait for the next 30s poll
+  useEffect(() => {
+    if (location.pathname === '/inbox') {
+      setUnreadCount(0)
+    }
   }, [manager?.team_abbrev])
 
   return (
@@ -82,7 +90,9 @@ export default function TopNav() {
                 <div className="tnl-home-section-label">Actions</div>
                 <button className="tnl-home-item tnl-inbox-item" onClick={() => navigate('/inbox')}>
                   Inbox
-                  {unreadCount > 0 && <span className="tnl-inbox-badge">{unreadCount}</span>}
+                  {unreadCount > 0 && (
+                    <span className="tnl-inbox-badge">{unreadCount > 99 ? '99+' : unreadCount} unread</span>
+                  )}
                 </button>
                 <button className="tnl-home-item" onClick={() => navigate('/free-agents')}>Submit FA Bid</button>
                 <button className="tnl-home-item" onClick={() => navigate('/trade')}>Propose Trade</button>
@@ -159,39 +169,34 @@ export default function TopNav() {
             )}
           </li>
 
-          <li style={{ position: 'relative' }}>
-            <NavLink to="/inbox" className={({ isActive }) => isActive ? 'tnl active' : 'tnl'}>
-              Inbox
-              {unreadCount > 0 && (
-                <span style={{
-                  position: 'absolute',
-                  top: -6,
-                  right: -10,
-                  background: 'var(--red, #d94f4f)',
-                  color: '#fff',
-                  fontFamily: 'var(--font-ui)',
-                  fontSize: 9,
-                  fontWeight: 800,
-                  padding: '1px 5px',
-                  borderRadius: 10,
-                  lineHeight: 1.4,
-                  minWidth: 16,
-                  textAlign: 'center',
-                }}>{unreadCount > 99 ? '99+' : unreadCount}</span>
-              )}
+          <li>
+            <NavLink to="/inbox"
+              className={({ isActive }) => isActive ? 'tnl active' : 'tnl'}
+              style={unreadCount > 0 ? { color: 'var(--red, #d94f4f)', fontWeight: 800 } : {}}>
+              Inbox{unreadCount > 0 ? ' •' : ''}
             </NavLink>
           </li>
           <li>
             <NavLink to="/standings" className={({ isActive }) => isActive ? 'tnl active' : 'tnl'}>Standings</NavLink>
           </li>
-          <li>
-            <NavLink to="/players" className={({ isActive }) => isActive ? 'tnl active' : 'tnl'}>Players</NavLink>
+          <li className="tnl-dropdown-wrap">
+            <NavLink to="/free-agents"
+              className={({ isActive }) =>
+                (isActive || location.pathname === '/players') ? 'tnl active' : 'tnl'
+              }>
+              Free Agents ▾
+            </NavLink>
+            <div className="tnl-draft-dropdown">
+              <button className="tnl-draft-item" onClick={() => navigate('/free-agents')}>
+                Free Agents
+              </button>
+              <button className="tnl-draft-item" onClick={() => navigate('/players')}>
+                Player Database
+              </button>
+            </div>
           </li>
           <li>
             <NavLink to="/player-stats" className={({ isActive }) => isActive ? 'tnl active' : 'tnl'}>Player Stats</NavLink>
-          </li>
-          <li>
-            <NavLink to="/free-agents" className={({ isActive }) => isActive ? 'tnl active' : 'tnl'}>Free Agents</NavLink>
           </li>
           <li>
             <NavLink to="/transactions" className={({ isActive }) => isActive ? 'tnl active' : 'tnl'}>Wire</NavLink>
