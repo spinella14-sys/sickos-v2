@@ -16,6 +16,7 @@ import PlayersPage from './pages/PlayersPage'
 import PlayerStatsPage from './pages/PlayerStatsPage'
 import PlayerPage from './pages/PlayerPage'
 import TeamPage from './pages/TeamPage'
+import SettingsPage from './pages/SettingsPage'
 import FreeAgentsPage from './pages/FreeAgentsPage'
 import TransactionsPage from './pages/TransactionsPage'
 import SalaryCapPage from './pages/SalaryCapPage'
@@ -86,6 +87,7 @@ function AuthenticatedApp() {
             <Route path="/team/:abbrev"  element={<TeamPage />} />
             <Route path="/free-agents"   element={<FreeAgentsPage />} />
             <Route path="/transactions"  element={<TransactionsPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
             <Route path="/salary-cap"    element={<SalaryCapPage />} />
             <Route path="/draft"       element={<DraftCentralPage />} />
             <Route path="/draft/board" element={<DraftBoardPage />} />

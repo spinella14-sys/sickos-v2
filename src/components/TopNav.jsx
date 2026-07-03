@@ -60,6 +60,7 @@ export default function TopNav() {
                 <button className="tnl-home-item" onClick={() => navigate(`/team/${myAbbrev}`)}>My Roster</button>
                 <button className="tnl-home-item" onClick={() => navigate(`/team/${myAbbrev}/cap`)}>My Cap Sheet</button>
                 <button className="tnl-home-item" onClick={() => navigate('/watchlist')}>My Watchlist</button>
+                <button className="tnl-home-item" onClick={() => navigate('/settings')}>Team Settings</button>
               </div>
               <div className="tnl-home-section">
                 <div className="tnl-home-section-label">Actions</div>
