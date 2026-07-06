@@ -108,3 +108,30 @@
 .ptw-btn--decline:hover:not(:disabled) { background:rgba(217,79,79,0.1); }
 .ptw-btn--counter { border-color:var(--blue); color:var(--blue); }
 .ptw-btn--counter:hover { background:rgba(58,159,212,0.1); }
+
+.ptw-waiting-section {
+  border-top: 1px solid var(--border);
+  padding: 12px 16px;
+}
+.ptw-waiting-label {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.ptw-waiting-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-ui);
+  font-size: 12px;
+}
+.ptw-waiting-card:last-child { border-bottom: none; }
+.ptw-waiting-teams { font-weight: 700; color: var(--text-primary); }
+.ptw-waiting-status { flex: 1; color: var(--text-muted); }
+.ptw-waiting-date { color: var(--text-muted); font-size: 11px; }

@@ -96,6 +96,7 @@ export default function TopNav() {
                 </button>
                 <button className="tnl-home-item" onClick={() => navigate('/free-agents')}>Submit FA Bid</button>
                 <button className="tnl-home-item" onClick={() => navigate('/trade')}>Propose Trade</button>
+                <button className="tnl-home-item" onClick={() => navigate('/trade?tab=history')}>Trade Offers</button>
                 <button className="tnl-home-item" onClick={() => navigate('/trade-block')}>Trade Block</button>
               </div>
               <div className="tnl-home-section">

@@ -62,6 +62,7 @@ export default function PendingTradesWidget() {
   const [loading,    setLoading]    = useState(true)
   const [processing, setProcessing] = useState({})
   const [expanded,   setExpanded]   = useState({})
+  const [waitingTrades, setWaitingTrades] = useState([])
 
   const team = manager?.team_abbrev
 
@@ -81,6 +82,13 @@ export default function PendingTradesWidget() {
       const myTT = trade.trade_teams?.find(t=>t.team_abbrev===team)
       return myTT && !myTT.has_accepted
     })
+
+    // Trades I proposed and already accepted, waiting on other team(s)
+    const waitingOnOthers = (myTrades||[]).filter(trade => {
+      const myTT = trade.trade_teams?.find(t=>t.team_abbrev===team)
+      return myTT && myTT.has_accepted && trade.proposed_by === team && trade.status === 'proposed'
+    })
+    setWaitingTrades(waitingOnOthers)
 
     // Admin pending: trades all parties accepted, awaiting commissioner
     const adminPending = isAdmin
@@ -157,7 +165,11 @@ export default function PendingTradesWidget() {
           <span className="ptw-notify-text">
             {trades.length === 1
               ? 'You have 1 pending trade offer'
-              : `You have ${trades.length} pending trade offers`}
+              : trades.length > 0
+                ? `You have ${trades.length} pending trade offer${trades.length>1?'s':''}`
+                : waitingTrades.length > 0
+                  ? `${waitingTrades.length} trade proposal${waitingTrades.length>1?'s':''} awaiting response`
+                  : 'No pending trades'}
           </span>
         </div>
         <span className="ptw-notify-count">{trades.length}</span>
@@ -293,6 +305,25 @@ export default function PendingTradesWidget() {
           </div>
         )
       })}
+      {/* Waiting on others section */}
+      {waitingTrades.length > 0 && (
+        <div className="ptw-waiting-section">
+          <div className="ptw-waiting-label">Waiting on response ({waitingTrades.length})</div>
+          {waitingTrades.map(trade => {
+            const teamsList = trade.trade_teams?.map(t=>t.team_abbrev) || []
+            const pending   = trade.trade_teams?.filter(t => !t.has_accepted && t.team_abbrev !== team).map(t=>t.team_abbrev) || []
+            return (
+              <div key={trade.id} className="ptw-waiting-card">
+                <div className="ptw-waiting-teams">{teamsList.join(' ↔ ')}</div>
+                <div className="ptw-waiting-status">
+                  Waiting on: <strong>{pending.join(', ')}</strong>
+                </div>
+                <div className="ptw-waiting-date">{new Date(trade.created_at).toLocaleDateString()}</div>
+              </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
