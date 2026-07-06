@@ -398,6 +398,17 @@ function TradeChatSidebar({ myTeam, otherTeams }) {
 function ConfirmTradeModal({ teams, assets, notes, onConfirm, onCancel, submitting }) {
   const playerAssets = assets.filter(a => a.asset_type === 'player')
   const pickAssets   = assets.filter(a => a.asset_type === 'pick')
+  const sbAssets     = assets.filter(a => a.asset_type === 'sb_budget')
+
+  // Salary impact per team: positive = gaining cap, negative = losing cap
+  const salaryImpact = {}
+  teams.forEach(t => { if (t) salaryImpact[t] = 0 })
+  playerAssets.forEach(a => {
+    if (a.salary) {
+      if (salaryImpact[a.from_team] !== undefined) salaryImpact[a.from_team] -= a.salary
+      if (salaryImpact[a.to_team]   !== undefined) salaryImpact[a.to_team]   += a.salary
+    }
+  })
 
   return (
     <div className="tm-confirm-backdrop" onClick={onCancel}>
@@ -407,31 +418,73 @@ function ConfirmTradeModal({ teams, assets, notes, onConfirm, onCancel, submitti
           <button className="tm-confirm-close" onClick={onCancel}>✕</button>
         </div>
         <div className="tm-confirm-body">
+
+          {/* Team badges with salary impact */}
           <div className="tm-confirm-teams">
-            {teams.map((t, i) => t && <span key={i} className="tm-confirm-team-badge">{t}</span>)}
+            {teams.map((t, i) => {
+              if (!t) return null
+              const impact = salaryImpact[t] || 0
+              const sign   = impact > 0 ? '+' : ''
+              const color  = impact > 0 ? 'var(--red,#d94f4f)' : impact < 0 ? 'var(--green,#3dba6e)' : 'var(--text-muted)'
+              return (
+                <div key={i} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:3}}>
+                  <span className="tm-confirm-team-badge">{t}</span>
+                  {impact !== 0 && (
+                    <span style={{fontFamily:'var(--font-ui)',fontSize:10,fontWeight:700,color}}>
+                      {sign}${Math.abs(impact).toFixed(2)} cap
+                    </span>
+                  )}
+                </div>
+              )
+            })}
           </div>
+
           {playerAssets.length > 0 && (
             <div className="tm-confirm-section">
               <div className="tm-confirm-section-label">Players</div>
               {playerAssets.map((a, i) => (
                 <div key={i} className="tm-confirm-asset">
-                  <span className="tm-confirm-asset-name">{a.player_name || a.sleeper_id}</span>
+                  <div style={{display:'flex',flexDirection:'column',gap:2}}>
+                    <span className="tm-confirm-asset-name">{a.player_name || a.sleeper_id}</span>
+                    {a.salary && <span style={{fontFamily:'var(--font-ui)',fontSize:10,color:'var(--text-muted)'}}>
+                      ${a.salary.toFixed(2)}{a.years ? ` · ${a.years}yr` : ''}
+                    </span>}
+                  </div>
                   <span className="tm-confirm-asset-move">{a.from_team} → {a.to_team}</span>
                 </div>
               ))}
             </div>
           )}
+
           {pickAssets.length > 0 && (
             <div className="tm-confirm-section">
               <div className="tm-confirm-section-label">Picks</div>
               {pickAssets.map((a, i) => (
                 <div key={i} className="tm-confirm-asset">
-                  <span className="tm-confirm-asset-name">{a.pick_label || 'Pick'}</span>
+                  <div style={{display:'flex',flexDirection:'column',gap:2}}>
+                    <span className="tm-confirm-asset-name">{a.pick_label || 'Pick'}</span>
+                    {a.cap_value && <span style={{fontFamily:'var(--font-ui)',fontSize:10,color:'var(--text-muted)'}}>
+                      ${parseFloat(a.cap_value).toFixed(2)} cap value
+                    </span>}
+                  </div>
                   <span className="tm-confirm-asset-move">{a.from_team} → {a.to_team}</span>
                 </div>
               ))}
             </div>
           )}
+
+          {sbAssets.length > 0 && (
+            <div className="tm-confirm-section">
+              <div className="tm-confirm-section-label">Signing Bonus Budget</div>
+              {sbAssets.map((a, i) => (
+                <div key={i} className="tm-confirm-asset">
+                  <span className="tm-confirm-asset-name">${parseFloat(a.sb_amount).toFixed(2)}</span>
+                  <span className="tm-confirm-asset-move">{a.from_team} → {a.to_team}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
           {notes && (
             <div className="tm-confirm-section">
               <div className="tm-confirm-section-label">Note</div>
@@ -547,10 +600,10 @@ export default function TradeMachinePage() {
     if (!threeWay) {
       const [t0,t1] = teams
       if (!t0||!t1) return []
-      tradingPlayers[0].forEach(c=>a.push({asset_type:'player',from_team:t0,to_team:t1,sleeper_id:c.players?.sleeper_id,contract_id:c.id}))
-      tradingPlayers[1].forEach(c=>a.push({asset_type:'player',from_team:t1,to_team:t0,sleeper_id:c.players?.sleeper_id,contract_id:c.id}))
-      tradingPicks[0].forEach(p=>a.push({asset_type:'pick',from_team:t0,to_team:t1,pick_id:p.id}))
-      tradingPicks[1].forEach(p=>a.push({asset_type:'pick',from_team:t1,to_team:t0,pick_id:p.id}))
+      tradingPlayers[0].forEach(c=>a.push({asset_type:'player',from_team:t0,to_team:t1,sleeper_id:c.players?.sleeper_id,contract_id:c.id,player_name:c.players?.full_name||c.players?.sleeper_id,salary:parseFloat(c.salary||0),years:c.years}))
+      tradingPlayers[1].forEach(c=>a.push({asset_type:'player',from_team:t1,to_team:t0,sleeper_id:c.players?.sleeper_id,contract_id:c.id,player_name:c.players?.full_name||c.players?.sleeper_id,salary:parseFloat(c.salary||0),years:c.years}))
+      tradingPicks[0].forEach(p=>a.push({asset_type:'pick',from_team:t0,to_team:t1,pick_id:p.id,pick_label:`${p.season} Round ${p.round}${p.original_team_abbrev&&p.original_team_abbrev!==t0?` (via ${p.original_team_abbrev})`:''}`,cap_value:p.cap_value}))
+      tradingPicks[1].forEach(p=>a.push({asset_type:'pick',from_team:t1,to_team:t0,pick_id:p.id,pick_label:`${p.season} Round ${p.round}${p.original_team_abbrev&&p.original_team_abbrev!==t1?` (via ${p.original_team_abbrev})`:''}`,cap_value:p.cap_value}))
       if(tradingSb[0]>0) a.push({asset_type:'sb_budget',from_team:t0,to_team:t1,sb_amount:tradingSb[0]})
       if(tradingSb[1]>0) a.push({asset_type:'sb_budget',from_team:t1,to_team:t0,sb_amount:tradingSb[1]})
     } else {
@@ -560,7 +613,7 @@ export default function TradeMachinePage() {
         tradingPlayers[slot].forEach(c => {
           const toSlot = sendTo[`p_${c.id}`]
           const toTeam = teams[toSlot]
-          if (toTeam) a.push({asset_type:'player',from_team:fromTeam,to_team:toTeam,sleeper_id:c.players?.sleeper_id,contract_id:c.id})
+          if (toTeam) a.push({asset_type:'player',from_team:fromTeam,to_team:toTeam,sleeper_id:c.players?.sleeper_id,contract_id:c.id,player_name:c.players?.full_name||c.players?.sleeper_id,salary:parseFloat(c.salary||0),years:c.years})
         })
         tradingPicks[slot].forEach(p => {
           const toSlot = sendTo[`pk_${p.id}`]
