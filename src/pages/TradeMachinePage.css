@@ -224,3 +224,245 @@
   letter-spacing:0.06em; color:var(--blue);
   flex-shrink:0;
 }
+
+/* Paste at the bottom of TradeMachinePage.css */
+
+/* â”€â”€ Live Trade Chat â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.tm-chat-live {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.tm-chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tm-chat-empty {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 24px 8px;
+}
+
+.tm-chat-bubble {
+  max-width: 85%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.tm-chat-bubble--me  { align-self: flex-end; }
+.tm-chat-bubble--them { align-self: flex-start; }
+
+.tm-chat-sender {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-muted);
+  padding-left: 4px;
+}
+
+.tm-chat-text {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  padding: 7px 10px;
+  border-radius: 12px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+.tm-chat-bubble--me   .tm-chat-text { background: var(--orange); color: #fff; border-bottom-right-radius: 3px; }
+.tm-chat-bubble--them .tm-chat-text { background: var(--bg3, rgba(255,255,255,0.08)); color: var(--text-primary); border-bottom-left-radius: 3px; }
+
+.tm-chat-input-row {
+  display: flex;
+  gap: 6px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--border);
+}
+
+.tm-chat-input {
+  flex: 1;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  padding: 7px 10px;
+  background: var(--bg2);
+  border: 1px solid var(--border-bright);
+  color: var(--text-primary);
+  border-radius: 4px;
+}
+.tm-chat-input:focus { outline: none; border-color: var(--orange); }
+
+.tm-chat-send {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--orange);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.tm-chat-send:disabled { opacity: 0.4; cursor: default; }
+
+/* â”€â”€ Confirm Trade Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.tm-confirm-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tm-confirm-modal {
+  background: var(--bg1);
+  border: 1px solid var(--border-bright);
+  border-radius: 8px;
+  width: 480px;
+  max-width: 92vw;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+}
+
+.tm-confirm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tm-confirm-title {
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.tm-confirm-close {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.tm-confirm-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tm-confirm-teams {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tm-confirm-team-badge {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--orange);
+  background: rgba(232,130,42,0.12);
+  border: 1px solid rgba(232,130,42,0.3);
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+
+.tm-confirm-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tm-confirm-section-label {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.tm-confirm-asset {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  padding: 6px 10px;
+  background: var(--bg2);
+  border-radius: 4px;
+}
+
+.tm-confirm-asset-name { color: var(--text-primary); font-weight: 600; }
+.tm-confirm-asset-move { color: var(--text-muted); font-size: 11px; }
+
+.tm-confirm-notes {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding: 8px 10px;
+  background: var(--bg2);
+  border-radius: 4px;
+  line-height: 1.5;
+}
+
+.tm-confirm-warning {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.tm-confirm-footer {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+}
+
+.tm-confirm-cancel {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 20px;
+  background: transparent;
+  border: 1px solid var(--border-bright);
+  color: var(--text-muted);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.tm-confirm-submit {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 800;
+  padding: 9px 24px;
+  background: var(--orange);
+  border: none;
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.tm-confirm-submit:disabled { opacity: 0.4; cursor: default; }

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useTeamColors } from '../hooks/useTeamColors'
@@ -62,7 +62,7 @@ function PlayerCard({ contract, stats, inTrade, onToggle }) {
   const p   = contract.players || {}
   const s   = stats[p.sleeper_id] || {}
   const ppg = s.pts_per_game ? parseFloat(s.pts_per_game).toFixed(1) : '—'
-  const rnk = s.pos_rank || '—'
+  const own = s.percent_owned != null ? parseFloat(s.percent_owned).toFixed(0) + '%' : '—'
   const rfa = contract.rfa_round ? `RFA ${contract.rfa_round===1?'1st':'2nd'}` : 'UFA'
 
   const currentYrRow = (contract.contract_years||[]).find(cy => cy.season === SEASON)
@@ -104,7 +104,7 @@ function PlayerCard({ contract, stats, inTrade, onToggle }) {
       </div>
       <div className="tm-pc-pts">
         <div className="tm-pc-ppg">{ppg}</div>
-        <div className="tm-pc-rank">#{rnk}</div>
+        <div className="tm-pc-rank">{own}</div>
       </div>
       <div className="tm-pc-toggle">{inTrade?'✓':'+'}</div>
     </div>
@@ -303,6 +303,156 @@ function TeamPanel({ slot, selectedTeam, onSelectTeam, tradingPlayers, tradingPi
 }
 
 // ─── Main Page ─────────────────────────────────────────────────────────────
+// ── Trade Chat Sidebar ────────────────────────────────────────────────────────
+// Shows the live conversation with the team(s) being traded with.
+// Uses the same /api/conversations endpoint as the inbox.
+const API_BASE_TM = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
+
+function TradeChatSidebar({ myTeam, otherTeams }) {
+  const [convId,   setConvId]   = React.useState(null)
+  const [messages, setMessages] = React.useState([])
+  const [input,    setInput]    = React.useState('')
+  const [loading,  setLoading]  = React.useState(false)
+  const endRef = React.useRef(null)
+
+  React.useEffect(() => {
+    if (!myTeam || !otherTeams?.length) { setConvId(null); setMessages([]); return }
+    // Find or create conversation with these teams
+    fetch(`${API_BASE_TM}/conversations`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-team-abbrev': myTeam },
+      body: JSON.stringify({ participants: otherTeams }),
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.id) setConvId(d.id) })
+      .catch(() => {})
+  }, [myTeam, otherTeams?.join(',')])
+
+  React.useEffect(() => {
+    if (!convId || !myTeam) return
+    const load = () => {
+      fetch(`${API_BASE_TM}/conversations/${convId}/messages`, {
+        headers: { 'x-team-abbrev': myTeam }
+      }).then(r => r.ok ? r.json() : []).then(setMessages).catch(() => {})
+    }
+    load()
+    const interval = setInterval(load, 15000)
+    return () => clearInterval(interval)
+  }, [convId, myTeam])
+
+  React.useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
+  async function send() {
+    if (!input.trim() || !convId || !myTeam) return
+    await fetch(`${API_BASE_TM}/conversations/${convId}/messages`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-team-abbrev': myTeam },
+      body: JSON.stringify({ body: input.trim() }),
+    })
+    setInput('')
+    fetch(`${API_BASE_TM}/conversations/${convId}/messages`, {
+      headers: { 'x-team-abbrev': myTeam }
+    }).then(r => r.ok ? r.json() : []).then(setMessages).catch(() => {})
+  }
+
+  if (!otherTeams?.length) return (
+    <div className="tm-sidebar-placeholder">
+      <div className="tm-sidebar-icon">💬</div>
+      <div className="tm-sidebar-msg">Select a team to start chatting</div>
+    </div>
+  )
+
+  return (
+    <div className="tm-chat-live">
+      <div className="tm-chat-messages">
+        {messages.length === 0 && (
+          <div className="tm-chat-empty">No messages yet. Start the conversation.</div>
+        )}
+        {messages.map((m, i) => (
+          <div key={i} className={`tm-chat-bubble ${m.sender_team === myTeam ? 'tm-chat-bubble--me' : 'tm-chat-bubble--them'}`}>
+            {m.sender_team !== myTeam && (
+              <div className="tm-chat-sender">{m.sender_team}</div>
+            )}
+            <div className="tm-chat-text">{m.body}</div>
+          </div>
+        ))}
+        <div ref={endRef}/>
+      </div>
+      <div className="tm-chat-input-row">
+        <input
+          className="tm-chat-input"
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && send()}
+          placeholder="Message..."
+        />
+        <button className="tm-chat-send" onClick={send} disabled={!input.trim()}>↑</button>
+      </div>
+    </div>
+  )
+}
+
+// ── Confirm Trade Modal ────────────────────────────────────────────────────────
+function ConfirmTradeModal({ teams, assets, notes, onConfirm, onCancel, submitting }) {
+  const playerAssets = assets.filter(a => a.asset_type === 'player')
+  const pickAssets   = assets.filter(a => a.asset_type === 'pick')
+
+  return (
+    <div className="tm-confirm-backdrop" onClick={onCancel}>
+      <div className="tm-confirm-modal" onClick={e => e.stopPropagation()}>
+        <div className="tm-confirm-header">
+          <span className="tm-confirm-title">Confirm Trade Proposal</span>
+          <button className="tm-confirm-close" onClick={onCancel}>✕</button>
+        </div>
+        <div className="tm-confirm-body">
+          <div className="tm-confirm-teams">
+            {teams.map((t, i) => t && <span key={i} className="tm-confirm-team-badge">{t}</span>)}
+          </div>
+          {playerAssets.length > 0 && (
+            <div className="tm-confirm-section">
+              <div className="tm-confirm-section-label">Players</div>
+              {playerAssets.map((a, i) => (
+                <div key={i} className="tm-confirm-asset">
+                  <span className="tm-confirm-asset-name">{a.player_name || a.sleeper_id}</span>
+                  <span className="tm-confirm-asset-move">{a.from_team} → {a.to_team}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          {pickAssets.length > 0 && (
+            <div className="tm-confirm-section">
+              <div className="tm-confirm-section-label">Picks</div>
+              {pickAssets.map((a, i) => (
+                <div key={i} className="tm-confirm-asset">
+                  <span className="tm-confirm-asset-name">{a.pick_label || 'Pick'}</span>
+                  <span className="tm-confirm-asset-move">{a.from_team} → {a.to_team}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          {notes && (
+            <div className="tm-confirm-section">
+              <div className="tm-confirm-section-label">Note</div>
+              <div className="tm-confirm-notes">{notes}</div>
+            </div>
+          )}
+          <p className="tm-confirm-warning">
+            Once submitted, all parties must accept before it goes to the commissioner for approval.
+          </p>
+        </div>
+        <div className="tm-confirm-footer">
+          <button className="tm-confirm-cancel" onClick={onCancel}>Go Back</button>
+          <button className="tm-confirm-submit" onClick={onConfirm} disabled={submitting}>
+            {submitting ? 'Submitting…' : 'Submit Proposal'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function TradeMachinePage() {
   const { manager, isAdmin } = useAuth()
   const [searchParams] = useSearchParams()
@@ -319,7 +469,8 @@ export default function TradeMachinePage() {
     return [manager?.team_abbrev||null, null, null]
   })
   const [posFilter,  setPosFilter]  = useState('ALL')
-  const [submitting, setSubmitting] = useState(false)
+  const [submitting,   setSubmitting]   = useState(false)
+  const [showConfirm,  setShowConfirm]  = useState(false)
   const [result,     setResult]     = useState(null)
   const [activeTab,  setActiveTab]  = useState('build')
   const [trades,     setTrades]     = useState([])
@@ -508,7 +659,7 @@ export default function TradeMachinePage() {
           <p className="tm-sub">Build, propose, accept or counter trades</p>
         </div>
         <div className="tm-tabs">
-          <button className={`tm-tab ${activeTab==='build'?'tm-tab--active':''}`} onClick={()=>setActiveTab('build')}>Build Trade</button>
+          <button className={`tm-tab ${activeTab==='build'?'tm-tab--active':''}`} onClick={()=>setActiveTab('build')}>Propose Trade</button>
           <button className={`tm-tab ${activeTab==='history'?'tm-tab--active':''}`} onClick={()=>setActiveTab('history')}>Trade History</button>
         </div>
       </div>
@@ -557,14 +708,13 @@ export default function TradeMachinePage() {
               activeSlots={activeSlots}
             />
           ))}
-          {/* Messaging sidebar — placeholder */}
+          {/* Trade Chat sidebar — wired to live conversations */}
           <div className="tm-sidebar">
             <div className="tm-sidebar-title">Trade Chat</div>
-            <div className="tm-sidebar-placeholder">
-              <div className="tm-sidebar-icon">💬</div>
-              <div className="tm-sidebar-msg">Trade messaging coming soon</div>
-              <div className="tm-sidebar-sub">Negotiate and discuss trades directly with other managers in this sidebar</div>
-            </div>
+            <TradeChatSidebar
+              myTeam={manager?.team_abbrev}
+              otherTeams={activeSlots.map(s=>teams[s]).filter(t=>t&&t!==manager?.team_abbrev)}
+            />
           </div>
         </div>
 
@@ -616,9 +766,9 @@ export default function TradeMachinePage() {
                 <div className={`tm-result ${result.ok?'tm-result--ok':'tm-result--err'}`}>{result.msg}</div>
               )}
             </div>
-            <button className="tm-submit" onClick={handleSubmit}
+            <button className="tm-submit" onClick={() => setShowConfirm(true)}
               disabled={!canSubmit || !hasAnyAssets}>
-              {submitting ? 'Submitting…' : !hasAnyAssets ? 'Add players or picks to trade' : 'Submit Trade Proposal →'}
+              {!hasAnyAssets ? 'Add players or picks to trade' : 'Propose Trade →'}
             </button>
           </div>
         </div>
@@ -681,5 +831,15 @@ export default function TradeMachinePage() {
         </div>
       )}
     </div>
+  {showConfirm && (
+    <ConfirmTradeModal
+      teams={activeSlots.map(s=>teams[s]).filter(Boolean)}
+      assets={assets}
+      notes={notes}
+      submitting={submitting}
+      onConfirm={() => { setShowConfirm(false); handleSubmit() }}
+      onCancel={() => setShowConfirm(false)}
+    />
+  )}
   )
 }
