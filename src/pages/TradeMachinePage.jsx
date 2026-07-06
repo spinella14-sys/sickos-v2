@@ -830,16 +830,16 @@ export default function TradeMachinePage() {
           })}
         </div>
       )}
+      {showConfirm && (
+        <ConfirmTradeModal
+          teams={activeSlots.map(s=>teams[s]).filter(Boolean)}
+          assets={assets}
+          notes={notes}
+          submitting={submitting}
+          onConfirm={() => { setShowConfirm(false); handleSubmit() }}
+          onCancel={() => setShowConfirm(false)}
+        />
+      )}
     </div>
-  {showConfirm && (
-    <ConfirmTradeModal
-      teams={activeSlots.map(s=>teams[s]).filter(Boolean)}
-      assets={assets}
-      notes={notes}
-      submitting={submitting}
-      onConfirm={() => { setShowConfirm(false); handleSubmit() }}
-      onCancel={() => setShowConfirm(false)}
-    />
-  )}
   )
 }
