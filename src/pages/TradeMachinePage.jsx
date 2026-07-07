@@ -697,11 +697,11 @@ export default function TradeMachinePage() {
   }
 
   const STATUS_LABEL = {
-    proposed:'Pending Response', pending_admin:'Awaiting Commissioner',
+    pending:'Pending Response', proposed:'Pending Response', pending_admin:'Awaiting Commissioner',
     approved:'Approved ✓', denied:'Denied ✗', declined:'Declined ✗', countered:'Countered'
   }
   const STATUS_COLOR = {
-    proposed:'var(--gold)', pending_admin:'var(--orange)',
+    pending:'var(--gold)', proposed:'var(--gold)', pending_admin:'var(--orange)',
     approved:'var(--green)', denied:'var(--red)', declined:'var(--red)', countered:'var(--blue)'
   }
 
@@ -833,7 +833,7 @@ export default function TradeMachinePage() {
           ) : trades.map(trade => {
             const myTeam         = manager?.team_abbrev
             const myTT           = trade.trade_teams?.find(t=>t.team_abbrev===myTeam)
-            const needsAction    = trade.status==='proposed' && myTT && !myTT.has_accepted
+            const needsAction    = (trade.status==='proposed'||trade.status==='pending') && myTT && !myTT.has_accepted
             const isAdminPending = isAdmin && trade.status==='pending_admin'
             return (
               <div key={trade.id} className={`tm-trade-card ${needsAction?'tm-trade-card--action':''}`}>
@@ -857,7 +857,7 @@ export default function TradeMachinePage() {
                         </div>
                         {sending.map((a,i) => (
                           <div key={i} className="tm-tc-asset">
-                            {a.asset_type==='player'    && `👤 ${a.sleeper_id} → ${a.to_team}`}
+                            {a.asset_type==='player'    && `👤 ${a.player_name||a.sleeper_id} → ${a.to_team}`}
                             {a.asset_type==='pick'      && `🏈 Pick → ${a.to_team}`}
                             {a.asset_type==='sb_budget' && `💰 $${a.sb_amount} SB → ${a.to_team}`}
                           </div>
