@@ -177,6 +177,27 @@ export default function InboxPage() {
     ...(isAdmin ? { 'x-admin-password': 'brethart' } : {}),
   }), [myTeam, isAdmin])
 
+  // ── Mark all old-system messages as read on mount ────────────────────────
+  // The old messages table has trade notifications etc. that aren't shown
+  // in the new inbox UI. Mark them all read on arrival so the count clears.
+  useEffect(() => {
+    if (!myTeam) return
+    fetch(`${API}/messages?folder=inbox`, {
+      headers: { 'x-team-abbrev': myTeam }
+    })
+      .then(r => r.ok ? r.json() : [])
+      .then(msgs => {
+        const unread = (msgs || []).filter(m => !m.is_read)
+        unread.forEach(m => {
+          fetch(`${API}/messages/${m.id}/read`, {
+            method: 'PATCH',
+            headers: { 'x-team-abbrev': myTeam },
+          }).catch(() => {})
+        })
+      })
+      .catch(() => {})
+  }, [myTeam])
+
   // ── Load sidebar data ──────────────────────────────────────────────────────
   const loadSidebar = useCallback(async () => {
     if (!myTeam) return

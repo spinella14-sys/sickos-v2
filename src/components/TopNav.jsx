@@ -24,19 +24,15 @@ export default function TopNav() {
 
     async function fetchUnread() {
       try {
-        // Aggregate unread from all three sources:
-        // 1. Old messages table
-        // 2. New channel messages
-        // 3. New conversation messages
-        const [msgRes, chRes, convRes] = await Promise.all([
-          fetch(`${API}/messages/unread-count`, { headers: hdrs }).then(r => r.ok ? r.json() : { count: 0 }),
+        // Only count new system (channels + conversations) — old messages table
+        // is not displayed in the new inbox so excluding it prevents phantom counts
+        const [chRes, convRes] = await Promise.all([
           fetch(`${API}/channels`, { headers: hdrs }).then(r => r.ok ? r.json() : []),
           fetch(`${API}/conversations`, { headers: hdrs }).then(r => r.ok ? r.json() : []),
         ])
-        const msgUnread  = msgRes?.count || 0
         const chUnread   = Array.isArray(chRes)   ? chRes.reduce((s, c)   => s + (c.unread   || 0), 0) : 0
         const convUnread = Array.isArray(convRes)  ? convRes.reduce((s, c) => s + (c.unread   || 0), 0) : 0
-        setUnreadCount(msgUnread + chUnread + convUnread)
+        setUnreadCount(chUnread + convUnread)
       } catch (e) {
         // silently fail — don't break the nav
       }
