@@ -677,6 +677,16 @@ export default function TradeMachinePage() {
     if (r.ok) setTrades(prev=>prev.map(t=>t.id===tradeId?{...t,status:d.trade?.status||t.status}:t))
   }
 
+  async function handleCancel(tradeId) {
+    if (!window.confirm('Cancel this trade proposal?')) return
+    await fetch(`${API}/trades/${tradeId}/decline`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ team_abbrev: manager?.team_abbrev })
+    })
+    fetch(`${API}/trades?team=${manager.team_abbrev}`)
+      .then(r => r.ok ? r.json() : []).then(setTrades)
+  }
+
   async function handleDecline(tradeId) {
     await fetch(`${API}/trades/${tradeId}/decline`,{
       method:'PATCH', headers:{'Content-Type':'application/json'},
@@ -835,41 +845,119 @@ export default function TradeMachinePage() {
             const myTT           = trade.trade_teams?.find(t=>t.team_abbrev===myTeam)
             const needsAction    = (trade.status==='proposed'||trade.status==='pending') && myTT && !myTT.has_accepted
             const isAdminPending = isAdmin && trade.status==='pending_admin'
+            // Cap impact per team for this trade
+            const capImpact = {}
+            trade.trade_teams?.forEach(tt => { capImpact[tt.team_abbrev] = 0 })
+            trade.trade_assets?.forEach(a => {
+              if (a.asset_type === 'player' && a.salary) {
+                if (capImpact[a.from_team] !== undefined) capImpact[a.from_team] -= parseFloat(a.salary)
+                if (capImpact[a.to_team]   !== undefined) capImpact[a.to_team]   += parseFloat(a.salary)
+              }
+            })
+
+            // Is this a trade I proposed and can cancel?
+            const iProposed = trade.proposed_by === myTeam
+            const canCancel = iProposed && (trade.status === 'pending' || trade.status === 'proposed')
+            const waitingOnTeams = trade.trade_teams?.filter(t => !t.has_accepted && t.team_abbrev !== myTeam).map(t=>t.team_abbrev) || []
+
             return (
-              <div key={trade.id} className={`tm-trade-card ${needsAction?'tm-trade-card--action':''}`}>
+              <div key={trade.id} className={`tm-trade-card ${needsAction?'tm-trade-card--action':''} ${iProposed&&!needsAction?'tm-trade-card--proposed':''}`}>
+                {/* Header */}
                 <div className="tm-tc-header">
-                  <div className="tm-tc-teams">{trade.trade_teams?.map(t=>t.team_abbrev).join(' ↔ ')}</div>
-                  <div className="tm-tc-status" style={{color:STATUS_COLOR[trade.status]||'var(--text-muted)'}}>
-                    {STATUS_LABEL[trade.status]||trade.status}
+                  <div style={{display:'flex',alignItems:'center',gap:10}}>
+                    <div className="tm-tc-teams">{trade.trade_teams?.map(t=>t.team_abbrev).join(' ↔ ')}</div>
+                    {needsAction && (
+                      <span style={{fontFamily:'var(--font-ui)',fontSize:10,fontWeight:800,
+                        color:'#fff',background:'var(--orange)',padding:'2px 8px',borderRadius:4}}>
+                        ACTION NEEDED
+                      </span>
+                    )}
+                    {canCancel && waitingOnTeams.length > 0 && (
+                      <span style={{fontFamily:'var(--font-ui)',fontSize:10,color:'var(--text-muted)'}}>
+                        Waiting on: {waitingOnTeams.join(', ')}
+                      </span>
+                    )}
                   </div>
-                  <div className="tm-tc-date">{new Date(trade.created_at).toLocaleDateString()}</div>
+                  <div style={{display:'flex',alignItems:'center',gap:12}}>
+                    <div className="tm-tc-status" style={{color:STATUS_COLOR[trade.status]||'var(--text-muted)'}}>
+                      {STATUS_LABEL[trade.status]||trade.status}
+                    </div>
+                    <div className="tm-tc-date">{new Date(trade.created_at).toLocaleDateString()}</div>
+                  </div>
                 </div>
-                {trade.notes      && <div className="tm-tc-notes">"{trade.notes}"</div>}
+
+                {trade.notes       && <div className="tm-tc-notes">"{trade.notes}"</div>}
                 {trade.admin_notes && <div className="tm-tc-admin-notes">Commissioner: {trade.admin_notes}</div>}
+
+                {/* Assets — one column per team */}
                 <div className="tm-tc-assets">
                   {trade.trade_teams?.map(tt => {
-                    const sending = trade.trade_assets?.filter(a=>a.from_team===tt.team_abbrev)
+                    const sending = trade.trade_assets?.filter(a => a.from_team === tt.team_abbrev)
                     if (!sending?.length) return null
+                    const impact = capImpact[tt.team_abbrev] || 0
+                    const sign   = impact >= 0 ? '+' : ''
+                    const impColor = impact > 0 ? 'var(--red,#d94f4f)' : impact < 0 ? 'var(--green,#3dba6e)' : 'var(--text-muted)'
                     return (
                       <div key={tt.team_abbrev} className="tm-tc-side">
                         <div className="tm-tc-side-team">
-                          {tt.team_abbrev} sends {tt.has_accepted && <span className="tm-tc-accepted">✓</span>}
+                          {tt.team_abbrev} sends
+                          {tt.has_accepted && <span className="tm-tc-accepted"> ✓</span>}
+                          {impact !== 0 && (
+                            <span style={{marginLeft:8,fontFamily:'var(--font-ui)',fontSize:10,fontWeight:700,color:impColor}}>
+                              {sign}${Math.abs(impact).toFixed(2)} cap
+                            </span>
+                          )}
                         </div>
-                        {sending.map((a,i) => (
+                        {sending.map((a, i) => (
                           <div key={i} className="tm-tc-asset">
-                            {a.asset_type==='player'    && `👤 ${a.player_name||a.sleeper_id} → ${a.to_team}`}
-                            {a.asset_type==='pick'      && `🏈 Pick → ${a.to_team}`}
-                            {a.asset_type==='sb_budget' && `💰 $${a.sb_amount} SB → ${a.to_team}`}
+                            {a.asset_type === 'player' && (
+                              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',width:'100%'}}>
+                                <div>
+                                  <span style={{fontWeight:600}}>{a.player_name || a.sleeper_id}</span>
+                                  {a.salary && (
+                                    <span style={{marginLeft:8,fontFamily:'var(--font-ui)',fontSize:11,color:'var(--text-muted)'}}>
+                                      ${parseFloat(a.salary).toFixed(2)}{a.years ? ` · ${a.years}yr` : ''}
+                                    </span>
+                                  )}
+                                </div>
+                                <span style={{fontFamily:'var(--font-ui)',fontSize:11,color:'var(--text-muted)'}}>→ {a.to_team}</span>
+                              </div>
+                            )}
+                            {a.asset_type === 'pick' && (
+                              <div style={{display:'flex',justifyContent:'space-between',width:'100%'}}>
+                                <span>🏈 {a.pick_label || 'Draft Pick'}</span>
+                                <span style={{fontFamily:'var(--font-ui)',fontSize:11,color:'var(--text-muted)'}}>→ {a.to_team}</span>
+                              </div>
+                            )}
+                            {a.asset_type === 'sb_budget' && (
+                              <div style={{display:'flex',justifyContent:'space-between',width:'100%'}}>
+                                <span>💰 ${parseFloat(a.sb_amount).toFixed(2)} SB budget</span>
+                                <span style={{fontFamily:'var(--font-ui)',fontSize:11,color:'var(--text-muted)'}}>→ {a.to_team}</span>
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>
                     )
                   })}
                 </div>
+
+                {/* Action buttons */}
                 {needsAction && (
                   <div className="tm-tc-actions">
                     <button className="tm-tc-btn tm-tc-btn--accept" onClick={()=>handleAccept(trade.id)}>Accept</button>
+                    <button className="tm-tc-btn tm-tc-btn--counter"
+                      onClick={()=>navigate(`/trade?counter=${trade.id}&teams=${trade.trade_teams?.map(t=>t.team_abbrev).join(',')}`)}>
+                      Counter
+                    </button>
                     <button className="tm-tc-btn tm-tc-btn--decline" onClick={()=>handleDecline(trade.id)}>Decline</button>
+                  </div>
+                )}
+                {canCancel && (
+                  <div className="tm-tc-actions">
+                    <button className="tm-tc-btn tm-tc-btn--decline" onClick={()=>handleCancel(trade.id)}>
+                      Cancel Proposal
+                    </button>
                   </div>
                 )}
                 {isAdminPending && (

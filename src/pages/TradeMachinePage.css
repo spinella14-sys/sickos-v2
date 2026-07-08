@@ -466,3 +466,11 @@
   cursor: pointer;
 }
 .tm-confirm-submit:disabled { opacity: 0.4; cursor: default; }
+
+.tm-trade-card--proposed { border-left: 3px solid var(--text-muted); }
+.tm-tc-btn--counter {
+  font-family: var(--font-ui); font-size: 12px; font-weight: 700;
+  padding: 7px 16px; border-radius: 4px; cursor: pointer;
+  background: transparent; border: 1px solid var(--orange); color: var(--orange);
+}
+.tm-tc-btn--counter:hover { background: var(--orange); color: #fff; }
