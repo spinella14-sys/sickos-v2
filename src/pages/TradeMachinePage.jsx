@@ -365,6 +365,15 @@ function TradeReviewModal({ trade, myTeam, onClose, onAccept, onDecline, onCance
             <span className="trm-teams">{teams.map(t => t.team_abbrev).join(' ↔ ')}</span>
           </div>
           <div style={{display:'flex',alignItems:'center',gap:12}}>
+            {trade.expires_at && (trade.status==='pending'||trade.status==='proposed') && (() => {
+              const hoursLeft = Math.max(0, Math.floor((new Date(trade.expires_at) - Date.now()) / (1000*60*60)))
+              return (
+                <span style={{fontFamily:'var(--font-ui)',fontSize:11,fontWeight:700,
+                  color: hoursLeft < 12 ? 'var(--red,#d94f4f)' : 'var(--text-muted)'}}>
+                  {hoursLeft > 0 ? `⏱ ${hoursLeft}h remaining` : '⏱ Expiring soon'}
+                </span>
+              )
+            })()}
             <span style={{
               fontFamily:'var(--font-ui)', fontSize:11, fontWeight:800,
               color: trade.status === 'pending' || trade.status === 'proposed' ? 'var(--gold)' :
@@ -1161,6 +1170,18 @@ export default function TradeMachinePage() {
                     <div className="tm-tc-status" style={{color:STATUS_COLOR[trade.status]||'var(--text-muted)'}}>
                       {STATUS_LABEL[trade.status]||trade.status}
                     </div>
+                    {trade.expires_at && (trade.status==='pending'||trade.status==='proposed') && (() => {
+                      const hoursLeft = Math.max(0, Math.floor((new Date(trade.expires_at) - Date.now()) / (1000 * 60 * 60)))
+                      const isUrgent  = hoursLeft < 12
+                      return (
+                        <span style={{
+                          fontFamily:'var(--font-ui)', fontSize:10, fontWeight:700,
+                          color: isUrgent ? 'var(--red,#d94f4f)' : 'var(--text-muted)',
+                        }}>
+                          {hoursLeft > 0 ? `Expires in ${hoursLeft}h` : 'Expiring soon'}
+                        </span>
+                      )
+                    })()}
                     <div className="tm-tc-date">{new Date(trade.created_at).toLocaleDateString()}</div>
                   </div>
                 </div>
