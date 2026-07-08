@@ -303,6 +303,265 @@ function TeamPanel({ slot, selectedTeam, onSelectTeam, tradingPlayers, tradingPi
 }
 
 // ─── Main Page ─────────────────────────────────────────────────────────────
+// ── Trade Review Modal ────────────────────────────────────────────────────────
+// Fanspo-style two-panel trade review. Shows what each team sends/receives
+// with headshots, salary, cap impact, and action buttons.
+const API_BASE_TRM = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
+
+function TradeReviewModal({ trade, myTeam, onClose, onAccept, onDecline, onCancel, isAdmin, onAdminProcess }) {
+  const [rosterData, setRosterData] = React.useState({})
+
+  React.useEffect(() => {
+    if (!trade) return
+    const teams = [...new Set(trade.trade_teams?.map(t => t.team_abbrev) || [])]
+    Promise.all(teams.map(abbrev =>
+      fetch(`${API_BASE_TRM}/teams/${abbrev}`)
+        .then(r => r.ok ? r.json() : null)
+        .catch(() => null)
+    )).then(results => {
+      const map = {}
+      teams.forEach((abbrev, i) => { if (results[i]) map[abbrev] = results[i] })
+      setRosterData(map)
+    })
+  }, [trade?.id])
+
+  if (!trade) return null
+
+  const myTT       = trade.trade_teams?.find(t => t.team_abbrev === myTeam)
+  const needsAction = (trade.status === 'pending' || trade.status === 'proposed') && myTT && !myTT.has_accepted
+  const iProposed  = trade.proposed_by === myTeam
+  const canCancel  = iProposed && (trade.status === 'pending' || trade.status === 'proposed')
+  const isAdminPending = isAdmin && trade.status === 'pending_admin'
+
+  // Build salary lookup from roster data
+  const salaryMap = {}
+  Object.values(rosterData).forEach(td => {
+    ;(td.roster || []).forEach(c => {
+      const sid = c.players?.sleeper_id || c.sleeper_id
+      if (sid) salaryMap[sid] = { salary: parseFloat(c.salary || 0), years: c.years, position: c.players?.position }
+    })
+  })
+
+  // Cap impact per team
+  const capImpact = {}
+  trade.trade_teams?.forEach(tt => { capImpact[tt.team_abbrev] = 0 })
+  trade.trade_assets?.forEach(a => {
+    const sal = parseFloat(a.salary || salaryMap[a.sleeper_id]?.salary || 0)
+    if (sal) {
+      if (capImpact[a.from_team] !== undefined) capImpact[a.from_team] -= sal
+      if (capImpact[a.to_team]   !== undefined) capImpact[a.to_team]   += sal
+    }
+  })
+
+  const teams = trade.trade_teams || []
+
+  return (
+    <div className="trm-backdrop" onClick={onClose}>
+      <div className="trm-modal" onClick={e => e.stopPropagation()}>
+        {/* Header */}
+        <div className="trm-header">
+          <div className="trm-header-left">
+            <span className="trm-title">Trade Review</span>
+            <span className="trm-teams">{teams.map(t => t.team_abbrev).join(' ↔ ')}</span>
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:12}}>
+            <span style={{
+              fontFamily:'var(--font-ui)', fontSize:11, fontWeight:800,
+              color: trade.status === 'pending' || trade.status === 'proposed' ? 'var(--gold)' :
+                     trade.status === 'pending_admin' ? 'var(--orange)' :
+                     trade.status === 'approved' ? 'var(--green)' : 'var(--red)',
+            }}>
+              {trade.status === 'pending' || trade.status === 'proposed' ? 'PENDING' :
+               trade.status === 'pending_admin' ? 'AWAITING COMMISSIONER' :
+               trade.status === 'approved' ? 'APPROVED ✓' :
+               trade.status === 'declined' || trade.status === 'denied' ? 'DECLINED ✗' : trade.status.toUpperCase()}
+            </span>
+            <button className="trm-close" onClick={onClose}>✕</button>
+          </div>
+        </div>
+
+        {/* Two-panel layout */}
+        <div className="trm-panels">
+          {teams.map(tt => {
+            const abbrev    = tt.team_abbrev
+            const teamInfo  = rosterData[abbrev]
+            const receives  = trade.trade_assets?.filter(a => a.to_team === abbrev) || []
+            const sends     = trade.trade_assets?.filter(a => a.from_team === abbrev) || []
+            const impact    = capImpact[abbrev] || 0
+            const capBefore = parseFloat(teamInfo?.cap_used || 0)
+            const capSpace  = parseFloat(teamInfo?.cap_space || 0)
+            const capAfter  = capBefore + impact
+            const sign      = impact >= 0 ? '+' : ''
+            const impColor  = impact > 0 ? 'var(--red,#d94f4f)' : impact < 0 ? 'var(--green,#3dba6e)' : 'var(--text-muted)'
+            const accepted  = tt.has_accepted
+
+            return (
+              <div key={abbrev} className="trm-panel">
+                {/* Team header */}
+                <div className="trm-panel-header">
+                  <div style={{display:'flex',alignItems:'center',gap:10}}>
+                    {LOGOS[abbrev] && <img src={LOGOS[abbrev]} alt={abbrev} className="trm-team-logo"/>}
+                    <div>
+                      <div className="trm-team-name">
+                        {TEAMS.find(t => t.abbrev === abbrev)?.name || abbrev}
+                        {accepted && <span className="trm-accepted-badge">✓ Accepted</span>}
+                      </div>
+                      <div style={{fontFamily:'var(--font-ui)',fontSize:11,color:impColor,fontWeight:700}}>
+                        {sign}${Math.abs(impact).toFixed(2)} cap impact
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sends section */}
+                {sends.length > 0 && (
+                  <div className="trm-section">
+                    <div className="trm-section-label">Sends</div>
+                    {sends.map((a, i) => {
+                      const contractInfo = salaryMap[a.sleeper_id]
+                      const sal  = parseFloat(a.salary || contractInfo?.salary || 0)
+                      const yrs  = a.years || contractInfo?.years
+                      const pos  = contractInfo?.position
+                      return (
+                        <div key={i} className="trm-asset-row">
+                          {a.asset_type === 'player' && <>
+                            <img
+                              src={`https://sleepercdn.com/content/nfl/players/thumb/${a.sleeper_id}.jpg`}
+                              alt="" className="trm-headshot"
+                              onError={e => e.target.style.opacity = 0}
+                            />
+                            <div className="trm-asset-info">
+                              <div className="trm-asset-name">{a.player_name || a.sleeper_id}</div>
+                              <div className="trm-asset-meta">
+                                {pos && <span className="trm-pos">{pos}</span>}
+                                {sal > 0 && <span>${sal.toFixed(2)}</span>}
+                                {yrs && <span>{yrs}yr</span>}
+                              </div>
+                            </div>
+                            <div className="trm-asset-to">→ {a.to_team}</div>
+                          </>}
+                          {a.asset_type === 'pick' && <>
+                            <div className="trm-pick-icon">🏈</div>
+                            <div className="trm-asset-info">
+                              <div className="trm-asset-name">{a.pick_label || 'Draft Pick'}</div>
+                              {a.cap_value && <div className="trm-asset-meta">${parseFloat(a.cap_value).toFixed(2)} cap value</div>}
+                            </div>
+                            <div className="trm-asset-to">→ {a.to_team}</div>
+                          </>}
+                          {a.asset_type === 'sb_budget' && <>
+                            <div className="trm-pick-icon">💰</div>
+                            <div className="trm-asset-info">
+                              <div className="trm-asset-name">${parseFloat(a.sb_amount).toFixed(2)} SB Budget</div>
+                            </div>
+                            <div className="trm-asset-to">→ {a.to_team}</div>
+                          </>}
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+
+                {/* Receives section */}
+                {receives.length > 0 && (
+                  <div className="trm-section">
+                    <div className="trm-section-label trm-section-label--receives">Receives</div>
+                    {receives.map((a, i) => {
+                      const contractInfo = salaryMap[a.sleeper_id]
+                      const sal = parseFloat(a.salary || contractInfo?.salary || 0)
+                      const yrs = a.years || contractInfo?.years
+                      const pos = contractInfo?.position
+                      return (
+                        <div key={i} className="trm-asset-row trm-asset-row--receives">
+                          {a.asset_type === 'player' && <>
+                            <img
+                              src={`https://sleepercdn.com/content/nfl/players/thumb/${a.sleeper_id}.jpg`}
+                              alt="" className="trm-headshot"
+                              onError={e => e.target.style.opacity = 0}
+                            />
+                            <div className="trm-asset-info">
+                              <div className="trm-asset-name">{a.player_name || a.sleeper_id}</div>
+                              <div className="trm-asset-meta">
+                                {pos && <span className="trm-pos">{pos}</span>}
+                                {sal > 0 && <span>${sal.toFixed(2)}</span>}
+                                {yrs && <span>{yrs}yr</span>}
+                              </div>
+                            </div>
+                          </>}
+                          {a.asset_type === 'pick' && <>
+                            <div className="trm-pick-icon">🏈</div>
+                            <div className="trm-asset-info">
+                              <div className="trm-asset-name">{a.pick_label || 'Draft Pick'}</div>
+                            </div>
+                          </>}
+                          {a.asset_type === 'sb_budget' && <>
+                            <div className="trm-pick-icon">💰</div>
+                            <div className="trm-asset-info">
+                              <div className="trm-asset-name">${parseFloat(a.sb_amount).toFixed(2)} SB Budget</div>
+                            </div>
+                          </>}
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+
+                {/* Financial summary */}
+                <div className="trm-financials">
+                  <div className="trm-fin-row">
+                    <span>Cap Before</span>
+                    <span>${capBefore.toFixed(2)}</span>
+                  </div>
+                  <div className="trm-fin-row">
+                    <span>Cap After</span>
+                    <span style={{color: capAfter > 138 ? 'var(--red)' : 'var(--text-primary)', fontWeight:700}}>
+                      ${capAfter.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="trm-fin-row">
+                    <span>Space Remaining</span>
+                    <span style={{color: (138 - capAfter) < 0 ? 'var(--red)' : 'var(--green,#3dba6e)', fontWeight:700}}>
+                      ${Math.max(0, 138 - capAfter).toFixed(2)}
+                    </span>
+                  </div>
+                  {impact !== 0 && (
+                    <div className="trm-fin-row">
+                      <span>Net Cap Change</span>
+                      <span style={{color: impColor, fontWeight:700}}>{sign}${Math.abs(impact).toFixed(2)}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Action buttons */}
+        {trade.notes && (
+          <div className="trm-notes">"{trade.notes}"</div>
+        )}
+        <div className="trm-actions">
+          {needsAction && <>
+            <button className="trm-btn trm-btn--accept" onClick={() => { onAccept(trade.id); onClose() }}>Accept Trade</button>
+            <button className="trm-btn trm-btn--counter"
+              onClick={() => { onClose(); window.location.href = `/trade?counter=${trade.id}&teams=${trade.trade_teams?.map(t=>t.team_abbrev).join(',')}` }}>
+              Counter
+            </button>
+            <button className="trm-btn trm-btn--decline" onClick={() => { onDecline(trade.id); onClose() }}>Decline</button>
+          </>}
+          {canCancel && !needsAction && (
+            <button className="trm-btn trm-btn--decline" onClick={() => { onCancel(trade.id); onClose() }}>Cancel Proposal</button>
+          )}
+          {isAdminPending && <>
+            <button className="trm-btn trm-btn--accept" onClick={() => { onAdminProcess(trade.id,'approve'); onClose() }}>Approve & Execute</button>
+            <button className="trm-btn trm-btn--decline" onClick={() => { onAdminProcess(trade.id,'deny'); onClose() }}>Deny</button>
+          </>}
+          <button className="trm-btn trm-btn--cancel" onClick={onClose}>Close</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Trade Chat Sidebar ────────────────────────────────────────────────────────
 // Shows the live conversation with the team(s) being traded with.
 // Uses the same /api/conversations endpoint as the inbox.
@@ -524,6 +783,7 @@ export default function TradeMachinePage() {
   const [posFilter,  setPosFilter]  = useState('ALL')
   const [submitting,   setSubmitting]   = useState(false)
   const [showConfirm,  setShowConfirm]  = useState(false)
+  const [selectedTrade, setSelectedTrade] = useState(null)
   const [result,     setResult]     = useState(null)
   const tabParam = searchParams.get('tab')
   const [activeTab,  setActiveTab]  = useState(tabParam || 'build')
@@ -861,7 +1121,10 @@ export default function TradeMachinePage() {
             const waitingOnTeams = trade.trade_teams?.filter(t => !t.has_accepted && t.team_abbrev !== myTeam).map(t=>t.team_abbrev) || []
 
             return (
-              <div key={trade.id} className={`tm-trade-card ${needsAction?'tm-trade-card--action':''} ${iProposed&&!needsAction?'tm-trade-card--proposed':''}`}>
+              <div key={trade.id}
+                className={`tm-trade-card ${needsAction?'tm-trade-card--action':''} ${iProposed&&!needsAction?'tm-trade-card--proposed':''}`}
+                onClick={() => setSelectedTrade(trade)}
+                style={{cursor:'pointer'}}>
                 {/* Header */}
                 <div className="tm-tc-header">
                   <div style={{display:'flex',alignItems:'center',gap:10}}>
@@ -944,7 +1207,7 @@ export default function TradeMachinePage() {
 
                 {/* Action buttons */}
                 {needsAction && (
-                  <div className="tm-tc-actions">
+                  <div className="tm-tc-actions" onClick={e => e.stopPropagation()}>
                     <button className="tm-tc-btn tm-tc-btn--accept" onClick={()=>handleAccept(trade.id)}>Accept</button>
                     <button className="tm-tc-btn tm-tc-btn--counter"
                       onClick={()=>navigate(`/trade?counter=${trade.id}&teams=${trade.trade_teams?.map(t=>t.team_abbrev).join(',')}`)}>
@@ -954,14 +1217,14 @@ export default function TradeMachinePage() {
                   </div>
                 )}
                 {canCancel && (
-                  <div className="tm-tc-actions">
+                  <div className="tm-tc-actions" onClick={e => e.stopPropagation()}>
                     <button className="tm-tc-btn tm-tc-btn--decline" onClick={()=>handleCancel(trade.id)}>
                       Cancel Proposal
                     </button>
                   </div>
                 )}
                 {isAdminPending && (
-                  <div className="tm-tc-actions">
+                  <div className="tm-tc-actions" onClick={e => e.stopPropagation()}>
                     <span className="tm-tc-admin-label">Admin:</span>
                     <button className="tm-tc-btn tm-tc-btn--accept" onClick={()=>handleAdminProcess(trade.id,'approve')}>Approve & Execute</button>
                     <button className="tm-tc-btn tm-tc-btn--decline" onClick={()=>handleAdminProcess(trade.id,'deny')}>Deny</button>
@@ -971,6 +1234,18 @@ export default function TradeMachinePage() {
             )
           })}
         </div>
+      )}
+      {selectedTrade && (
+        <TradeReviewModal
+          trade={selectedTrade}
+          myTeam={manager?.team_abbrev}
+          isAdmin={isAdmin}
+          onClose={() => setSelectedTrade(null)}
+          onAccept={handleAccept}
+          onDecline={handleDecline}
+          onCancel={handleCancel}
+          onAdminProcess={handleAdminProcess}
+        />
       )}
       {showConfirm && (
         <ConfirmTradeModal
