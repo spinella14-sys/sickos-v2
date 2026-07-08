@@ -431,7 +431,15 @@ function TradeReviewModal({ trade, myTeam, onClose, onAccept, onDecline, onCance
                               onError={e => e.target.style.opacity = 0}
                             />
                             <div className="trm-asset-info">
-                              <div className="trm-asset-name">{a.player_name || a.sleeper_id}</div>
+                              <div className="trm-asset-name">
+                                <PlayerLink
+                                  playerId={a.sleeper_id}
+                                  onClick={e => e.stopPropagation()}
+                                  style={{textDecoration:'none',color:'inherit',cursor:'pointer',fontWeight:700}}
+                                >
+                                  {a.player_name || a.sleeper_id}
+                                </PlayerLink>
+                              </div>
                               <div className="trm-asset-meta">
                                 {pos && <span className="trm-pos">{pos}</span>}
                                 {sal > 0 && <span>${sal.toFixed(2)}</span>}
@@ -479,7 +487,15 @@ function TradeReviewModal({ trade, myTeam, onClose, onAccept, onDecline, onCance
                               onError={e => e.target.style.opacity = 0}
                             />
                             <div className="trm-asset-info">
-                              <div className="trm-asset-name">{a.player_name || a.sleeper_id}</div>
+                              <div className="trm-asset-name">
+                                <PlayerLink
+                                  playerId={a.sleeper_id}
+                                  onClick={e => e.stopPropagation()}
+                                  style={{textDecoration:'none',color:'inherit',cursor:'pointer',fontWeight:700}}
+                                >
+                                  {a.player_name || a.sleeper_id}
+                                </PlayerLink>
+                              </div>
                               <div className="trm-asset-meta">
                                 {pos && <span className="trm-pos">{pos}</span>}
                                 {sal > 0 && <span>${sal.toFixed(2)}</span>}
