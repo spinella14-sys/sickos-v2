@@ -81,11 +81,12 @@ export default function SalaryCapPage() {
   const enriched = useMemo(() => teams.map(t => {
     const capUsed   = parseFloat(t.cap_used || 0)
     const sbBalance = parseFloat(sbBal[t.abbrev] || 0)
-    const tax       = taxAmount(capUsed)
-    const taxPay    = taxPayment(capUsed)
-    const eos       = endOfSeason(capUsed)
-    const maxSpace  = parseFloat(t.max_cap_space || 0)
-    return { ...t, cap_used: capUsed, sb_balance: sbBalance, tax_amount: tax, tax_payment: taxPay, eos_payment: eos, max_cap_space: maxSpace }
+    const tax        = taxAmount(capUsed)
+    const taxPay     = taxPayment(capUsed)
+    const eos        = endOfSeason(capUsed)
+    const maxSpace   = parseFloat(t.max_cap_space || 0)
+    const taxPosition = parseFloat((capUsed - TAX_LINE).toFixed(2)) // negative = room, positive = over
+    return { ...t, cap_used: capUsed, sb_balance: sbBalance, tax_amount: tax, tax_payment: taxPay, eos_payment: eos, max_cap_space: maxSpace, tax_position: taxPosition }
   }), [teams, sbBal])
 
   const sorted = useMemo(() => {
@@ -164,7 +165,7 @@ export default function SalaryCapPage() {
                 <th className="scp-th">Cap Usage</th>
                 <SortTh label="Space"      k="cap_space"       sortKey={sortKey} sortDir={sortDir} onSort={handleSort}/>
                 <SortTh label="SB Budget"  k="sb_balance"      sortKey={sortKey} sortDir={sortDir} onSort={handleSort}/>
-                <SortTh label="Tax Amt"    k="tax_amount"      sortKey={sortKey} sortDir={sortDir} onSort={handleSort}/>
+                <SortTh label="Tax Position" k="tax_position"   sortKey={sortKey} sortDir={sortDir} onSort={handleSort}/>
                 <SortTh label="Tax Pmt"    k="tax_payment"     sortKey={sortKey} sortDir={sortDir} onSort={handleSort}/>
                 <SortTh label="EOS Pmt"    k="eos_payment"     sortKey={sortKey} sortDir={sortDir} onSort={handleSort} style={{color:'var(--text-muted)'}}/>
                 <SortTh label="Max Space"  k="max_cap_space"   sortKey={sortKey} sortDir={sortDir} onSort={handleSort}/>
@@ -200,8 +201,15 @@ export default function SalaryCapPage() {
                     <td className="scp-td scp-td--num">
                       ${t.sb_balance.toFixed(2)}
                     </td>
-                    <td className="scp-td scp-td--num" style={{color: t.tax_amount > 0 ? 'var(--gold,#f0b429)' : 'var(--text-muted)'}}>
-                      {t.tax_amount > 0 ? `$${t.tax_amount.toFixed(2)}` : '—'}
+                    <td className="scp-td scp-td--num" style={{
+                      color: t.tax_position > 0
+                        ? 'var(--red,#d94f4f)'
+                        : 'var(--green,#3dba6e)',
+                      fontWeight: 600,
+                    }}>
+                      {t.tax_position > 0
+                        ? `+$${t.tax_position.toFixed(2)}`
+                        : `-$${Math.abs(t.tax_position).toFixed(2)}`}
                     </td>
                     <td className="scp-td scp-td--num" style={{color: t.tax_payment > 0 ? 'var(--red,#d94f4f)' : 'var(--text-muted)'}}>
                       {t.tax_payment > 0 ? `$${t.tax_payment.toFixed(2)}` : '—'}
