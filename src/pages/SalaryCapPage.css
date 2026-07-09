@@ -1,64 +1,247 @@
-.sc-root { background: var(--bg0); min-height: calc(100vh - 56px); }
-.sc-header { background: var(--bg1); border-bottom: 1px solid var(--border); padding: 32px 40px; }
-.sc-header-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
-.sc-title { font-family: var(--font-display); font-size: 42px; letter-spacing: 0.04em; }
-.sc-sub { font-family: var(--font-ui); font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); margin-top: 4px; }
+/* SalaryCapPage.css */
 
-.sc-summary { display: flex; gap: 32px; }
-.sc-sum-item { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
-.sc-sum-label { font-family: var(--font-ui); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-muted); }
-.sc-sum-val { font-family: var(--font-display); font-size: 24px; letter-spacing: 0.02em; color: var(--text-primary); }
-.sc-gold { color: var(--gold); }
-.sc-red  { color: var(--red);  }
-.sc-green{ color: var(--green);}
-.sc-muted{ color: var(--text-muted); }
-
-.sc-content { max-width: 1200px; margin: 0 auto; padding: 24px 40px; }
-
-.sc-rules-bar {
-  display: flex; gap: 32px; align-items: center;
-  background: var(--bg1); border: 1px solid var(--border);
-  padding: 12px 20px; margin-bottom: 20px;
-  font-family: var(--font-body); font-size: 13px; color: var(--text-muted);
+.scp-root {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
 }
-.sc-rules-bar strong { color: var(--text-primary); }
 
-.sc-table { border: 1px solid var(--border); }
-
-.sc-table-header, .sc-row {
-  display: grid;
-  grid-template-columns: 40px 1fr 90px 180px 90px 90px 120px;
-  align-items: center;
+/* ── Header ── */
+.scp-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
   gap: 16px;
-  padding: 0 20px;
-  min-height: 60px;
-  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
 }
-.sc-row:last-child { border-bottom: none; }
-.sc-table-header { background: var(--bg2); min-height: 40px; }
-.sc-table-header .sc-col { font-family: var(--font-ui); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-muted); }
-.sc-row { text-decoration: none; background: var(--bg1); transition: background 0.1s; }
-.sc-row:hover { background: var(--bg2); }
 
-.sc-rank-num { font-family: var(--font-display); font-size: 18px; color: var(--text-muted); text-align: center; }
-.sc-col-team { display: flex; align-items: center; gap: 12px; }
-.sc-team-logo { width: 40px; height: 40px; object-fit: contain; flex-shrink: 0; }
-.sc-team-info { display: flex; flex-direction: column; gap: 2px; }
-.sc-team-name { font-family: var(--font-ui); font-size: 13px; font-weight: 700; color: var(--text-primary); }
-.sc-team-mgr  { font-family: var(--font-body); font-size: 11px; color: var(--text-muted); }
+.scp-title {
+  font-family: var(--font-display);
+  font-size: 32px;
+  color: var(--text-primary);
+  margin: 0 0 4px;
+  letter-spacing: 0.02em;
+}
 
-.sc-salary-val { font-family: var(--font-display); font-size: 20px; letter-spacing: 0.02em; color: var(--text-primary); }
+.scp-sub {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0;
+}
 
-.sc-meter { width: 100%; }
-.sc-meter-track { position: relative; height: 4px; background: var(--bg4); border-radius: 2px; }
-.sc-meter-fill { height: 100%; border-radius: 2px; transition: width 0.4s; }
-.sc-m-ok   { background: var(--green); }
-.sc-m-gold { background: var(--gold);  }
-.sc-m-red  { background: var(--red);   }
-.sc-m-lux-line { position: absolute; top: -3px; bottom: -3px; width: 1px; background: var(--orange); opacity: 0.7; }
-.sc-pct { font-family: var(--font-accent); font-size: 11px; color: var(--text-muted); margin-top: 4px; display: block; }
+.scp-league-stats {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
 
-.sc-badge { font-family: var(--font-ui); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 4px 8px; border-left: 2px solid; }
-.sc-badge-over { color: var(--red);   background: var(--red-dim);              border-color: var(--red);  }
-.sc-badge-lux  { color: var(--gold);  background: rgba(212,168,67,0.12);       border-color: var(--gold); }
-.sc-badge-ok   { color: var(--green); background: var(--green-dim);            border-color: var(--green);}
+.scp-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.scp-stat-label {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.scp-stat-val {
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+/* ── Constants bar ── */
+.scp-constants {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  padding: 10px 16px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.scp-constants strong { color: var(--text-primary); }
+
+/* ── Nav tabs ── */
+.scp-nav-tabs {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0;
+}
+
+.scp-nav-tab {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px 20px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  margin-bottom: -1px;
+}
+.scp-nav-tab--active {
+  color: var(--orange);
+  border-bottom-color: var(--orange);
+}
+.scp-nav-tab:hover:not(.scp-nav-tab--active) { color: var(--text-secondary); }
+
+/* ── Table ── */
+.scp-loading {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 48px;
+}
+
+.scp-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.scp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-ui);
+  font-size: 13px;
+}
+
+.scp-th {
+  padding: 10px 12px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.scp-th--rank  { width: 36px; }
+.scp-th--team  { text-align: left; min-width: 180px; }
+.scp-th--sortable { cursor: pointer; user-select: none; }
+.scp-th--sortable:hover { color: var(--text-primary); }
+.scp-th--active { color: var(--orange); }
+
+.scp-sort-icon {
+  font-size: 9px;
+  opacity: 0.6;
+}
+
+.scp-row {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.1s;
+}
+.scp-row:last-child { border-bottom: none; }
+.scp-row:hover { background: var(--bg2); }
+.scp-row--tax  { background: rgba(240,180,41,0.04); }
+.scp-row--over { background: rgba(217,79,79,0.06); }
+
+.scp-td {
+  padding: 10px 12px;
+  text-align: center;
+  vertical-align: middle;
+}
+.scp-td--rank {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+.scp-td--team { text-align: left; }
+.scp-td--num  { font-variant-numeric: tabular-nums; }
+.scp-td--bar  { min-width: 160px; }
+
+.scp-team-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.scp-logo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.scp-team-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.scp-team-mgr {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+/* ── Cap bar ── */
+.scp-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.scp-bar-track {
+  flex: 1;
+  height: 6px;
+  background: var(--bg3, rgba(255,255,255,0.06));
+  border-radius: 3px;
+  position: relative;
+  overflow: visible;
+}
+
+.scp-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+
+.scp-bar-ltl {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 12px;
+  background: var(--gold, #f0b429);
+  border-radius: 1px;
+  transform: translateX(-50%);
+}
+
+.scp-bar-pct {
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  min-width: 36px;
+  text-align: right;
+}
+
+/* ── Footnote ── */
+.scp-footnote {
+  margin-top: 16px;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}

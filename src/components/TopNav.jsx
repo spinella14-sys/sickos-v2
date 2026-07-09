@@ -197,8 +197,18 @@ export default function TopNav() {
           <li>
             <NavLink to="/transactions" className={({ isActive }) => isActive ? 'tnl active' : 'tnl'}>Wire</NavLink>
           </li>
-          <li>
-            <NavLink to="/salary-cap" className={({ isActive }) => isActive ? 'tnl active' : 'tnl'}>Salary Cap</NavLink>
+          <li className="tnl-dropdown-wrap">
+            <NavLink to="/salary-cap"
+              className={({ isActive }) =>
+                (isActive || location.pathname.startsWith('/salary-cap')) ? 'tnl active' : 'tnl'
+              }>
+              Salary Cap ▾
+            </NavLink>
+            <div className="tnl-draft-dropdown">
+              <button className="tnl-draft-item" onClick={() => navigate('/salary-cap')}>League Overview</button>
+              <button className="tnl-draft-item" onClick={() => navigate('/salary-cap/multi-year')}>Multi-Year View</button>
+              <button className="tnl-draft-item" onClick={() => navigate('/salary-cap/payouts')}>Payout Calculator</button>
+            </div>
           </li>
 
           {/* Draft Central dropdown */}
