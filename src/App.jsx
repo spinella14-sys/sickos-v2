@@ -43,6 +43,7 @@ import AdminHealthPage  from './pages/AdminHealthPage'
 import MasterSchedulePage from './pages/MasterSchedulePage'
 import DraftCentralPage from './pages/DraftCentralPage'
 import DraftBoardPage   from './pages/DraftBoardPage'
+import MultiYearCapPage from './pages/MultiYearCapPage'
 
 function DraftWrapper({ component: Component }) {
   const { manager, isAdmin } = useAuth()
@@ -89,6 +90,7 @@ function AuthenticatedApp() {
             <Route path="/transactions"  element={<TransactionsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/salary-cap"    element={<SalaryCapPage />} />
+            <Route path="/salary-cap/multi-year" element={<MultiYearCapPage />} />
             <Route path="/draft"       element={<DraftCentralPage />} />
             <Route path="/draft/board" element={<DraftBoardPage />} />
             <Route path="/draft/rookie"  element={<DraftWrapper component={RookieDraft} />} />

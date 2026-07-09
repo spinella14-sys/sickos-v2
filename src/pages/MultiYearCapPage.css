@@ -1,0 +1,125 @@
+/* MultiYearCapPage.css */
+
+.mycp-root {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+}
+
+.mycp-header { margin-bottom: 20px; }
+
+.mycp-title {
+  font-family: var(--font-display);
+  font-size: 32px;
+  color: var(--text-primary);
+  margin: 0 0 4px;
+}
+
+.mycp-sub {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Nav tabs — same style as SalaryCapPage */
+.mycp-nav-tabs {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--border);
+}
+
+.mycp-nav-tab {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px 20px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  margin-bottom: -1px;
+}
+.mycp-nav-tab--active {
+  color: var(--orange);
+  border-bottom-color: var(--orange);
+}
+.mycp-nav-tab:hover:not(.mycp-nav-tab--active) { color: var(--text-secondary); }
+
+/* Divisions */
+.mycp-divisions {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.mycp-division {}
+
+.mycp-div-label {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.mycp-team-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.mycp-team-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.1s, background 0.1s;
+  width: 100%;
+}
+.mycp-team-card:hover {
+  border-color: var(--orange);
+  background: var(--bg2);
+}
+
+.mycp-team-logo {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.mycp-team-info { flex: 1; min-width: 0; }
+
+.mycp-team-name {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mycp-team-mgr {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.mycp-arrow {
+  font-size: 16px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.mycp-team-card:hover .mycp-arrow { color: var(--orange); }
