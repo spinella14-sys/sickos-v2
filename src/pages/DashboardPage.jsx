@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useTeamColors } from '../hooks/useTeamColors'
@@ -319,6 +319,132 @@ function InboxWidget({ abbrev, colors, navigate }) {
   )
 }
 
+// ── Standings Widget ──────────────────────────────────────────────────────────
+function StandingsWidget({ standings, myAbbrev, view, setView, loaded, colors }) {
+  if (!loaded) return (
+    <div className="dash-standings-empty">Loading standings…</div>
+  )
+
+  const myTeam = standings.find(s => s.abbrev === myAbbrev)
+  const myDiv  = myTeam?.division
+
+  // ── Division view: only show manager's division ──────────────────────────
+  if (view === 'division') {
+    const divTeams = standings
+      .filter(s => s.division === myDiv)
+      .sort((a, b) => a.div_rank - b.div_rank || b.pts_for - a.pts_for)
+
+    return (
+      <div className="dash-standings-body">
+        <div className="dash-standings-div-label">{myDiv} DIVISION</div>
+        <table className="dash-standings-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th className="dash-st-team">TEAM</th>
+              <th>W</th>
+              <th>L</th>
+              <th>PF</th>
+            </tr>
+          </thead>
+          <tbody>
+            {divTeams.map((s, i) => {
+              const isMe = s.abbrev === myAbbrev
+              return (
+                <tr key={s.abbrev} className={`dash-st-row ${isMe ? 'dash-st-row--me' : ''}`}
+                  style={isMe ? { background: `${colors?.dim||'rgba(255,255,255,0.04)'}`, borderLeft: `2px solid ${colors?.primary||'var(--orange)'}` } : {}}>
+                  <td className="dash-st-rank">{i + 1}</td>
+                  <td className="dash-st-team">
+                    {LOGOS[s.abbrev] && <img src={LOGOS[s.abbrev]} alt={s.abbrev} className="dash-st-logo"/>}
+                    <span className="dash-st-abbrev">{s.abbrev}</span>
+                  </td>
+                  <td className="dash-st-num">{s.wins}</td>
+                  <td className="dash-st-num">{s.losses}</td>
+                  <td className="dash-st-num dash-st-pf">{s.pts_for > 0 ? s.pts_for.toFixed(1) : '—'}</td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    )
+  }
+
+  // ── Playoff view: top 6 seeds + manager if outside top 6 ─────────────────
+  const sorted   = [...standings].sort((a, b) => a.rank - b.rank || b.pts_for - a.pts_for)
+  const top6     = sorted.slice(0, 6)
+  const seed6    = top6[5]
+  const myRank   = myTeam?.rank || 999
+  const inTop6   = myRank <= 6
+  const gb6      = seed6 && myTeam && !inTop6
+    ? ((seed6.wins - myTeam.wins) + (myTeam.losses - seed6.losses)) / 2
+    : null
+
+  const rows = inTop6 ? top6 : [...top6, myTeam].filter(Boolean)
+
+  return (
+    <div className="dash-standings-body">
+      <table className="dash-standings-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th className="dash-st-team">TEAM</th>
+            <th>W-L</th>
+            <th>PF</th>
+            <th>GB</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((s, i) => {
+            const isMe       = s.abbrev === myAbbrev
+            const isCutline  = i === 5 && !inTop6 // line before manager's team
+            const gbFrom6    = i < 6 && seed6
+              ? ((seed6.wins - s.wins) + (s.losses - seed6.losses)) / 2
+              : gb6
+            const gbDisplay  = i === 5 && !inTop6
+              ? gb6?.toFixed(1)
+              : gbFrom6 !== null && gbFrom6 > 0
+                ? gbFrom6.toFixed(1)
+                : i < top6.length - 1 ? '—' : '—'
+
+            return (
+              <React.Fragment key={s.abbrev}>
+                {isCutline && (
+                  <tr className="dash-st-cutline">
+                    <td colSpan={5}>
+                      <div className="dash-st-cutline-line">
+                        <span>— Playoff cutline —</span>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+                <tr className={`dash-st-row ${isMe ? 'dash-st-row--me' : ''}`}
+                  style={isMe ? { background: `${colors?.dim||'rgba(255,255,255,0.04)'}`, borderLeft: `2px solid ${colors?.primary||'var(--orange)'}` } : {}}>
+                  <td className="dash-st-rank" style={i < 6 ? {color:'var(--orange)',fontWeight:800} : {}}>{i < 6 ? i+1 : myRank}</td>
+                  <td className="dash-st-team">
+                    {LOGOS[s.abbrev] && <img src={LOGOS[s.abbrev]} alt={s.abbrev} className="dash-st-logo"/>}
+                    <span className="dash-st-abbrev">{s.abbrev}</span>
+                  </td>
+                  <td className="dash-st-num">{s.wins}-{s.losses}</td>
+                  <td className="dash-st-num dash-st-pf">{s.pts_for > 0 ? s.pts_for.toFixed(1) : '—'}</td>
+                  <td className="dash-st-num" style={{color: gbDisplay !== '—' && gbDisplay > 0 ? 'var(--red,#d94f4f)' : 'var(--text-muted)'}}>
+                    {gbDisplay !== '—' && parseFloat(gbDisplay) > 0 ? `+${gbDisplay}` : '—'}
+                  </td>
+                </tr>
+              </React.Fragment>
+            )
+          })}
+        </tbody>
+      </table>
+      {!inTop6 && gb6 !== null && (
+        <div className="dash-st-gb-note">
+          {gb6 <= 0 ? '✓ In playoff position' : `${gb6.toFixed(1)} GB from 6th seed`}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function DashboardPage() {
   const { manager, isAdmin } = useAuth()
   const navigate  = useNavigate()
@@ -331,6 +457,18 @@ export default function DashboardPage() {
   const { mode, adminOverride, setAdminOverride, nflMode } = useSeasonMode(isAdmin)
   const { roster, deadCap, sbData, loading } = useTeamData(abbrev)
   const { matchup, mLoading } = useCurrentMatchup(abbrev)
+
+  // Standings widget state
+  const [standings,      setStandings]      = useState([])
+  const [standingsView,  setStandingsView]  = useState('division')
+  const [standingsLoaded,setStandingsLoaded]= useState(false)
+
+  useEffect(() => {
+    fetch(`${API_BASE}/standings?season=${CURRENT_SEASON}`)
+      .then(r => r.ok ? r.json() : { standings: [] })
+      .then(d => { setStandings(d.standings || []); setStandingsLoaded(true) })
+      .catch(() => setStandingsLoaded(true))
+  }, [])
 
   // Cap calculations
   const totalCapHit = useMemo(()=>{
@@ -594,6 +732,39 @@ export default function DashboardPage() {
               </GlassCard>
             )}
 
+            {/* STANDINGS WIDGET */}
+            <GlassCard className="dash-standings-card" colors={colors}>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
+                <WidgetLabel colors={colors}>Standings</WidgetLabel>
+                <div style={{display:'flex',gap:4}}>
+                  {['division','playoff'].map(v => (
+                    <button key={v}
+                      onClick={() => setStandingsView(v)}
+                      style={{
+                        fontFamily:'var(--font-ui)', fontSize:10, fontWeight:700,
+                        padding:'3px 10px', border:'1px solid var(--border-bright)',
+                        background: standingsView===v ? (colors?.primary||'var(--orange)') : 'transparent',
+                        color: standingsView===v ? '#fff' : 'var(--text-muted)',
+                        cursor:'pointer', borderRadius:3,
+                      }}>
+                      {v === 'division' ? 'Division' : 'Playoff'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <StandingsWidget
+                standings={standings}
+                myAbbrev={abbrev}
+                view={standingsView}
+                setView={setStandingsView}
+                loaded={standingsLoaded}
+                colors={colors}
+              />
+              <Link to="/standings" className="dash-widget-footer-link" style={{color:colors?.primary||'var(--orange)'}}>
+                Full Standings →
+              </Link>
+            </GlassCard>
+
             {/* DRAFT COUNTDOWN */}
             <GlassCard className="dash-draft-card" colors={colors}>
               <WidgetLabel colors={colors}>Rookie Draft</WidgetLabel>
@@ -603,6 +774,39 @@ export default function DashboardPage() {
                 borderColor: colors?.primary||'var(--orange)',
                 color: colors?.primary||'var(--orange)',
               }}>Draft Board →</Link>
+            </GlassCard>
+
+            {/* STANDINGS WIDGET */}
+            <GlassCard className="dash-standings-card" colors={colors}>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
+                <WidgetLabel colors={colors}>Standings</WidgetLabel>
+                <div style={{display:'flex',gap:4}}>
+                  {['division','playoff'].map(v => (
+                    <button key={v}
+                      onClick={() => setStandingsView(v)}
+                      style={{
+                        fontFamily:'var(--font-ui)', fontSize:10, fontWeight:700,
+                        padding:'3px 10px', border:'1px solid var(--border-bright)',
+                        background: standingsView===v ? (colors?.primary||'var(--orange)') : 'transparent',
+                        color: standingsView===v ? '#fff' : 'var(--text-muted)',
+                        cursor:'pointer', borderRadius:3,
+                      }}>
+                      {v === 'division' ? 'Division' : 'Playoff'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <StandingsWidget
+                standings={standings}
+                myAbbrev={abbrev}
+                view={standingsView}
+                setView={setStandingsView}
+                loaded={standingsLoaded}
+                colors={colors}
+              />
+              <Link to="/standings" className="dash-widget-footer-link" style={{color:colors?.primary||'var(--orange)'}}>
+                Full Standings →
+              </Link>
             </GlassCard>
 
             {/* NEWS TICKER */}
@@ -713,6 +917,39 @@ export default function DashboardPage() {
                   </strong> in {CURRENT_SEASON+1}
                 </div>
               )}
+            </GlassCard>
+
+            {/* STANDINGS WIDGET */}
+            <GlassCard className="dash-standings-card" colors={colors}>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
+                <WidgetLabel colors={colors}>Standings</WidgetLabel>
+                <div style={{display:'flex',gap:4}}>
+                  {['division','playoff'].map(v => (
+                    <button key={v}
+                      onClick={() => setStandingsView(v)}
+                      style={{
+                        fontFamily:'var(--font-ui)', fontSize:10, fontWeight:700,
+                        padding:'3px 10px', border:'1px solid var(--border-bright)',
+                        background: standingsView===v ? (colors?.primary||'var(--orange)') : 'transparent',
+                        color: standingsView===v ? '#fff' : 'var(--text-muted)',
+                        cursor:'pointer', borderRadius:3,
+                      }}>
+                      {v === 'division' ? 'Division' : 'Playoff'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <StandingsWidget
+                standings={standings}
+                myAbbrev={abbrev}
+                view={standingsView}
+                setView={setStandingsView}
+                loaded={standingsLoaded}
+                colors={colors}
+              />
+              <Link to="/standings" className="dash-widget-footer-link" style={{color:colors?.primary||'var(--orange)'}}>
+                Full Standings →
+              </Link>
             </GlassCard>
 
             {/* NEWS TICKER */}
