@@ -54,11 +54,9 @@ export default function TopNav() {
     <nav className="topnav">
       <div className="topnav-inner">
 
-        {showBack && (
-          <button className="topnav-back" onClick={() => navigate(-1)} title="Go back">
-            ‹
-          </button>
-        )}
+        <button className="topnav-back" onClick={() => navigate(-1)} title="Go back">
+          ‹
+        </button>
 
         <button className="topnav-brand" onClick={() => navigate('/')} title="Dashboard">
           <img
