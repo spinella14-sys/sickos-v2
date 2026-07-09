@@ -33,6 +33,7 @@ import CalendarPage from './pages/CalendarPage'
 import TradeBlockPage from './pages/TradeBlockPage'
 import WatchlistPage from './pages/WatchlistPage'
 import CapSheetPage from './pages/CapSheetPage'
+import PayoutCalculatorPage from './pages/PayoutCalculatorPage'
 import RookieDraft  from './pages/draft/RookieDraft'
 import RFADraft     from './pages/draft/RFADraft'
 import UFADraft     from './pages/draft/UFADraft'
@@ -103,6 +104,7 @@ function AuthenticatedApp() {
             <Route path="/calendar"      element={<CalendarPage />} />
             <Route path="/trade-block"   element={<TradeBlockPage />} />
             <Route path="/watchlist"     element={<WatchlistPage />} />
+            <Route path="/salary-cap/payouts" element={<PayoutCalculatorPage />} />
             <Route path="/team/:abbrev/cap" element={<CapSheetPage />} />
             <Route path="/matchup/:matchupId" element={<MatchupPage />} />
             <Route path="/admin"              element={<AdminPage />} />

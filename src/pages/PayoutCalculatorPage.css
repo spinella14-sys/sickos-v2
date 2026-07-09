@@ -1,0 +1,284 @@
+/* PayoutCalculatorPage.css */
+
+.pcp-root {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+}
+
+.pcp-loading {
+  text-align: center;
+  padding: 48px;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* ── Header ── */
+.pcp-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.pcp-title {
+  font-family: var(--font-display);
+  font-size: 32px;
+  color: var(--text-primary);
+  margin: 0 0 4px;
+}
+
+.pcp-sub {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.pcp-buy-in-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.pcp-bi-label {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.pcp-bi-count {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+}
+
+/* ── Nav tabs ── */
+.pcp-nav-tabs {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.pcp-nav-tab {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px 20px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  margin-bottom: -1px;
+}
+.pcp-nav-tab--active { color: var(--orange); border-bottom-color: var(--orange); }
+.pcp-nav-tab:hover:not(.pcp-nav-tab--active) { color: var(--text-secondary); }
+
+/* ── Admin bar ── */
+.pcp-admin-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+.pcp-admin-label {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.pcp-admin-input-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pcp-dollar {
+  font-family: var(--font-ui);
+  color: var(--text-muted);
+}
+
+.pcp-admin-input {
+  width: 80px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  padding: 6px 10px;
+  background: var(--bg1);
+  border: 1px solid var(--border-bright);
+  color: var(--text-primary);
+  border-radius: 4px;
+}
+
+.pcp-admin-save {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 14px;
+  background: var(--orange);
+  border: none;
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.pcp-save-msg {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--green, #3dba6e);
+}
+
+.pcp-admin-sub {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ── Pot cards ── */
+.pcp-pots {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.pcp-pot-card {
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.pcp-pot-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  border-left: 3px solid transparent;
+}
+
+.pcp-pot-title {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.pcp-pot-total {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.pcp-pot-rows {
+  padding: 8px 0;
+}
+
+.pcp-pot-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 16px;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.pcp-pot-row:last-child { border-bottom: none; }
+
+.pcp-pot-row-label { color: var(--text-muted); }
+.pcp-pot-row-val   { font-weight: 700; }
+
+/* ── Season leaders ── */
+.pcp-leaders {
+  display: flex;
+  gap: 24px;
+  padding: 12px 16px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.pcp-leader-item { display: flex; flex-direction: column; gap: 2px; }
+.pcp-leader-label { font-family: var(--font-ui); font-size: 9px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+.pcp-leader-val   { font-family: var(--font-ui); font-size: 14px; font-weight: 700; color: var(--text-primary); }
+
+/* ── Per-team table ── */
+.pcp-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+.pcp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-ui);
+  font-size: 12px;
+}
+
+.pcp-th {
+  padding: 10px 12px;
+  text-align: center;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.pcp-th--team { text-align: left; }
+
+.pcp-row { border-bottom: 1px solid var(--border); }
+.pcp-row:last-child { border-bottom: none; }
+.pcp-row:hover { background: var(--bg2); }
+.pcp-row--tax { background: rgba(240,180,41,0.04); }
+
+.pcp-td { padding: 10px 12px; vertical-align: middle; }
+.pcp-td--team { display: flex; align-items: center; gap: 10px; }
+.pcp-td--center { text-align: center; }
+.pcp-td--num { text-align: center; font-variant-numeric: tabular-nums; }
+
+.pcp-logo { width: 28px; height: 28px; object-fit: contain; flex-shrink: 0; }
+.pcp-team-name { font-size: 12px; font-weight: 700; color: var(--text-primary); }
+.pcp-team-mgr  { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+
+.pcp-checkbox { width: 16px; height: 16px; cursor: pointer; accent-color: var(--orange); }
+
+.pcp-sb-select {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  padding: 4px 8px;
+  background: var(--bg2);
+  border: 1px solid var(--border-bright);
+  color: var(--text-primary);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.pcp-footnote {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
