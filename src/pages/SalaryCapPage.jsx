@@ -108,25 +108,25 @@ export default function SalaryCapPage() {
       <div className="scp-header">
         <div>
           <h1 className="scp-title">Salary Cap</h1>
-          <p className="scp-sub">{CURRENT_SEASON} Season · All figures in millions</p>
+          <p className="scp-sub">{CURRENT_SEASON} Season</p>
         </div>
         <div className="scp-league-stats">
           <div className="scp-stat">
             <div className="scp-stat-label">Hard Cap</div>
-            <div className="scp-stat-val">${HARD_CAP}M</div>
+            <div className="scp-stat-val">${HARD_CAP}</div>
           </div>
           <div className="scp-stat">
             <div className="scp-stat-label">Luxury Line</div>
-            <div className="scp-stat-val" style={{color:'var(--gold,#f0b429)'}}>${TAX_LINE}M</div>
+            <div className="scp-stat-val" style={{color:'var(--gold,#f0b429)'}}>${TAX_LINE}</div>
           </div>
           <div className="scp-stat">
             <div className="scp-stat-label">League Avg</div>
-            <div className="scp-stat-val">${leagueAvg.toFixed(2)}M</div>
+            <div className="scp-stat-val">${leagueAvg.toFixed(2)}</div>
           </div>
           <div className="scp-stat">
             <div className="scp-stat-label">Total Lux Tax</div>
             <div className="scp-stat-val" style={{color: totalLuxTax > 0 ? 'var(--red,#d94f4f)' : 'var(--text-muted)'}}>
-              ${totalLuxTax.toFixed(2)}M
+              ${totalLuxTax.toFixed(2)}
             </div>
           </div>
         </div>
@@ -134,10 +134,10 @@ export default function SalaryCapPage() {
 
       {/* ── League constants bar ── */}
       <div className="scp-constants">
-        <span>QB Max: <strong>$26.67M</strong></span>
-        <span>Non-QB Max: <strong>$21.82M</strong></span>
-        <span>Min Salary: <strong>$2.40M</strong></span>
-        <span>Buy-In: <strong>${BUY_IN.toFixed(2)}M</strong></span>
+        <span>QB Max: <strong>$26.67</strong></span>
+        <span>Non-QB Max: <strong>$21.82</strong></span>
+        <span>Min Salary: <strong>$2.40</strong></span>
+        <span>Buy-In: <strong>${BUY_IN.toFixed(2)}</strong></span>
         <span style={{color: overTaxCount > 0 ? 'var(--gold)' : 'var(--text-muted)'}}>
           Luxury Tax: <strong>{overTaxCount} team{overTaxCount !== 1 ? 's' : ''} over line</strong>
         </span>
@@ -221,7 +221,7 @@ export default function SalaryCapPage() {
       )}
 
       <div className="scp-footnote">
-        EOS Pmt = (Salary − Buy-In ${BUY_IN}) + Tax Penalties. Floor at $0. · Max Space = space available if all non-guaranteed contracts released.
+        EOS Pmt = (Salary − Buy-In ${BUY_IN}) + Tax Penalties. Floor at $0. Max Space = space if all non-guaranteed contracts released.
       </div>
     </div>
   )
