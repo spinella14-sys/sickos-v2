@@ -34,9 +34,11 @@
 .topnav-brand:hover { opacity: 0.8; }
 
 .topnav-league-logo {
-  height: 48px;
-  width: auto;
-  object-fit: contain;
+  height: 44px;
+  width: 44px;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 4px;
 }
 
 .topnav-links {
