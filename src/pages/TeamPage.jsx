@@ -817,7 +817,7 @@ export default function TeamPage() {
       <div className="tp-tabs-wrap">
         <div className="tp-tabs">
           <button className={`tp-tab ${activeTab==='roster'?'tp-tab--active':''}`} onClick={() => setActiveTab('roster')}>Roster</button>
-          <button className={`tp-tab ${activeTab==='cap'?'tp-tab--active':''}`} onClick={() => setActiveTab('cap')}>Cap Sheet</button>
+          <button className="tp-tab" onClick={() => navigate(`/team/${abbrev}/cap`)}>Cap Sheet</button>
           <button className={`tp-tab ${activeTab==='injuries'?'tp-tab--active':''}`} onClick={() => setActiveTab('injuries')}>
             Injuries{roster.filter(r=>r.players?.injury_status).length > 0 ? ` (${roster.filter(r=>r.players?.injury_status).length})` : ''}
           </button>
@@ -992,136 +992,6 @@ export default function TeamPage() {
                 </div>
               </>
             )}
-          </div>
-        )}
-
-        {activeTab === 'cap' && (
-          <div className="tp-cap-view">
-            {/* Multi-year cap bars */}
-            <div className="tp-cap-bars-header">
-              <div className="tp-cap-overview">
-                {[
-                  { label:'Cap Used',    val:`$${capUsed.toFixed(2)}`,  cls: isOver?'tp-red':isLux?'tp-gold':'' },
-                  { label:'Hard Cap',    val:`$${hardCap}`,             cls:'' },
-                  { label:'Cap Space',   val: isOver?`($${Math.abs(capSpace).toFixed(2)})`:`$${capSpace.toFixed(2)}`, cls: capSpace<5?'tp-red':'tp-green' },
-                  { label:'Luxury Line', val:`$${TAX_LINE}`,            cls:'tp-gold' },
-                  { label:'Lux Tax',     val: isLux?`$${(capUsed-TAX_LINE).toFixed(2)}`:'—', cls: isLux?'tp-red':'tp-muted' },
-                  { label:'PS Space',    val:`$${Math.max(0,PS_SALARY_LIMIT-psSalaryUsed).toFixed(2)}`, cls: psSalaryOver?'tp-red':'' },
-                ].map(s => (
-                  <div key={s.label} className="tp-cap-card">
-                    <span className="tp-cc-label">{s.label}</span>
-                    <span className={`tp-cc-val ${s.cls}`}>{s.val}</span>
-                  </div>
-                ))}
-              </div>
-              <CapYearBars roster={roster} hardCap={hardCap} taxLine={TAX_LINE}/>
-            </div>
-
-            {/* Multi-year player grid */}
-            {roster.length > 0 && (() => {
-              const sorted  = [...roster].sort((a,b) => parseFloat(b.salary||0) - parseFloat(a.salary||0))
-              const allYears = new Set()
-              sorted.forEach(r => (r.contract_years||[]).forEach(cy => allYears.add(cy.season)))
-              const yearCols    = [...allYears].sort()
-              const totalByYear = {}
-              yearCols.forEach(y => { totalByYear[y] = 0 })
-
-              return (
-                <div className="tp-cap-grid-wrap">
-                  <table className="tp-cap-grid">
-                    <thead>
-                      <tr>
-                        <th className="tp-cg-th tp-cg-th-player">PLAYER</th>
-                        <th className="tp-cg-th">POS</th>
-                        <th className="tp-cg-th">SLOT</th>
-                        {yearCols.map(y => (
-                          <th key={y} className={`tp-cg-th tp-cg-th-year ${y===CURRENT_SEASON?'tp-cg-th--current':''}`}>{y}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {sorted.map(r => {
-                        const p    = r.players || {}
-                        const sid  = p.sleeper_id || r.sleeper_id
-                        const slot = r.roster_slots?.[0]?.slot_type || 'active'
-                        // cap_hit already has the max-contract 80% discount baked in —
-                        // only apply the PS/IR slot discount here (avoids double-discounting)
-                        const disc = (slot==='ps'||slot==='ir') ? 0.5 : 1
-                        const yearMap = {}
-                        ;(r.contract_years||[]).forEach(cy => { yearMap[cy.season] = cy })
-                        yearCols.forEach(y => {
-                          const cy = yearMap[y]
-                          if (cy) totalByYear[y] = (totalByYear[y]||0) + parseFloat(cy.cap_hit||0)*disc
-                        })
-                        // The player's free agency happens the year AFTER their last contracted
-                        // season — that's where the UFA/RFA tag belongs (Spotrac convention), shown
-                        // in what would otherwise be an empty "—" cell for that year.
-                        const maxYear = Math.max(0, ...(r.contract_years||[]).map(cy => cy.season))
-                        const faYear  = maxYear + 1
-
-                        return (
-                          <tr key={r.id||sid} className="tp-cg-row">
-                            <td className="tp-cg-td tp-cg-td-player">
-                              <img src={headshotUrl(sid)} alt="" className="tp-ct-shot" onError={e=>e.target.style.opacity=0}/>
-                              <PlayerLink playerId={sid} className="tp-cg-name">{p.full_name}</PlayerLink>
-                            </td>
-                            <td className="tp-cg-td" style={{color:POS_COLOR[p.position],fontWeight:700,textAlign:'center'}}>{p.position}</td>
-                            <td className="tp-cg-td tp-cg-slot">{slot.toUpperCase()}</td>
-                            {yearCols.map(y => {
-                              const cy = yearMap[y]
-                              if (!cy) {
-                                // Empty cell — but if this is the player's first free-agent year,
-                                // show the UFA/RFA tag here instead of a bare dash.
-                                if (y === faYear && maxYear > 0) {
-                                  return (
-                                    <td key={y} className="tp-cg-td tp-cg-empty">
-                                      {r.rfa_round
-                                        ? <span className="tp-cg-fa-tag tp-cg-fa-tag--rfa">RFA {r.rfa_round===1?'1st':'2nd'}</span>
-                                        : <span className="tp-cg-fa-tag tp-cg-fa-tag--ufa">UFA</span>}
-                                    </td>
-                                  )
-                                }
-                                return <td key={y} className="tp-cg-td tp-cg-empty">—</td>
-                              }
-                              const hit = parseFloat(cy.cap_hit||0)*disc
-                              const isNG = !cy.is_guaranteed
-                              // Color rules: non-guaranteed = purple, everything else defaults to
-                              // plain text color. MAX label (gold) and FA tags (green/red) are
-                              // separate badge elements, not the dollar figure's own color.
-                              return (
-                                <td key={y} className={`tp-cg-td tp-cg-year-cell ${cy.is_guaranteed?'tp-cg-guaranteed':'tp-cg-ng'} ${y===CURRENT_SEASON?'tp-cg-current':''}`}>
-                                  <span className="tp-cg-hit" style={{ color: isNG ? 'var(--purple)' : 'var(--text-primary)' }}>${hit.toFixed(2)}</span>
-                                  {(slot==='ps'||slot==='ir') && <span className="tp-cg-disc">50% (PS/IR)</span>}
-                                  {slot!=='ps' && slot!=='ir' && r.is_max_contract && <span className="tp-cg-disc tp-cg-disc--max">MAX (80%)</span>}
-                                </td>
-                              )
-                            })}
-                          </tr>
-                        )
-                      })}
-                    </tbody>
-                    <tfoot>
-                      <tr className="tp-cg-totals">
-                        <td className="tp-cg-td" colSpan={3}>CAP HIT TOTAL</td>
-                        {yearCols.map(y => (
-                          <td key={y} className={`tp-cg-td tp-cg-year-cell ${y===CURRENT_SEASON?'tp-cg-current':''} ${(totalByYear[y]||0)>TAX_LINE?'tp-cg-over-tax':''}`}>
-                            <strong>${(totalByYear[y]||0).toFixed(2)}</strong>
-                            <span className="tp-cg-disc" style={{color:(totalByYear[y]||0)>TAX_LINE?'var(--red)':'var(--text-muted)'}}>
-                              {((totalByYear[y]||0)/hardCap*100).toFixed(0)}%
-                            </span>
-                          </td>
-                        ))}
-                      </tr>
-                    </tfoot>
-                  </table>
-                  <div className="tp-cg-legend">
-                    <span className="tp-cg-legend-item tp-cg-guaranteed">■ Guaranteed</span>
-                    <span className="tp-cg-legend-item tp-cg-ng">■ Non-Guaranteed</span>
-                    <span className="tp-cg-legend-item" style={{color:'var(--text-muted)'}}>50% = PS/IR discount</span>
-                  </div>
-                </div>
-              )
-            })()}
           </div>
         )}
 
