@@ -200,13 +200,15 @@ export default function PayoutCalculatorPage() {
           <thead>
             <tr>
               <th className="pcp-th pcp-th--team">Team</th>
-              <th className="pcp-th">Buy-In Paid</th>
-              <th className="pcp-th">Current Salary</th>
-              <th className="pcp-th">Pot 2 Contribution</th>
-              <th className="pcp-th">Tax Payment</th>
-              <th className="pcp-th">EOS Additional</th>
+              <th className="pcp-th">Paid</th>
+              <th className="pcp-th">Salary</th>
+              <th className="pcp-th">Pot 2</th>
+              <th className="pcp-th">Tax Pmt</th>
+              <th className="pcp-th">EOS Addl</th>
               <th className="pcp-th">Total Paid</th>
-              <th className="pcp-th">Weekly Earnings</th>
+              <th className="pcp-th">Wkly $</th>
+              <th className="pcp-th">Playoff $</th>
+              <th className="pcp-th" style={{color:'var(--green,#3dba6e)'}}>Total Earned</th>
               {isAdmin && <th className="pcp-th">SB Credits</th>}
             </tr>
           </thead>
@@ -214,6 +216,19 @@ export default function PayoutCalculatorPage() {
             {(teams || []).sort((a, b) => b.cap_used - a.cap_used).map(t => {
               const wEarnings = parseFloat(weekly_earnings?.[t.abbrev] || 0)
               const overTax   = t.cap_used > constants.ltl
+
+              // Playoff earnings
+              let playoffEarnings = 0
+              if (playoff.champion      === t.abbrev) playoffEarnings = pot2.champion    + pot3.total
+              else if (playoff.runner_up    === t.abbrev) playoffEarnings = pot2.runner_up
+              else if (playoff.third_place  === t.abbrev) playoffEarnings = pot2.third_place
+              else if (playoff.fourth_place === t.abbrev) playoffEarnings = pot2.fourth_place
+
+              // RS points leader prize
+              const rsEarnings = rs_leader === t.abbrev ? pot1.rs_leader_prize : 0
+
+              // Total earnings
+              const totalEarnings = wEarnings + playoffEarnings + rsEarnings
 
               return (
                 <tr key={t.abbrev} className={`pcp-row ${overTax ? 'pcp-row--tax' : ''}`}>
@@ -249,6 +264,15 @@ export default function PayoutCalculatorPage() {
                   <td className="pcp-td pcp-td--num" style={{ fontWeight:700 }}>${t.total_paid.toFixed(2)}</td>
                   <td className="pcp-td pcp-td--num" style={{ color: wEarnings > 0 ? 'var(--green,#3dba6e)' : 'var(--text-muted)' }}>
                     {wEarnings > 0 ? `$${wEarnings.toFixed(2)}` : '—'}
+                  </td>
+                  <td className="pcp-td pcp-td--num" style={{ color: playoffEarnings > 0 ? 'var(--green,#3dba6e)' : 'var(--text-muted)' }}>
+                    {playoffEarnings > 0 ? `$${playoffEarnings.toFixed(2)}` : '—'}
+                  </td>
+                  <td className="pcp-td pcp-td--num" style={{
+                    color: totalEarnings > 0 ? 'var(--green,#3dba6e)' : 'var(--text-muted)',
+                    fontWeight: totalEarnings > 0 ? 800 : 400,
+                  }}>
+                    {totalEarnings > 0 ? `$${totalEarnings.toFixed(2)}` : '—'}
                   </td>
                   {isAdmin && (
                     <td className="pcp-td pcp-td--center">
