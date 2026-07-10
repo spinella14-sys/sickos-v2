@@ -282,3 +282,115 @@
   color: var(--text-muted);
   line-height: 1.6;
 }
+
+/* Paste at the bottom of PayoutCalculatorPage.css */
+
+/* â”€â”€ League Expenses Section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.pcp-expenses-section {
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.pcp-expenses-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+}
+
+.pcp-expenses-title {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.pcp-expenses-total {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.pcp-expenses-per {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.pcp-exp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-ui);
+  font-size: 13px;
+}
+
+.pcp-exp-th {
+  padding: 8px 16px;
+  text-align: left;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+.pcp-exp-th--num { text-align: right; }
+
+.pcp-exp-row {
+  border-bottom: 1px solid var(--border);
+}
+.pcp-exp-row:last-child { border-bottom: none; }
+.pcp-exp-row--new { background: var(--bg2); }
+
+.pcp-exp-td {
+  padding: 10px 16px;
+  vertical-align: middle;
+}
+
+.pcp-exp-name  { font-weight: 600; color: var(--text-primary); }
+.pcp-exp-notes { color: var(--text-muted); font-size: 12px; }
+.pcp-exp-num   { text-align: right; font-variant-numeric: tabular-nums; }
+
+.pcp-exp-input-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.pcp-exp-input {
+  width: 80px;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  padding: 5px 8px;
+  background: var(--bg2);
+  border: 1px solid var(--border-bright);
+  color: var(--text-primary);
+  border-radius: 4px;
+  text-align: right;
+}
+.pcp-exp-input--name {
+  width: 160px;
+  text-align: left;
+}
+.pcp-exp-input:focus { outline: none; border-color: var(--orange); }
+
+.pcp-exp-saving {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.pcp-exp-del {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+.pcp-exp-del:hover { color: var(--red, #d94f4f); background: rgba(217,79,79,0.1); }

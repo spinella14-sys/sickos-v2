@@ -37,6 +37,9 @@ export default function PayoutCalculatorPage() {
   const [loading,     setLoading]     = useState(true)
   const [websiteFees, setWebsiteFees] = useState('')
   const [saving,      setSaving]      = useState(false)
+  const [newExpName,  setNewExpName]  = useState('')
+  const [newExpAmt,   setNewExpAmt]   = useState('')
+  const [expSaving,   setExpSaving]   = useState({})
   const [saveMsg,     setSaveMsg]     = useState(null)
 
   function load() {
@@ -79,6 +82,37 @@ export default function PayoutCalculatorPage() {
     load()
   }
 
+  async function updateExpense(id, amount) {
+    setExpSaving(s => ({ ...s, [id]: true }))
+    await fetch(`${API}/payouts/${CURRENT_SEASON}/expenses/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPw },
+      body: JSON.stringify({ amount: parseFloat(amount) || 0 }),
+    })
+    setExpSaving(s => ({ ...s, [id]: false }))
+    load()
+  }
+
+  async function addExpense() {
+    if (!newExpName.trim()) return
+    await fetch(`${API}/payouts/${CURRENT_SEASON}/expenses`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPw },
+      body: JSON.stringify({ name: newExpName.trim(), amount: parseFloat(newExpAmt) || 0 }),
+    })
+    setNewExpName(''); setNewExpAmt('')
+    load()
+  }
+
+  async function deleteExpense(id) {
+    if (!window.confirm('Remove this expense?')) return
+    await fetch(`${API}/payouts/${CURRENT_SEASON}/expenses/${id}`, {
+      method: 'DELETE',
+      headers: { 'x-admin-password': adminPw },
+    })
+    load()
+  }
+
   if (loading) return <div className="pcp-loading">Loading payout data…</div>
   if (!data)   return <div className="pcp-loading">Failed to load payout data.</div>
 
@@ -109,27 +143,84 @@ export default function PayoutCalculatorPage() {
         <button className="pcp-nav-tab pcp-nav-tab--active">Payout Calculator</button>
       </div>
 
-      {/* ── Admin: website fees ── */}
-      {isAdmin && (
-        <div className="pcp-admin-bar">
-          <span className="pcp-admin-label">⚙ Website Fees (admin)</span>
-          <div className="pcp-admin-input-row">
-            <span className="pcp-dollar">$</span>
-            <input
-              className="pcp-admin-input"
-              type="number" step="0.01" min="0"
-              value={websiteFees}
-              onChange={e => setWebsiteFees(e.target.value)}
-              placeholder="0.00"
-            />
-            <button className="pcp-admin-save" onClick={saveWebsiteFees} disabled={saving}>
-              {saving ? 'Saving…' : 'Save'}
-            </button>
-            {saveMsg && <span className="pcp-save-msg">{saveMsg}</span>}
+      {/* ── Website Expenses section — visible to all, editable by admin ── */}
+      <div className="pcp-expenses-section">
+        <div className="pcp-expenses-header">
+          <div className="pcp-expenses-title">League Website Expenses</div>
+          <div className="pcp-expenses-total">
+            Total: <strong>${(data.config.website_fees || 0).toFixed(2)}</strong>
+            <span className="pcp-expenses-per"> · ${((data.config.website_fees || 0) / 16).toFixed(2)} per manager</span>
           </div>
-          <span className="pcp-admin-sub">Per person: ${(parseFloat(data.config.website_fees || 0) / 16).toFixed(2)}</span>
         </div>
-      )}
+        <table className="pcp-exp-table">
+          <thead>
+            <tr>
+              <th className="pcp-exp-th">Service</th>
+              <th className="pcp-exp-th">Notes</th>
+              <th className="pcp-exp-th pcp-exp-th--num">Cost</th>
+              {isAdmin && <th className="pcp-exp-th"/>}
+            </tr>
+          </thead>
+          <tbody>
+            {(data.expenses || []).map(e => (
+              <tr key={e.id} className="pcp-exp-row">
+                <td className="pcp-exp-td pcp-exp-name">{e.name}</td>
+                <td className="pcp-exp-td pcp-exp-notes">{e.notes || '—'}</td>
+                <td className="pcp-exp-td pcp-exp-num">
+                  {isAdmin ? (
+                    <div className="pcp-exp-input-row">
+                      <span className="pcp-dollar">$</span>
+                      <input
+                        className="pcp-exp-input"
+                        type="number" step="0.01" min="0"
+                        defaultValue={parseFloat(e.amount || 0).toFixed(2)}
+                        onBlur={ev => updateExpense(e.id, ev.target.value)}
+                      />
+                      {expSaving[e.id] && <span className="pcp-exp-saving">…</span>}
+                    </div>
+                  ) : (
+                    `$${parseFloat(e.amount || 0).toFixed(2)}`
+                  )}
+                </td>
+                {isAdmin && (
+                  <td className="pcp-exp-td">
+                    <button className="pcp-exp-del" onClick={() => deleteExpense(e.id)}>✕</button>
+                  </td>
+                )}
+              </tr>
+            ))}
+            {isAdmin && (
+              <tr className="pcp-exp-row pcp-exp-row--new">
+                <td className="pcp-exp-td">
+                  <input
+                    className="pcp-exp-input pcp-exp-input--name"
+                    placeholder="Service name…"
+                    value={newExpName}
+                    onChange={e => setNewExpName(e.target.value)}
+                  />
+                </td>
+                <td className="pcp-exp-td pcp-exp-notes">—</td>
+                <td className="pcp-exp-td">
+                  <div className="pcp-exp-input-row">
+                    <span className="pcp-dollar">$</span>
+                    <input
+                      className="pcp-exp-input"
+                      type="number" step="0.01" min="0"
+                      placeholder="0.00"
+                      value={newExpAmt}
+                      onChange={e => setNewExpAmt(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && addExpense()}
+                    />
+                  </div>
+                </td>
+                <td className="pcp-exp-td">
+                  <button className="pcp-admin-save" onClick={addExpense} disabled={!newExpName.trim()}>+ Add</button>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
 
       {/* ── Three pots ── */}
       <div className="pcp-pots">
