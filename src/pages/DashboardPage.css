@@ -64,8 +64,7 @@
   opacity:0.85; }
 
 /* ── CANVAS GRID ─────────────────────────────────────────────────────────────── */
-.dash-canvas { position:relative; z-index:1; padding:20px 24px 32px;
-  display:flex; flex-direction:column; gap:16px; }
+.dash-canvas { position:relative; z-index:1; }
 
 /* Floating widget layout — flex-wrap so widgets only take space they need */
 .dash-canvas--offseason {
