@@ -890,37 +890,7 @@ export default function DashboardPage() {
             </GlassCard>
 
             {/* STANDINGS WIDGET */}
-            <GlassCard className="dash-standings-card" colors={colors}>
-              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
-                <WidgetLabel colors={colors}>Standings</WidgetLabel>
-                <div style={{display:'flex',gap:4}}>
-                  {['division','playoff'].map(v => (
-                    <button key={v}
-                      onClick={() => setStandingsView(v)}
-                      style={{
-                        fontFamily:'var(--font-ui)', fontSize:10, fontWeight:700,
-                        padding:'3px 10px', border:'1px solid var(--border-bright)',
-                        background: standingsView===v ? (colors?.primary||'var(--orange)') : 'transparent',
-                        color: standingsView===v ? '#fff' : 'var(--text-muted)',
-                        cursor:'pointer', borderRadius:3,
-                      }}>
-                      {v === 'division' ? 'Division' : 'Playoff'}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <StandingsWidget
-                standings={standings}
-                myAbbrev={abbrev}
-                view={standingsView}
-                setView={setStandingsView}
-                loaded={standingsLoaded}
-                colors={colors}
-              />
-              <Link to="/standings" className="dash-widget-footer-link" style={{color:colors?.primary||'var(--orange)'}}>
-                Full Standings →
-              </Link>
-            </GlassCard>
+
 
             {/* NEWS TICKER */}
             <GlassCard className="dash-news-card" colors={colors}>

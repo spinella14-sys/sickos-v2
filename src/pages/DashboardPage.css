@@ -46,6 +46,10 @@
   position: relative;
   overflow: hidden;
   transition: transform 0.22s ease, box-shadow 0.22s ease;
+  break-inside: avoid;
+  display: inline-block;
+  width: 100%;
+  margin-bottom: 16px;
 }
 /* Team-color tint layer */
 .dash-glass::before {
@@ -66,31 +70,29 @@
 /* ── CANVAS GRID ─────────────────────────────────────────────────────────────── */
 .dash-canvas { position:relative; z-index:1; }
 
-/* Floating widget layout — flex-wrap so widgets only take space they need */
+/* Column layout — widgets stack naturally, no row-height dead space */
 .dash-canvas--offseason {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 16px;
+  columns: 3 260px;
+  column-gap: 16px;
   padding: 20px 24px 48px;
 }
 
 /* Widget size classes — fixed widths, natural heights */
-.dash-cap-card       { width: 420px; }
-.dash-sb-card        { width: 260px; }
-.dash-roster-card    { width: 420px; }
-.dash-injury-card    { width: 260px; }
-.dash-dc-card        { width: 260px; }
-.dash-standings-card { width: 320px; }
-.dash-draft-card     { width: 280px; }
-.dash-inbox-card     { width: 360px; }
-.dash-cal-card       { width: 340px; }
-.dash-tb-card        { width: 320px; }
-.dash-news-card      { width: 260px; }
+
+
+
+
+
+
+
+
+
+
+
 .dash-shortcuts-row  { width: 100%; }
 
 /* Regular season grid */
-.dash-canvas--regular { display:flex; flex-wrap:wrap; align-items:flex-start; gap:16px; padding:20px 24px 48px;
+.dash-canvas--regular { columns: 3 260px; column-gap: 16px; padding: 20px 24px 48px;
   grid-template-columns:1fr 1fr 1fr;
 }
 .dash-scorebug-card { grid-column:1/3; }
@@ -100,7 +102,7 @@
 
 @media (max-width: 900px) {
   .dash-canvas--offseason,
-  .dash-canvas--regular { padding: 12px 12px 32px; }
+  .dash-canvas--regular { columns: 1; padding: 12px 12px 32px; }
   .dash-cap-card, .dash-sb-card, .dash-roster-card,
   .dash-injury-card, .dash-dc-card, .dash-draft-card,
   .dash-scorebug-card, .dash-cap-compact, .dash-lineup-card,
