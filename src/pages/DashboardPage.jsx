@@ -247,7 +247,16 @@ function InboxWidget({ abbrev, colors, navigate, onUnreadCount }) {
     const hdrs = { 'x-team-abbrev': abbrev }
     Promise.all([
       fetch(`${API_BASE}/messages?folder=inbox`, { headers: hdrs }).then(r=>r.ok?r.json():[]),
-      fetch(`${API_BASE}/messages/unread-count`,  { headers: hdrs }).then(r=>r.ok?r.json():{count:0}),
+      // Count unread from new system only (channels + conversations)
+      // to match TopNav behavior and avoid phantom counts from old trade notifications
+      Promise.all([
+        fetch(`${API_BASE}/channels`, { headers: hdrs }).then(r => r.ok ? r.json() : []),
+        fetch(`${API_BASE}/conversations`, { headers: hdrs }).then(r => r.ok ? r.json() : []),
+      ]).then(([chs, convs]) => {
+        const chUnread   = Array.isArray(chs)   ? chs.reduce((s, c)   => s + (c.unread || 0), 0) : 0
+        const convUnread = Array.isArray(convs)  ? convs.reduce((s, c) => s + (c.unread || 0), 0) : 0
+        return { count: chUnread + convUnread }
+      }),
     ]).then(([msgs, cnt]) => {
       setMessages((Array.isArray(msgs) ? msgs : []).slice(0, 5))
       const count = cnt?.count || 0
