@@ -537,6 +537,15 @@ export default function DashboardPage() {
   // Unread count lifted to dashboard level for AlertBar
   const [dashUnread, setDashUnread] = useState(0)
 
+  // Current NFL week for bye-week alerts
+  const [currentWeek, setCurrentWeek] = useState(null)
+  useEffect(() => {
+    fetch(`${API_BASE}/health`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.nfl?.week) setCurrentWeek(d.nfl.week) })
+      .catch(() => {})
+  }, [])
+
   // Pending trades count for alert bar
   const [pendingTrades, setPendingTrades] = useState(0)
   useEffect(() => {
