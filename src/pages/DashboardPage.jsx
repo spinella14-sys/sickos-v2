@@ -237,7 +237,7 @@ function timeSince(dateStr) {
   return `${Math.floor(diff/86400)}d`
 }
 
-function InboxWidget({ abbrev, colors, navigate }) {
+function InboxWidget({ abbrev, colors, navigate, onUnreadCount }) {
   const [messages, setMessages] = useState([])
   const [unread,   setUnread]   = useState(0)
   const [loading,  setLoading]  = useState(true)
@@ -250,7 +250,9 @@ function InboxWidget({ abbrev, colors, navigate }) {
       fetch(`${API_BASE}/messages/unread-count`,  { headers: hdrs }).then(r=>r.ok?r.json():{count:0}),
     ]).then(([msgs, cnt]) => {
       setMessages((Array.isArray(msgs) ? msgs : []).slice(0, 5))
-      setUnread(cnt?.count || 0)
+      const count = cnt?.count || 0
+      setUnread(count)
+      if (onUnreadCount) onUnreadCount(count)
       setLoading(false)
     }).catch(()=>setLoading(false))
   }, [abbrev])
@@ -445,6 +447,80 @@ function StandingsWidget({ standings, myAbbrev, view, setView, loaded, colors })
   )
 }
 
+// ── Alert Bar ─────────────────────────────────────────────────────────────────
+// Shows only when there are actionable items needing the manager's attention.
+function AlertBar({ roster, unread, pendingTrades, currentWeek, isOffseason }) {
+  const alerts = []
+
+  // Injured players (entire roster)
+  const injured = (roster || []).filter(r => {
+    const status = r.players?.injury_status
+    return status && ['Out', 'IR', 'PUP'].includes(status)
+  })
+  injured.forEach(r => {
+    const name = r.players?.full_name || 'Player'
+    const status = r.players?.injury_status
+    alerts.push({ type: 'red', icon: '🚨', text: `${name} is ${status}` })
+  })
+
+  // Questionable/Doubtful starters only
+  const starters = (roster || []).filter(r =>
+    (r.roster_slots?.[0]?.slot_type || 'active') === 'active'
+  )
+  const questionable = starters.filter(r => {
+    const status = r.players?.injury_status
+    return status && ['Questionable', 'Doubtful', 'Q', 'D'].includes(status)
+  })
+  questionable.forEach(r => {
+    const name = r.players?.full_name || 'Player'
+    const status = r.players?.injury_status
+    alerts.push({ type: 'gold', icon: '⚠️', text: `${name} is ${status} (starter)` })
+  })
+
+  // Bye week starters (regular season only)
+  if (!isOffseason && currentWeek) {
+    const onBye = starters.filter(r => r.players?.bye_week === currentWeek)
+    onBye.forEach(r => {
+      const name = r.players?.full_name || 'Player'
+      alerts.push({ type: 'gold', icon: '💤', text: `${name} on BYE (starter)` })
+    })
+  }
+
+  // Pending trades
+  if (pendingTrades > 0) {
+    alerts.push({
+      type: 'orange', icon: '🔄',
+      text: `${pendingTrades} trade offer${pendingTrades > 1 ? 's' : ''} need${pendingTrades === 1 ? 's' : ''} your response`,
+      link: '/trade?tab=history',
+    })
+  }
+
+  // Unread messages
+  if (unread > 0) {
+    alerts.push({
+      type: 'blue', icon: '💬',
+      text: `${unread} unread message${unread > 1 ? 's' : ''}`,
+      link: '/inbox',
+    })
+  }
+
+  if (!alerts.length) return null
+
+  return (
+    <div className="dash-alert-bar">
+      {alerts.map((a, i) => (
+        <div key={i} className={`dash-alert-pill dash-alert-pill--${a.type}`}>
+          <span>{a.icon}</span>
+          {a.link
+            ? <a href={a.link}>{a.text}</a>
+            : <span>{a.text}</span>
+          }
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export default function DashboardPage() {
   const { manager, isAdmin } = useAuth()
   const navigate  = useNavigate()
@@ -457,6 +533,26 @@ export default function DashboardPage() {
   const { mode, adminOverride, setAdminOverride, nflMode } = useSeasonMode(isAdmin)
   const { roster, deadCap, sbData, loading } = useTeamData(abbrev)
   const { matchup, mLoading } = useCurrentMatchup(abbrev)
+
+  // Unread count lifted to dashboard level for AlertBar
+  const [dashUnread, setDashUnread] = useState(0)
+
+  // Pending trades count for alert bar
+  const [pendingTrades, setPendingTrades] = useState(0)
+  useEffect(() => {
+    if (!abbrev) return
+    fetch(`${API_BASE}/trades?team=${abbrev}&status=pending`)
+      .then(r => r.ok ? r.json() : [])
+      .then(trades => {
+        // Count trades where I haven't accepted yet
+        const count = trades.filter(t => {
+          const myTT = t.trade_teams?.find(tt => tt.team_abbrev === abbrev)
+          return myTT && !myTT.has_accepted
+        }).length
+        setPendingTrades(count)
+      })
+      .catch(() => {})
+  }, [abbrev])
 
   // Standings widget state
   const [standings,      setStandings]      = useState([])
@@ -571,6 +667,14 @@ export default function DashboardPage() {
         <div className={`dash-canvas ${mode==='regular'?'dash-canvas--regular':'dash-canvas--offseason'}`}>
 
           {/* ── OFFSEASON LAYOUT ── */}
+          <AlertBar
+            roster={roster}
+            unread={dashUnread}
+            pendingTrades={pendingTrades}
+            currentWeek={currentWeek}
+            isOffseason={mode === 'offseason'}
+          />
+
           {mode === 'offseason' && (<>
 
             {/* CAP SUMMARY */}
@@ -816,7 +920,7 @@ export default function DashboardPage() {
             </GlassCard>
 
             {/* INBOX */}
-            <InboxWidget abbrev={abbrev} colors={colors} navigate={navigate}/>
+            <InboxWidget abbrev={abbrev} colors={colors} navigate={navigate} onUnreadCount={setDashUnread}/>
 
             {/* CALENDAR */}
             <GlassCard className="dash-cal-card" colors={colors}>
@@ -959,7 +1063,7 @@ export default function DashboardPage() {
             </GlassCard>
 
             {/* INBOX */}
-            <InboxWidget abbrev={abbrev} colors={colors} navigate={navigate}/>
+            <InboxWidget abbrev={abbrev} colors={colors} navigate={navigate} onUnreadCount={setDashUnread}/>
 
             {/* CALENDAR */}
             <GlassCard className="dash-cal-card" colors={colors}>
