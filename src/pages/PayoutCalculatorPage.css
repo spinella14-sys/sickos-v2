@@ -236,7 +236,7 @@
 }
 
 .pcp-th {
-  padding: 10px 12px;
+  padding: 8px 8px;
   text-align: center;
   font-size: 9px;
   font-weight: 800;
@@ -254,7 +254,7 @@
 .pcp-row:hover { background: var(--bg2); }
 .pcp-row--tax { background: rgba(240,180,41,0.04); }
 
-.pcp-td { padding: 10px 12px; vertical-align: middle; }
+.pcp-td { padding: 8px 8px; vertical-align: middle; }
 .pcp-td--team { display: flex; align-items: center; gap: 10px; }
 .pcp-td--center { text-align: center; }
 .pcp-td--num { text-align: center; font-variant-numeric: tabular-nums; }
