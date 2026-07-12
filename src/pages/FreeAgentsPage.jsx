@@ -69,7 +69,8 @@ export default function FreeAgentsPage() {
 
   const [allPlayers,   setAllPlayers]   = useState([])
   const [statsMap,     setStatsMap]     = useState({})
-  const [ownershipMap, setOwnershipMap] = useState({})
+  const [ownershipMap,  setOwnershipMap]  = useState({})
+  const [ownershipMode, setOwnershipMode] = useState('adp') // 'adp' | 'owned'
   const [rosteredIds,  setRosteredIds]  = useState(new Set())
   const [watchlist,    setWatchlist]    = useState(new Set())
   const [wlBusy,       setWlBusy]       = useState({})
@@ -110,10 +111,13 @@ export default function FreeAgentsPage() {
 
   useEffect(() => {
     fetch(`${API_BASE}/stats/ownership-bulk`)
-      .then(r => r.ok ? r.json() : {})
-      .then(setOwnershipMap)
-      .catch(() => {})
-  }, [])
+      .then(r => r.ok ? r.json() : { __mode: 'adp', data: {} })
+      .then(res => {
+        const mode = res.__mode || 'owned'
+        const map  = res.data || res  // handle old format too
+        setOwnershipMode(mode)
+        setOwnershipMap(map)
+      })
 
   useEffect(() => {
     fetch(`${API_BASE}/contracts?season=${CURRENT_SEASON}`)
@@ -269,7 +273,7 @@ export default function FreeAgentsPage() {
                     <th className="fa-th"><SortHeader colKey="fantasy_pts" label="PTS" title="Season Fantasy Points" /></th>
                     <th className="fa-th"><SortHeader colKey="pts_pg" label="PTS/G" title="Fantasy Points Per Game" /></th>
                     <th className="fa-th"><SortHeader colKey="pos_rank" label="POS RK" title="Position Rank by PTS/G" /></th>
-                    <th className="fa-th"><SortHeader colKey="pct_owned" label="% OWN" title="% Owned" /></th>
+                    <th className="fa-th"><SortHeader colKey="pct_owned" label={ownershipMode === 'adp' ? 'ADP RK' : '% OWN'} title="% Owned" /></th>
                     <th className="fa-th">BYE</th>
                     <th className="fa-th">OPP</th>
                     <th className="fa-th">OPP RNK</th>
@@ -282,7 +286,11 @@ export default function FreeAgentsPage() {
                     const isRostered = rosteredIds.has(p.sleeper_id)
                     const onWl       = watchlist.has(p.sleeper_id)
                     const st         = statsMap[p.sleeper_id]
-                    const pctOwned   = ownershipMap[p.sleeper_id]
+                    const pctOwned   = {ownershipMap[p.sleeper_id]
+                    ? ownershipMode === 'adp'
+                      ? `#${ownershipMap[p.sleeper_id]}`
+                      : `${ownershipMap[p.sleeper_id].toFixed(1)}%`
+                    : '—'}
                     const injColor   = p.injury_status ? INJ_COLOR[p.injury_status] || '#888' : null
 
                     return (
