@@ -62,11 +62,7 @@ function PlayerCard({ contract, stats, inTrade, onToggle }) {
   const p   = contract.players || {}
   const s   = stats[p.sleeper_id] || {}
   const ppg = s.pts_per_game ? parseFloat(s.pts_per_game).toFixed(1) : '—'
-  const own = s.percent_owned != null
-    ? parseFloat(s.percent_owned).toFixed(0) + '%'
-    : s.search_rank && s.search_rank < 999999
-      ? `#${s.search_rank}`
-      : '—'
+
   const rfa = contract.rfa_round ? `RFA ${contract.rfa_round===1?'1st':'2nd'}` : 'UFA'
 
   const currentYrRow = (contract.contract_years||[]).find(cy => cy.season === SEASON)
@@ -108,7 +104,7 @@ function PlayerCard({ contract, stats, inTrade, onToggle }) {
       </div>
       <div className="tm-pc-pts">
         <div className="tm-pc-ppg">{ppg}</div>
-        <div className="tm-pc-rank">{own}</div>
+
       </div>
       <div className="tm-pc-toggle">{inTrade?'✓':'+'}</div>
     </div>

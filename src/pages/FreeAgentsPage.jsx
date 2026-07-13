@@ -69,8 +69,7 @@ export default function FreeAgentsPage() {
 
   const [allPlayers,   setAllPlayers]   = useState([])
   const [statsMap,     setStatsMap]     = useState({})
-  const [ownershipMap,  setOwnershipMap]  = useState({})
-  const [ownershipMode, setOwnershipMode] = useState('adp') // 'adp' | 'owned'
+
   const [rosteredIds,  setRosteredIds]  = useState(new Set())
   const [watchlist,    setWatchlist]    = useState(new Set())
   const [wlBusy,       setWlBusy]       = useState({})
@@ -109,17 +108,7 @@ export default function FreeAgentsPage() {
     fetchStats().catch(() => {})
   }, [])
 
-  useEffect(() => {
-    fetch(`${API_BASE}/stats/ownership-bulk`)
-      .then(r => r.ok ? r.json() : { __mode: 'adp', data: {} })
-      .then(res => {
-        const mode = res.__mode || 'owned'
-        const map  = res.data || res  // handle old format too
-        setOwnershipMode(mode)
-        setOwnershipMap(map)
-      })
-      .catch(() => {})
-  }, [])
+
 
   useEffect(() => {
     fetch(`${API_BASE}/contracts?season=${CURRENT_SEASON}`)
@@ -182,9 +171,7 @@ export default function FreeAgentsPage() {
       } else if (sortKey === 'fantasy_pts') {
         av = statsMap[a.sleeper_id]?.fantasy_pts ?? -1
         bv = statsMap[b.sleeper_id]?.fantasy_pts ?? -1
-      } else if (sortKey === 'pct_owned') {
-        av = ownershipMap[a.sleeper_id] ?? -1
-        bv = ownershipMap[b.sleeper_id] ?? -1
+
       } else if (sortKey === 'pos_rank') {
         av = statsMap[a.sleeper_id]?.pos_rank ?? 9999
         bv = statsMap[b.sleeper_id]?.pos_rank ?? 9999
@@ -201,7 +188,7 @@ export default function FreeAgentsPage() {
       return sortDir === 'desc' ? bv - av : av - bv
     })
     return rows
-  }, [allPlayers, rosteredIds, pos, nflTeam, search, showRostered, sortKey, sortDir, statsMap, ownershipMap])
+  }, [allPlayers, rosteredIds, pos, nflTeam, search, showRostered, sortKey, sortDir, statsMap])
 
   const availableCount = allPlayers.filter(p => !rosteredIds.has(p.sleeper_id)).length
 
@@ -275,7 +262,7 @@ export default function FreeAgentsPage() {
                     <th className="fa-th"><SortHeader colKey="fantasy_pts" label="PTS" title="Season Fantasy Points" /></th>
                     <th className="fa-th"><SortHeader colKey="pts_pg" label="PTS/G" title="Fantasy Points Per Game" /></th>
                     <th className="fa-th"><SortHeader colKey="pos_rank" label="POS RK" title="Position Rank by PTS/G" /></th>
-                    <th className="fa-th"><SortHeader colKey="pct_owned" label={ownershipMode === 'adp' ? 'ADP RK' : '% OWN'} title="% Owned" /></th>
+
                     <th className="fa-th">BYE</th>
                     <th className="fa-th">OPP</th>
                     <th className="fa-th">OPP RNK</th>
@@ -288,76 +275,8 @@ export default function FreeAgentsPage() {
                     const isRostered = rosteredIds.has(p.sleeper_id)
                     const onWl       = watchlist.has(p.sleeper_id)
                     const st         = statsMap[p.sleeper_id]
-                    const rawOwn = ownershipMap[p.sleeper_id]
-                    const pctOwned = rawOwn != null
-                      ? ownershipMode === 'adp'
-                        ? `#${rawOwn}`
-                        : `${parseFloat(rawOwn).toFixed(1)}%`
-                      : '—'
-                    const injColor   = p.injury_status ? INJ_COLOR[p.injury_status] || '#888' : null
-
                     return (
-                      <tr key={p.sleeper_id} className={`fa-row ${isRostered ? 'fa-row--rostered' : ''}`}>
-
-                        {/* Player: headshot + name + injury status under name */}
-                        <td className="fa-td fa-td-player">
-                          <div className="fa-player-cell">
-                            <img src={headshotUrl(p.sleeper_id)} alt={p.full_name}
-                              className="fa-headshot" loading="lazy"
-                              onError={e => e.target.style.opacity = 0} />
-                            <div className="fa-player-info">
-                              <PlayerLink playerId={p.sleeper_id} className="fa-pname">
-                                {p.full_name}
-                              </PlayerLink>
-                              {/* Injury status under name — replaces college, clickable for history */}
-                              {p.injury_status ? (
-                                <span
-                                  className="fa-inj-sub"
-                                  style={{ color: injColor || '#888', cursor: 'pointer', textDecoration: 'underline' }}
-                                  onClick={e => { e.preventDefault(); e.stopPropagation(); setNewsModal({ sleeperId: p.sleeper_id, name: p.full_name, tab: 'health' }) }}
-                                  title="Click for injury history"
-                                >
-                                  {p.injury_status === 'Q' ? 'Questionable'
-                                    : p.injury_status === 'D' ? 'Doubtful'
-                                    : p.injury_status === 'O' ? 'Out'
-                                    : p.injury_status === 'IR' ? 'Injured Reserve'
-                                    : p.injury_status === 'PUP' ? 'PUP List'
-                                    : p.injury_status}
-                                </span>
-                              ) : isRostered ? (
-                                <span className="fa-rostered-sub">Rostered</span>
-                              ) : null}
-                              {transNewsIds.has(p.sleeper_id) && (
-                                <span
-                                  className="fa-news-icon"
-                                  onClick={e => { e.preventDefault(); e.stopPropagation(); setNewsModal({ sleeperId: p.sleeper_id, name: p.full_name, tab: 'transaction' }) }}
-                                  title="Recent transaction news"
-                                >📰</span>
-                              )}
-                            </div>
-                          </div>
-                        </td>
-
-                        <td className="fa-td fa-td-center">
-                          {p.nfl_team
-                            ? <span className="fa-nfl-team">{p.nfl_team}</span>
-                            : <span className="fa-no-team">FA</span>}
-                        </td>
-                        <td className="fa-td fa-td-center" style={{ color: POS_COLOR[p.position], fontWeight: 700 }}>
-                          {p.position}
-                        </td>
-                        <td className="fa-td fa-td-center fa-stat">{p.age || '—'}</td>
-                        <td className="fa-td fa-td-center fa-stat">
-                          {p.years_exp === 0 ? <span className="fa-rookie">R</span> : p.years_exp != null ? `${p.years_exp}yr` : '—'}
-                        </td>
-                        <td className="fa-td fa-td-center fa-stat fa-pts">{st ? fmt1(st.fantasy_pts) : '—'}</td>
-                        <td className="fa-td fa-td-center fa-stat fa-pts">{st ? fmt1(st.pts_pg) : '—'}</td>
-                        <td className="fa-td fa-td-center fa-stat">
-                          {st?.pos_rank ? <span className="fa-pos-rank">{p.position}{st.pos_rank}</span> : '—'}
-                        </td>
-                        <td className="fa-td fa-td-center fa-stat">
-                          {pctOwned}
-                        </td>
+                      <tr key={p.sleeper_id} className={`fa-row${isRostered?' fa-row--rostered':''}`}>
                         <td className="fa-td fa-td-center fa-stat">{p.bye_week || '—'}</td>
                         <td className="fa-td fa-td-center fa-stat fa-opp">
                           <DefenseRankBadge
