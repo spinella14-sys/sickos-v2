@@ -118,6 +118,8 @@ export default function FreeAgentsPage() {
         setOwnershipMode(mode)
         setOwnershipMap(map)
       })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     fetch(`${API_BASE}/contracts?season=${CURRENT_SEASON}`)
@@ -286,11 +288,12 @@ export default function FreeAgentsPage() {
                     const isRostered = rosteredIds.has(p.sleeper_id)
                     const onWl       = watchlist.has(p.sleeper_id)
                     const st         = statsMap[p.sleeper_id]
-                    const pctOwned   = {ownershipMap[p.sleeper_id]
-                    ? ownershipMode === 'adp'
-                      ? `#${ownershipMap[p.sleeper_id]}`
-                      : `${ownershipMap[p.sleeper_id].toFixed(1)}%`
-                    : '—'}
+                    const rawOwn = ownershipMap[p.sleeper_id]
+                    const pctOwned = rawOwn != null
+                      ? ownershipMode === 'adp'
+                        ? `#${rawOwn}`
+                        : `${parseFloat(rawOwn).toFixed(1)}%`
+                      : '—'
                     const injColor   = p.injury_status ? INJ_COLOR[p.injury_status] || '#888' : null
 
                     return (
@@ -353,7 +356,7 @@ export default function FreeAgentsPage() {
                           {st?.pos_rank ? <span className="fa-pos-rank">{p.position}{st.pos_rank}</span> : '—'}
                         </td>
                         <td className="fa-td fa-td-center fa-stat">
-                          {pctOwned != null ? `${pctOwned}%` : '—'}
+                          {pctOwned}
                         </td>
                         <td className="fa-td fa-td-center fa-stat">{p.bye_week || '—'}</td>
                         <td className="fa-td fa-td-center fa-stat fa-opp">
