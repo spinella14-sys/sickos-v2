@@ -711,6 +711,7 @@ export default function DashboardPage() {
           {mode === 'offseason' && (<>
 
             {/* CAP SUMMARY */}
+            <WidgetCard title="Salary Cap" preview={`$${totalCapHit.toFixed(2)} used · $${(consts.hardCap - totalCapHit).toFixed(2)} space`} colors={colors} gridClass="dash-cap-card">
             <GlassCard className="dash-cap-card" colors={colors}>
               <WidgetLabel colors={colors}>Salary Cap</WidgetLabel>
               <div className="dash-cap-main">
@@ -756,8 +757,10 @@ export default function DashboardPage() {
                 </div>
               </div>
             </GlassCard>
+            </WidgetCard>
 
             {/* SB BUDGET — declining balance view */}
+            <WidgetCard title="Signing Bonus" preview={sbData ? `$${sbData.balance?.toFixed(2)} remaining` : '—'} colors={colors} accent="var(--green)" gridClass="dash-sb-card">
             <GlassCard className="dash-sb-card" colors={colors} accent="var(--green)">
               <WidgetLabel colors={colors}>Signing Bonus Budget</WidgetLabel>
               <div className="dash-sb-big" style={{color:'var(--green)'}}>
@@ -785,8 +788,10 @@ export default function DashboardPage() {
                 </div>
               )}
             </GlassCard>
+            </WidgetCard>
 
             {/* ROSTER OVERVIEW */}
+            <WidgetCard title="Roster" preview={`${roster.length} rostered · ${injured.filter(r=>['Out','IR','PUP'].includes(r.players?.injury_status)).length} injured`} colors={colors} gridClass="dash-roster-card">
             <GlassCard className="dash-roster-card" colors={colors}>
               <WidgetLabel colors={colors}>Roster ({roster.length})</WidgetLabel>
               <div className="dash-roster-scroll">
@@ -829,9 +834,11 @@ export default function DashboardPage() {
                 Manage Roster →
               </Link>
             </GlassCard>
+            </WidgetCard>
 
             {/* INJURIES */}
             {injured.length > 0 && (
+              <WidgetCard title="Injuries" preview={`${injured.length} player${injured.length>1?'s':''} injured`} colors={colors} accent="var(--red)" gridClass="dash-injury-card">
               <GlassCard className="dash-injury-card" colors={colors} accent="var(--red)">
                 <WidgetLabel colors={colors}>⚠ Injuries ({injured.length})</WidgetLabel>
                 {injured.map(r=>(
@@ -848,10 +855,12 @@ export default function DashboardPage() {
                   </Link>
                 ))}
               </GlassCard>
+              </WidgetCard>
             )}
 
             {/* DEAD CAP */}
             {deadCapCurrentSeason.length > 0 && (
+              <WidgetCard title="Dead Cap" preview={`$${deadCapCurrentSeason.reduce((s,d)=>s+parseFloat(d.amount||0),0).toFixed(2)} total`} colors={colors} accent="var(--red)" gridClass="dash-dc-card">
               <GlassCard className="dash-dc-card" colors={colors} accent="var(--red)">
                 <WidgetLabel colors={colors}>Dead Cap</WidgetLabel>
                 {deadCapCurrentSeason.map(d=>(
@@ -867,9 +876,15 @@ export default function DashboardPage() {
                   </span>
                 </div>
               </GlassCard>
+              </WidgetCard>
             )}
 
             {/* STANDINGS WIDGET */}
+            <WidgetCard
+              title="Standings"
+              preview={(() => { const me = standings.find(s=>s.abbrev===abbrev); return me ? `${me.div_rank||'—'} in ${me.division||'—'} · ${me.wins}-${me.losses}` : 'Loading…' })()}
+              colors={colors} gridClass="dash-standings-card"
+            >
             <GlassCard className="dash-standings-card" colors={colors}>
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
                 <WidgetLabel colors={colors}>Standings</WidgetLabel>
@@ -901,49 +916,45 @@ export default function DashboardPage() {
                 Full Standings →
               </Link>
             </GlassCard>
-
-            {/* DRAFT COUNTDOWN */}
-            <GlassCard className="dash-draft-card" colors={colors}>
-              <WidgetLabel colors={colors}>Rookie Draft</WidgetLabel>
-              <div className="dash-draft-year">{CURRENT_SEASON}</div>
-              <div className="dash-draft-sub">Approaching — Mid-July</div>
-              <Link to="/draft" className="dash-draft-cta" style={{
-                borderColor: colors?.primary||'var(--orange)',
-                color: colors?.primary||'var(--orange)',
-              }}>Draft Board →</Link>
-            </GlassCard>
-
-            {/* STANDINGS WIDGET */}
-
-
-            {/* NEWS TICKER */}
-            <GlassCard className="dash-news-card" colors={colors}>
-              <WidgetLabel colors={colors}>League News</WidgetLabel>
-              <NewsTickerWidget limit={6} />
-            </GlassCard>
+            </WidgetCard>
 
             {/* INBOX */}
-            <InboxWidget abbrev={abbrev} colors={colors} navigate={navigate} onUnreadCount={setDashUnread}/>
+            <WidgetCard
+              title="Inbox"
+              preview={dashUnread > 0 ? `${dashUnread} unread message${dashUnread>1?'s':''}` : 'No new messages'}
+              colors={colors}
+              accent={dashUnread > 0 ? 'var(--orange)' : undefined}
+              gridClass="dash-inbox-card"
+            >
+              <InboxWidget abbrev={abbrev} colors={colors} navigate={navigate} onUnreadCount={setDashUnread}/>
+            </WidgetCard>
 
             {/* CALENDAR */}
-            <GlassCard className="dash-cal-card" colors={colors}>
-              <CalendarWidget colors={colors}/>
-            </GlassCard>
+            <WidgetCard title="Calendar" preview="Upcoming events" colors={colors} gridClass="dash-cal-card">
+              <GlassCard className="dash-cal-card" colors={colors}>
+                <CalendarWidget colors={colors}/>
+              </GlassCard>
+            </WidgetCard>
 
             {/* TRADE BLOCK */}
-            <GlassCard className="dash-tb-card" colors={colors}>
-              <TradeBlockWidget colors={colors}/>
-            </GlassCard>
+            <WidgetCard title="Trade Block" preview="View available players" colors={colors} gridClass="dash-tb-card">
+              <GlassCard className="dash-tb-card" colors={colors}>
+                <TradeBlockWidget colors={colors}/>
+              </GlassCard>
+            </WidgetCard>
 
           </>)}
 
           {/* ── REGULAR SEASON LAYOUT ── */}
           {mode === 'regular' && (<>
 
-            {/* LIVE MATCHUP WIDGET */}
-            <MatchupWidget matchup={matchup} mLoading={mLoading} abbrev={abbrev} colors={colors} />
+            {/* LIVE MATCHUP WIDGET — always expanded, 2x2 */}
+            <div className="dash-matchup-featured">
+              <MatchupWidget matchup={matchup} mLoading={mLoading} abbrev={abbrev} colors={colors} />
+            </div>
 
             {/* CAP SUMMARY compact */}
+            <WidgetCard title="Salary Cap" preview={`$${capRemaining.toFixed(2)} remaining`} colors={colors} gridClass="dash-cap-compact">
             <GlassCard className="dash-cap-compact" colors={colors}>
               <WidgetLabel colors={colors}>Cap</WidgetLabel>
               <div className="dash-cap-compact-num" style={{color:isOverCap?'var(--red)':colors?.primary||'var(--orange)'}}>
@@ -960,8 +971,10 @@ export default function DashboardPage() {
                 Cap Sheet →
               </Link>
             </GlassCard>
+            </WidgetCard>
 
             {/* LINEUP */}
+            <WidgetCard title="Active Roster" preview={`${active.length} active · ${injured.filter(r=>['Out','IR','PUP'].includes(r.players?.injury_status)).length} injured`} colors={colors} gridClass="dash-lineup-card" accent={injured.length > 0 ? 'var(--red)' : undefined}>
             <GlassCard className="dash-lineup-card" colors={colors}>
               <WidgetLabel colors={colors}>Active Lineup ({active.length})</WidgetLabel>
               <div className="dash-roster-scroll">
@@ -983,9 +996,11 @@ export default function DashboardPage() {
                 Full Roster →
               </Link>
             </GlassCard>
+            </WidgetCard>
 
             {/* INJURIES */}
             {injured.length > 0 ? (
+              <WidgetCard title="Injuries" preview={`${injured.length} player${injured.length>1?'s':''} injured`} colors={colors} accent="var(--red)" gridClass="dash-injury-card">
               <GlassCard className="dash-injury-card" colors={colors} accent="var(--red)">
                 <WidgetLabel colors={colors}>⚠ Injuries ({injured.length})</WidgetLabel>
                 {injured.map(r=>(
@@ -1002,15 +1017,19 @@ export default function DashboardPage() {
                   </Link>
                 ))}
               </GlassCard>
+              </WidgetCard>
             ) : (
+              <WidgetCard title="Injuries" preview="✓ All Clear" colors={colors} accent="var(--green)" gridClass="dash-injury-card">
               <GlassCard className="dash-injury-card" colors={colors} accent="var(--green)">
                 <WidgetLabel colors={colors}>Injuries</WidgetLabel>
                 <div className="dash-all-clear">✓ All Clear</div>
                 <div className="dash-all-clear-sub">No injury flags on your roster</div>
               </GlassCard>
+              </WidgetCard>
             )}
 
-            {/* SB BUDGET — declining balance, compact */}
+            {/* SB BUDGET */}
+            <WidgetCard title="Signing Bonus" preview={sbData ? `$${sbData.balance?.toFixed(2)} remaining` : '—'} colors={colors} accent="var(--green)" gridClass="dash-sb-card">
             <GlassCard className="dash-sb-card" colors={colors} accent="var(--green)">
               <WidgetLabel colors={colors}>Signing Bonus</WidgetLabel>
               <div className="dash-sb-big" style={{color:'var(--green)'}}>
@@ -1025,8 +1044,14 @@ export default function DashboardPage() {
                 </div>
               )}
             </GlassCard>
+            </WidgetCard>
 
             {/* STANDINGS WIDGET */}
+            <WidgetCard
+              title="Standings"
+              preview={(() => { const me = standings.find(s=>s.abbrev===abbrev); return me ? `${me.div_rank||'—'} in ${me.division||'—'} · ${me.wins}-${me.losses}` : 'Loading…' })()}
+              colors={colors} gridClass="dash-standings-card"
+            >
             <GlassCard className="dash-standings-card" colors={colors}>
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
                 <WidgetLabel colors={colors}>Standings</WidgetLabel>
@@ -1058,25 +1083,32 @@ export default function DashboardPage() {
                 Full Standings →
               </Link>
             </GlassCard>
-
-            {/* NEWS TICKER */}
-            <GlassCard className="dash-news-card" colors={colors}>
-              <WidgetLabel colors={colors}>League News</WidgetLabel>
-              <NewsTickerWidget limit={6} />
-            </GlassCard>
+            </WidgetCard>
 
             {/* INBOX */}
-            <InboxWidget abbrev={abbrev} colors={colors} navigate={navigate} onUnreadCount={setDashUnread}/>
+            <WidgetCard
+              title="Inbox"
+              preview={dashUnread > 0 ? `${dashUnread} unread message${dashUnread>1?'s':''}` : 'No new messages'}
+              colors={colors}
+              accent={dashUnread > 0 ? 'var(--orange)' : undefined}
+              gridClass="dash-inbox-card"
+            >
+              <InboxWidget abbrev={abbrev} colors={colors} navigate={navigate} onUnreadCount={setDashUnread}/>
+            </WidgetCard>
 
             {/* CALENDAR */}
-            <GlassCard className="dash-cal-card" colors={colors}>
-              <CalendarWidget colors={colors}/>
-            </GlassCard>
+            <WidgetCard title="Calendar" preview="Upcoming events" colors={colors} gridClass="dash-cal-card">
+              <GlassCard className="dash-cal-card" colors={colors}>
+                <CalendarWidget colors={colors}/>
+              </GlassCard>
+            </WidgetCard>
 
             {/* TRADE BLOCK */}
-            <GlassCard className="dash-tb-card" colors={colors}>
-              <TradeBlockWidget colors={colors}/>
-            </GlassCard>
+            <WidgetCard title="Trade Block" preview="View available players" colors={colors} gridClass="dash-tb-card">
+              <GlassCard className="dash-tb-card" colors={colors}>
+                <TradeBlockWidget colors={colors}/>
+              </GlassCard>
+            </WidgetCard>
 
           </>)}
 
