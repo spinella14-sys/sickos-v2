@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import ReactDOM from 'react-dom'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useTeamColors } from '../hooks/useTeamColors'
@@ -463,7 +464,7 @@ function DashboardModal({ title, onClose, children }) {
     document.body.style.overflow = 'hidden'
     return () => { document.body.style.overflow = '' }
   }, [])
-  return (
+  return ReactDOM.createPortal(
     <div className="dm-backdrop" onClick={onClose}>
       <div className="dm-panel" onClick={e => e.stopPropagation()}>
         <div className="dm-header">
@@ -473,7 +474,8 @@ function DashboardModal({ title, onClose, children }) {
         <div className="dm-body">{children}</div>
         <button className="dm-close-bottom" onClick={onClose}>Close</button>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
