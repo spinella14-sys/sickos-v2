@@ -720,3 +720,17 @@
   .dm-close-bottom { display: block; }
   .dm-close-top { display: none; }
 }
+
+
+/* Force 4-column grid override */
+.dash-canvas--offseason,
+.dash-canvas--regular {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  grid-auto-rows: auto !important;
+  gap: 12px !important;
+  align-items: start !important;
+  columns: unset !important;
+  column-count: unset !important;
+  flex-direction: unset !important;
+}

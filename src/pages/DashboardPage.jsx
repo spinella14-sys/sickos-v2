@@ -98,7 +98,7 @@ function Shortcut({ to, emoji, label, colors }) {
 }
 
 // ─── Glass card wrapper ───────────────────────────────────────────────────────
-function GlassCard({ children, className='', style={}, colors, accent }) {
+function GlassCard({ children, className='', style={}, colors, accent, ...rest }) {
   return (
     <div className={`dash-glass ${className}`} style={{
       '--gc-primary': colors?.primary || 'rgba(255,255,255,0.08)',
@@ -106,7 +106,7 @@ function GlassCard({ children, className='', style={}, colors, accent }) {
       '--gc-border':  colors?.border  || 'rgba(255,255,255,0.1)',
       borderTopColor: accent || colors?.primary || 'rgba(255,255,255,0.15)',
       ...style,
-    }}>
+    }} {...rest}>
       {children}
     </div>
   )
@@ -949,7 +949,7 @@ export default function DashboardPage() {
           {mode === 'regular' && (<>
 
             {/* LIVE MATCHUP WIDGET — always expanded, 2x2 */}
-            <div className="dash-matchup-featured">
+            <div className="dash-matchup-featured" style={{gridColumn:'span 2', gridRow:'span 2'}}>
               <MatchupWidget matchup={matchup} mLoading={mLoading} abbrev={abbrev} colors={colors} />
             </div>
 
