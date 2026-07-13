@@ -456,60 +456,75 @@ function StandingsWidget({ standings, myAbbrev, view, setView, loaded, colors })
   )
 }
 
+// ── Dashboard Modal ───────────────────────────────────────────────────────────
+// Full-screen on mobile, centered panel on desktop. Close on backdrop click.
+function DashboardModal({ title, onClose, children }) {
+  React.useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = '' }
+  }, [])
+  return (
+    <div className="dm-backdrop" onClick={onClose}>
+      <div className="dm-panel" onClick={e => e.stopPropagation()}>
+        <div className="dm-header">
+          <span className="dm-title">{title}</span>
+          <button className="dm-close-top" onClick={onClose}>✕</button>
+        </div>
+        <div className="dm-body">{children}</div>
+        <button className="dm-close-bottom" onClick={onClose}>Close</button>
+      </div>
+    </div>
+  )
+}
+
+// ── Widget Card ────────────────────────────────────────────────────────────────
+// Collapsed by default showing just title + preview line.
+// Click opens a modal with the full widget content.
+// alwaysExpanded skips the collapse entirely (used for Matchup in regular season).
+function WidgetCard({ title, preview, children, colors, accent, className='', alwaysExpanded=false, gridClass='' }) {
+  const [open, setOpen] = React.useState(false)
+
+  if (alwaysExpanded) {
+    return (
+      <GlassCard className={`${className} ${gridClass}`} colors={colors} accent={accent}>
+        {children}
+      </GlassCard>
+    )
+  }
+
+  return (
+    <>
+      <GlassCard
+        className={`dash-wc ${className} ${gridClass}`}
+        colors={colors}
+        accent={accent}
+        style={{ cursor: 'pointer' }}
+        onClick={() => setOpen(true)}
+      >
+        <div className="dash-wc-title">{title}</div>
+        <div className="dash-wc-preview">{preview || '—'}</div>
+        <div className="dash-wc-expand">↗</div>
+      </GlassCard>
+      {open && (
+        <DashboardModal title={title} onClose={() => setOpen(false)}>
+          {children}
+        </DashboardModal>
+      )}
+    </>
+  )
+}
+
 // ── Alert Bar ─────────────────────────────────────────────────────────────────
 // Shows only when there are actionable items needing the manager's attention.
 function AlertBar({ roster, unread, pendingTrades, currentWeek, isOffseason }) {
   const alerts = []
 
-  // Injured players (entire roster)
-  const injured = (roster || []).filter(r => {
-    const status = r.players?.injury_status
-    return status && ['Out', 'IR', 'PUP'].includes(status)
-  })
-  injured.forEach(r => {
-    const name = r.players?.full_name || 'Player'
-    const status = r.players?.injury_status
-    alerts.push({ type: 'red', icon: '🚨', text: `${name} is ${status}` })
-  })
-
-  // Questionable/Doubtful starters only
-  const starters = (roster || []).filter(r =>
-    (r.roster_slots?.[0]?.slot_type || 'active') === 'active'
-  )
-  const questionable = starters.filter(r => {
-    const status = r.players?.injury_status
-    return status && ['Questionable', 'Doubtful', 'Q', 'D'].includes(status)
-  })
-  questionable.forEach(r => {
-    const name = r.players?.full_name || 'Player'
-    const status = r.players?.injury_status
-    alerts.push({ type: 'gold', icon: '⚠️', text: `${name} is ${status} (starter)` })
-  })
-
-  // Bye week starters (regular season only)
-  if (!isOffseason && currentWeek) {
-    const onBye = starters.filter(r => r.players?.bye_week === currentWeek)
-    onBye.forEach(r => {
-      const name = r.players?.full_name || 'Player'
-      alerts.push({ type: 'gold', icon: '💤', text: `${name} on BYE (starter)` })
-    })
-  }
-
-  // Pending trades
+  // Trade proposals only — injuries moved to Injuries widget
   if (pendingTrades > 0) {
     alerts.push({
       type: 'orange', icon: '🔄',
       text: `${pendingTrades} trade offer${pendingTrades > 1 ? 's' : ''} need${pendingTrades === 1 ? 's' : ''} your response`,
       link: '/trade?tab=history',
-    })
-  }
-
-  // Unread messages
-  if (unread > 0) {
-    alerts.push({
-      type: 'blue', icon: '💬',
-      text: `${unread} unread message${unread > 1 ? 's' : ''}`,
-      link: '/inbox',
     })
   }
 
