@@ -302,6 +302,13 @@ export default function FreeAgentsPage() {
                             </button>
                           </div>
                         </td>
+                        <td className="fa-td fa-td-center">{p.nfl_team || '—'}</td>
+                        <td className="fa-td fa-td-center">{p.position || '—'}</td>
+                        <td className="fa-td fa-td-center fa-stat">{p.age || '—'}</td>
+                        <td className="fa-td fa-td-center fa-stat">{p.years_exp != null ? p.years_exp : '—'}</td>
+                        <td className="fa-td fa-td-center fa-stat">{st?.fantasy_pts > 0 ? st.fantasy_pts.toFixed(1) : '—'}</td>
+                        <td className="fa-td fa-td-center fa-stat">{st?.pts_pg > 0 ? st.pts_pg.toFixed(1) : '—'}</td>
+                        <td className="fa-td fa-td-center fa-stat">{st?.pos_rank || '—'}</td>
                         <td className="fa-td fa-td-center fa-stat">{p.bye_week || '—'}</td>
                         <td className="fa-td fa-td-center fa-stat fa-opp">
                           <DefenseRankBadge
