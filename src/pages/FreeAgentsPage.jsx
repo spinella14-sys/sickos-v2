@@ -277,6 +277,31 @@ export default function FreeAgentsPage() {
                     const st         = statsMap[p.sleeper_id]
                     return (
                       <tr key={p.sleeper_id} className={`fa-row${isRostered?' fa-row--rostered':''}`}>
+                        <td className="fa-td fa-td-player">
+                          <div className="fa-player-cell">
+                            <img
+                              src={`https://sleepercdn.com/content/nfl/players/thumb/${p.sleeper_id}.jpg`}
+                              alt="" className="fa-headshot"
+                              onError={e => e.target.style.opacity = 0}
+                            />
+                            <div className="fa-player-info">
+                              <div className="fa-player-name">{p.full_name || '—'}</div>
+                              <div className="fa-player-meta">
+                                <span style={{color: p.position==='QB'?'#e8822a':p.position==='RB'?'#3dba6e':p.position==='WR'?'#3a9fd4':'#d4a843', fontWeight:800, fontSize:10}}>
+                                  {p.position}
+                                </span>
+                                {p.nfl_team && <span style={{color:'var(--text-muted)',fontSize:10}}> · {p.nfl_team}</span>}
+                              </div>
+                            </div>
+                            <button
+                              className="fa-wl-btn"
+                              onClick={() => toggleWatchlist(p.sleeper_id)}
+                              title={onWl ? 'Remove from watchlist' : 'Add to watchlist'}
+                            >
+                              {onWl ? '★' : '☆'}
+                            </button>
+                          </div>
+                        </td>
                         <td className="fa-td fa-td-center fa-stat">{p.bye_week || '—'}</td>
                         <td className="fa-td fa-td-center fa-stat fa-opp">
                           <DefenseRankBadge
