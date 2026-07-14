@@ -285,7 +285,9 @@ export default function FreeAgentsPage() {
                               onError={e => e.target.style.opacity = 0}
                             />
                             <div className="fa-player-info">
-                              <div className="fa-player-name">{p.full_name || '—'}</div>
+                              <PlayerLink playerId={p.sleeper_id} onClick={e => e.stopPropagation()} style={{textDecoration:'none',color:'inherit'}}>
+                                {p.full_name || '—'}
+                              </PlayerLink>
                               <div className="fa-player-meta">
                                 <span style={{color: p.position==='QB'?'#e8822a':p.position==='RB'?'#3dba6e':p.position==='WR'?'#3a9fd4':'#d4a843', fontWeight:800, fontSize:10}}>
                                   {p.position}
