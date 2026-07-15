@@ -1,0 +1,265 @@
+.wire-root {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 28px 20px 80px;
+}
+
+.wire-header { margin-bottom: 20px; }
+.wire-title {
+  font-family: var(--font-display);
+  font-size: 42px;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+  line-height: 1;
+}
+.wire-sub {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ── Filters ── */
+.wire-filters {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 14px 16px;
+  background: var(--bg1);
+  border: 1px solid var(--border-bright);
+  border-radius: 6px;
+  margin-bottom: 24px;
+}
+.wire-filter-select {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  padding: 6px 10px;
+  border: 1px solid var(--border-bright);
+  background: var(--bg1);
+  color: var(--text-primary);
+  border-radius: 4px;
+}
+.wire-type-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.wire-chip {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border: 1px solid var(--border-bright);
+  border-radius: 20px;
+  background: var(--bg1);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.wire-chip.active { background: var(--bg2); font-weight: 800; }
+.wire-chip:hover { border-color: var(--orange); }
+
+.wire-date-range {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.wire-date-range input[type="date"] {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  padding: 5px 8px;
+  border: 1px solid var(--border-bright);
+  background: var(--bg1);
+  color: var(--text-primary);
+  border-radius: 4px;
+}
+
+.wire-reset-btn {
+  margin-left: auto;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 6px 12px;
+  border: 1px solid var(--border-bright);
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 4px;
+  cursor: pointer;
+}
+.wire-reset-btn:hover { color: var(--red); border-color: var(--red); }
+
+/* ── Feed / spine ── */
+.wire-empty {
+  text-align: center;
+  padding: 60px 0;
+  font-family: var(--font-ui);
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.wire-spine {
+  position: relative;
+  padding-left: 22px;
+}
+.wire-spine::before {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: var(--border-bright);
+}
+
+.wire-tick {
+  position: relative;
+  display: flex;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.wire-tick-dot {
+  position: absolute;
+  left: -22px;
+  top: 20px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px var(--bg0);
+}
+.wire-tick-content { flex: 1; min-width: 0; }
+.wire-tick-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.wire-type-badge {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border: 1px solid;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.wire-tick-date {
+  font-family: var(--font-accent);
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+.wire-tick-notes {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-style: italic;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+.wire-tick-assets { display: flex; flex-direction: column; gap: 10px; }
+
+/* ── Asset lines ── */
+.wire-asset-line { padding: 4px 0; }
+.wire-asset-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  flex-wrap: wrap;
+}
+.wire-player-link {
+  font-weight: 700;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.wire-player-link:hover { color: var(--orange); }
+.wire-player-unlinked { color: var(--text-muted); font-style: italic; cursor: default; }
+.wire-pos {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--text-muted);
+  background: var(--bg2);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+.wire-arrow { color: var(--text-muted); font-size: 12px; }
+.wire-team-name { font-size: 13px; color: var(--text-secondary); font-weight: 600; }
+.wire-pick { font-weight: 700; color: var(--text-primary); }
+
+/* ── Contract year breakdown ── */
+.wire-contract { margin-top: 6px; padding-left: 25px; }
+.wire-contract-years { display: flex; gap: 6px; flex-wrap: wrap; }
+.wire-contract-year {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-family: var(--font-accent);
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: var(--bg2);
+  border: 1px solid var(--border-bright);
+}
+.wire-contract-yr-label { color: var(--text-muted); font-weight: 700; }
+.wire-contract-yr-val { color: var(--text-primary); font-weight: 700; }
+.wire-contract-yr-flag {
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+.wire-flag-normal { }
+.wire-flag-ng { border-color: var(--purple); }
+.wire-flag-ng .wire-contract-yr-flag { background: var(--purple-dim); color: var(--purple); }
+.wire-flag-max { border-color: var(--gold); }
+.wire-flag-max .wire-contract-yr-flag { background: rgba(212,168,67,0.18); color: var(--gold); }
+
+.wire-contract-meta {
+  display: flex;
+  gap: 14px;
+  margin-top: 4px;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.wire-contract-meta strong { color: var(--text-secondary); }
+
+.wire-sb-tag {
+  margin-top: 3px;
+  padding-left: 25px;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* ── Draft bulletin card ── */
+.wire-bulletin {
+  position: relative;
+  margin: 18px 0 18px -22px;
+  border: 2px solid var(--text-primary);
+  border-radius: 6px;
+  background: var(--bg1);
+  overflow: hidden;
+}
+.wire-bulletin-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: var(--bg4);
+  font-family: var(--font-display);
+  letter-spacing: 0.03em;
+}
+.wire-bulletin-icon { font-size: 16px; }
+.wire-bulletin-title { flex: 1; font-size: 16px; color: var(--text-primary); }
+.wire-bulletin-date { font-family: var(--font-ui); font-size: 12px; color: var(--text-muted); }
+.wire-bulletin-body { padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
+
+@media (max-width: 640px) {
+  .wire-title { font-size: 32px; }
+  .wire-filters { flex-direction: column; align-items: stretch; }
+  .wire-reset-btn { margin-left: 0; }
+}

@@ -19,6 +19,28 @@ const TAX_LINE        = 120
 const PS_SALARY_LIMIT = 20
 
 const POS_COLOR = { QB:'#e8822a', RB:'#3dba6e', WR:'#3a9fd4', TE:'#d4a843', K:'#8a9bb0' }
+
+// ── Transactions tab description builder (new schema has no flat description) ──
+function describeTeamPageTx(t) {
+  const assets = t.assets || []
+  const first = assets[0]
+  const name = first?.player?.full_name || first?.player_id || 'player'
+  if (t.type === 'signing') {
+    const years = first?.contract_years ? Object.keys(first.contract_years).length : null
+    const total = first?.contract_years
+      ? Object.values(first.contract_years).reduce((s,y)=>s+(parseFloat(y.salary)||0),0)
+      : null
+    return `Signed ${name}${years ? ` · ${years}yr / $${total.toFixed(2)}` : ''}`
+  }
+  if (t.type === 'release') return `Released ${name}`
+  if (t.type === 'bid_lost') return `Lost bid on ${name}`
+  if (t.type === 'trade') {
+    const names = assets.filter(a=>a.player).map(a=>a.player?.full_name||a.player_id)
+    return names.length ? `Trade: ${names.join(', ')}` : 'Trade'
+  }
+  if (t.type === 'draft_batch') return t.notes || 'Draft results'
+  return (t.type||'').replace(/_/g,' ')
+}
 const INJ_COLOR = { Q:'#d4a843', D:'#d94f4f', O:'#d94f4f', IR:'#d94f4f', PUP:'#d94f4f' }
 
 const LINEUP_SLOTS = [
@@ -1213,39 +1235,42 @@ export default function TeamPage() {
             )}
             {!txLoading && transactions.length > 0 && (
               <div className="tp-tx-list">
-                {transactions.map((t,i) => (
+                {transactions.map((t,i) => {
+                  const players = (t.assets||[]).filter(a => a.player)
+                  const desc = describeTeamPageTx(t)
+                  return (
                   <div key={t.id||i} style={{
                     padding:'10px 14px', borderBottom:'1px solid var(--border)',
                     fontFamily:'var(--font-ui)',
                   }}>
-                    <div style={{display:'flex',alignItems:'center',gap:12,marginBottom: t.player_details?.length ? 6 : 0}}>
+                    <div style={{display:'flex',alignItems:'center',gap:12,marginBottom: players.length ? 6 : 0}}>
                       <span style={{
                         fontSize:9, fontWeight:800, letterSpacing:'0.06em', textTransform:'uppercase',
                         padding:'2px 7px', border:'1px solid var(--border-bright)', color:'var(--text-muted)',
                         whiteSpace:'nowrap', flexShrink:0,
                       }}>{(t.type||'').replace(/_/g,' ')}</span>
-                      <span style={{flex:1,fontSize:13,color:'var(--text-primary)'}}>{t.description}</span>
+                      <span style={{flex:1,fontSize:13,color:'var(--text-primary)'}}>{desc}</span>
                       <span style={{fontSize:11,color:'var(--text-muted)',whiteSpace:'nowrap'}}>
-                        {t.created_at ? new Date(t.created_at).toLocaleDateString() : ''}
+                        {t.transaction_date ? new Date(t.transaction_date).toLocaleDateString() : ''}
                       </span>
                     </div>
                     {/* Player cards for anyone mentioned in this transaction */}
-                    {t.player_details?.length > 0 && (
+                    {players.length > 0 && (
                       <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap',paddingLeft:4}}>
-                        {t.player_details.map(p => (
-                          <div key={p.sleeper_id} style={{display:'flex',alignItems:'center',gap:6}}>
+                        {players.map(a => (
+                          <div key={a.player.sleeper_id} style={{display:'flex',alignItems:'center',gap:6}}>
                             <img
-                              src={`https://sleepercdn.com/content/nfl/players/thumb/${p.sleeper_id}.jpg`}
+                              src={`https://sleepercdn.com/content/nfl/players/thumb/${a.player.sleeper_id}.jpg`}
                               alt=""
                               style={{width:24,height:24,objectFit:'cover',objectPosition:'top',borderRadius:3,background:'var(--bg3)'}}
                               onError={e=>e.target.style.opacity=0}
                             />
-                            <PlayerLink playerId={p.sleeper_id} style={{fontSize:12,fontWeight:600}}>
-                              {p.full_name || p.sleeper_id}
+                            <PlayerLink playerId={a.player.sleeper_id} style={{fontSize:12,fontWeight:600}}>
+                              {a.player.full_name || a.player.sleeper_id}
                             </PlayerLink>
-                            {p.position && (
-                              <span style={{fontSize:10,fontWeight:700,color:POS_COLOR[p.position]||'var(--text-muted)'}}>
-                                {p.position}
+                            {a.player.position && (
+                              <span style={{fontSize:10,fontWeight:700,color:POS_COLOR[a.player.position]||'var(--text-muted)'}}>
+                                {a.player.position}
                               </span>
                             )}
                           </div>
@@ -1253,7 +1278,7 @@ export default function TeamPage() {
                       </div>
                     )}
                   </div>
-                ))}
+                )})}
               </div>
             )}
           </div>
