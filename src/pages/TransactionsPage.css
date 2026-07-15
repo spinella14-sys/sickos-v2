@@ -1,5 +1,5 @@
 .wire-root {
-  max-width: 920px;
+  max-width: 1180px;
   margin: 0 auto;
   padding: 28px 20px 80px;
 }
@@ -92,7 +92,7 @@
 }
 .wire-reset-btn:hover { color: var(--red); border-color: var(--red); }
 
-/* ── Feed / spine ── */
+/* ── Empty / loading ── */
 .wire-empty {
   text-align: center;
   padding: 60px 0;
@@ -101,162 +101,80 @@
   font-size: 14px;
 }
 
-.wire-spine {
-  position: relative;
-  padding-left: 22px;
-}
-.wire-spine::before {
-  content: '';
-  position: absolute;
-  left: 5px;
-  top: 8px;
-  bottom: 8px;
-  width: 2px;
-  background: var(--border-bright);
-}
-
-.wire-tick {
-  position: relative;
-  display: flex;
-  gap: 14px;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--border);
-}
-.wire-tick-dot {
-  position: absolute;
-  left: -22px;
-  top: 20px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  box-shadow: 0 0 0 3px var(--bg0);
-}
-.wire-tick-content { flex: 1; min-width: 0; }
-.wire-tick-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
-.wire-type-badge {
+/* ── Table ── */
+.wire-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 6px; }
+.wire-table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+.wire-table thead tr { background: var(--bg2); }
+.wire-table th {
   font-family: var(--font-ui);
   font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-bright);
+  white-space: nowrap;
+}
+.wire-table th.th-total, .wire-table th.th-years, .wire-table th.th-sb, .wire-table th.th-year {
+  text-align: right;
+}
+
+.wire-row { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+.wire-row:hover { background: var(--bg2); }
+.wire-row td {
+  padding: 6px 10px;
+  vertical-align: middle;
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+.wire-subrow { background: var(--bg1); }
+.wire-subrow td { padding-top: 5px; padding-bottom: 5px; }
+
+.wire-td-date { color: var(--text-muted); font-family: var(--font-accent); font-size: 12px; width: 64px; }
+.wire-type-badge {
+  font-family: var(--font-ui);
+  font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  padding: 2px 8px;
+  padding: 2px 7px;
   border: 1px solid;
   border-radius: 3px;
-  flex-shrink: 0;
+  white-space: nowrap;
 }
-.wire-tick-date {
-  font-family: var(--font-accent);
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-left: auto;
-}
-.wire-tick-notes {
-  font-family: var(--font-body);
-  font-size: 12px;
-  font-style: italic;
-  color: var(--text-secondary);
-  margin-bottom: 6px;
-}
-.wire-tick-assets { display: flex; flex-direction: column; gap: 10px; }
+.wire-td-team { display: flex; align-items: center; gap: 6px; font-weight: 700; }
+.wire-td-team img { flex-shrink: 0; }
 
-/* ── Asset lines ── */
-.wire-asset-line { padding: 4px 0; }
-.wire-asset-head {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-family: var(--font-ui);
-  font-size: 14px;
-  flex-wrap: wrap;
-}
-.wire-player-link {
-  font-weight: 700;
-  color: var(--text-primary);
-  cursor: pointer;
-}
+.wire-player-link { font-weight: 700; color: var(--text-primary); cursor: pointer; }
 .wire-player-link:hover { color: var(--orange); }
-.wire-player-unlinked { color: var(--text-muted); font-style: italic; cursor: default; }
-.wire-pos {
-  font-size: 10px;
-  font-weight: 800;
-  color: var(--text-muted);
-  background: var(--bg2);
-  padding: 1px 5px;
-  border-radius: 3px;
-}
-.wire-arrow { color: var(--text-muted); font-size: 12px; }
-.wire-team-name { font-size: 13px; color: var(--text-secondary); font-weight: 600; }
+.wire-player-unlinked { color: var(--text-muted); font-style: italic; }
 .wire-pick { font-weight: 700; color: var(--text-primary); }
 
-/* ── Contract year breakdown ── */
-.wire-contract { margin-top: 6px; padding-left: 25px; }
-.wire-contract-years { display: flex; gap: 6px; flex-wrap: wrap; }
-.wire-contract-year {
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
-  font-family: var(--font-accent);
-  font-size: 12px;
-  padding: 3px 8px;
-  border-radius: 4px;
-  background: var(--bg2);
-  border: 1px solid var(--border-bright);
-}
-.wire-contract-yr-label { color: var(--text-muted); font-weight: 700; }
-.wire-contract-yr-val { color: var(--text-primary); font-weight: 700; }
-.wire-contract-yr-flag {
-  font-size: 8px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  padding: 1px 4px;
-  border-radius: 2px;
-}
-.wire-flag-normal { }
-.wire-flag-ng { border-color: var(--purple); }
-.wire-flag-ng .wire-contract-yr-flag { background: var(--purple-dim); color: var(--purple); }
-.wire-flag-max { border-color: var(--gold); }
-.wire-flag-max .wire-contract-yr-flag { background: rgba(212,168,67,0.18); color: var(--gold); }
+.wire-td-pos { color: var(--text-muted); font-weight: 700; font-size: 11px; }
+.wire-td-total { text-align: right; font-family: var(--font-display); font-weight: 700; color: var(--text-primary); }
+.wire-td-years { text-align: right; color: var(--text-muted); }
+.wire-td-sb { text-align: right; color: var(--text-secondary); }
 
-.wire-contract-meta {
-  display: flex;
-  gap: 14px;
-  margin-top: 4px;
+.wire-td-year { text-align: right; font-family: var(--font-accent); color: var(--text-primary); }
+.wire-year-empty { color: var(--border-bright); }
+.wire-year-ng { color: var(--purple); background: var(--purple-dim); }
+.wire-year-max { color: var(--gold); background: rgba(212,168,67,0.1); }
+
+/* ── Trade summary row ── */
+.wire-trade-summary { cursor: pointer; }
+.wire-trade-summary:hover { background: var(--bg2); }
+.wire-td-trade-summary {
   font-family: var(--font-ui);
-  font-size: 11px;
-  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
 }
-.wire-contract-meta strong { color: var(--text-secondary); }
-
-.wire-sb-tag {
-  margin-top: 3px;
-  padding-left: 25px;
-  font-family: var(--font-ui);
-  font-size: 11px;
-  font-weight: 700;
-}
-
-/* ── Draft bulletin card ── */
-.wire-bulletin {
-  position: relative;
-  margin: 18px 0 18px -22px;
-  border: 2px solid var(--text-primary);
-  border-radius: 6px;
-  background: var(--bg1);
-  overflow: hidden;
-}
-.wire-bulletin-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 16px;
-  background: var(--bg4);
-  font-family: var(--font-display);
-  letter-spacing: 0.03em;
-}
-.wire-bulletin-icon { font-size: 16px; }
-.wire-bulletin-title { flex: 1; font-size: 16px; color: var(--text-primary); }
-.wire-bulletin-date { font-family: var(--font-ui); font-size: 12px; color: var(--text-muted); }
-.wire-bulletin-body { padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
+.wire-trade-caret { display: inline-block; width: 14px; color: var(--text-muted); }
+.wire-trade-team { display: inline-flex; align-items: center; gap: 4px; font-weight: 700; margin-right: 2px; }
+.wire-trade-team img { vertical-align: middle; }
 
 @media (max-width: 640px) {
   .wire-title { font-size: 32px; }
