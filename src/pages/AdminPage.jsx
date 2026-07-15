@@ -16,7 +16,7 @@ export default function AdminPage() {
 
   async function handleAuth(e) {
     e.preventDefault()
-    if (password === 'brethart') { setAuthed(true); addLog('Authenticated as commissioner', 'success'); setBidsLoading(true); fetchBids({status:'pending'}).then(data => { setBids(data || []); setBidsLoading(false) }) }
+    if (password === 'Sickos26-Vault!Q7') { setAuthed(true); addLog('Authenticated as commissioner', 'success'); setBidsLoading(true); fetchBids({status:'pending'}).then(data => { setBids(data || []); setBidsLoading(false) }) }
     else addLog('Wrong password', 'error')
   }
 

@@ -135,7 +135,7 @@ export default function PendingTradesWidget() {
     setProcessing(p=>({...p,[tradeId]:action}))
     const r = await fetch(`${API}/trades/${tradeId}/process`, {
       method:'PATCH',
-      headers:{'Content-Type':'application/json','x-admin-password':'brethart'},
+      headers:{'Content-Type':'application/json','x-admin-password':'Sickos26-Vault!Q7'},
       body: JSON.stringify({ action })
     })
     if (r.ok) await loadTrades()

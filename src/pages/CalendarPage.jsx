@@ -57,7 +57,7 @@ function EventModal({ event, defaultDate, isAdmin, manager, onClose, onSave, onD
       headers: {
         'Content-Type':'application/json',
         'x-team-abbrev': manager.team_abbrev,
-        ...(isAdmin ? {'x-admin-password':'brethart'} : {}),
+        ...(isAdmin ? {'x-admin-password':'Sickos26-Vault!Q7'} : {}),
       },
       body: JSON.stringify(body),
     })
@@ -73,7 +73,7 @@ function EventModal({ event, defaultDate, isAdmin, manager, onClose, onSave, onD
       method:'DELETE',
       headers: {
         'x-team-abbrev': manager.team_abbrev,
-        ...(isAdmin ? {'x-admin-password':'brethart'} : {}),
+        ...(isAdmin ? {'x-admin-password':'Sickos26-Vault!Q7'} : {}),
       },
     })
     onDelete(event.id); onClose()
@@ -190,7 +190,7 @@ export default function CalendarPage() {
 
   const hdrs = useCallback(() => ({
     'x-team-abbrev': manager?.team_abbrev || '',
-    ...(isAdmin ? {'x-admin-password':'brethart'} : {}),
+    ...(isAdmin ? {'x-admin-password':'Sickos26-Vault!Q7'} : {}),
   }), [manager?.team_abbrev, isAdmin])
 
   const loadEvents = useCallback(async () => {

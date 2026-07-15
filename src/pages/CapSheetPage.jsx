@@ -6,7 +6,7 @@ import { headshotUrl } from '../hooks/useSleeper'
 import './CapSheetPage.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
-const ADMIN_PW = 'brethart'
+const ADMIN_PW = 'Sickos26-Vault!Q7'
 const CURRENT_SEASON = new Date().getFullYear()
 const YEARS = Array.from({length:6}, (_,i) => CURRENT_SEASON + i)
 

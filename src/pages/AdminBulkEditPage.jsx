@@ -3,7 +3,7 @@ import { TEAMS } from '../data/league'
 import './AdminBulkEditPage.css'
 
 const API_BASE  = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
-const ADMIN_PW  = 'brethart'
+const ADMIN_PW  = 'Sickos26-Vault!Q7'
 const CURRENT_SEASON = new Date().getFullYear()
 
 const POS_COLOR = { QB:'#e8822a', RB:'#3dba6e', WR:'#3a9fd4', TE:'#d4a843' }

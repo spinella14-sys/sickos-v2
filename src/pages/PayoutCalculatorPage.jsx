@@ -31,7 +31,7 @@ function PotCard({ title, total, rows, accent }) {
 export default function PayoutCalculatorPage() {
   const navigate  = useNavigate()
   const { isAdmin } = useAuth()
-  const adminPw   = 'brethart'
+  const adminPw   = 'Sickos26-Vault!Q7'
 
   const [data,        setData]        = useState(null)
   const [loading,     setLoading]     = useState(true)

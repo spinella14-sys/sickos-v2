@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom'
 import './AdminRosterPage.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
-const ADMIN_PW = 'brethart'
+const ADMIN_PW = 'Sickos26-Vault!Q7'
 
 const POS_COLOR = { QB:'#e8822a', RB:'#3dba6e', WR:'#3a9fd4', TE:'#d4a843', K:'#8a9bb0' }
 const STRUCTURES = ['minimum','flat','escalating','descending','max']

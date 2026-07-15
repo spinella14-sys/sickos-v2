@@ -77,7 +77,7 @@ export default function AdminRFAPage() {
     try {
       const [stateRes, poolRes, teamsRes] = await Promise.all([
         fetch(`${API}/api/rfa/state`),
-        fetch(`${API}/api/rfa/admin/pool?password=brethart`),
+        fetch(`${API}/api/rfa/admin/pool?password=Sickos26-Vault!Q7`),
         fetch(`${API}/api/teams`),
       ]);
       const [stateData, poolData, teamsData] = await Promise.all([
@@ -141,7 +141,7 @@ export default function AdminRFAPage() {
     try {
       const res = await fetch(`${API}/api/rfa/${endpoint}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: 'brethart', ...body }),
+        body: JSON.stringify({ password: 'Sickos26-Vault!Q7', ...body }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -155,7 +155,7 @@ export default function AdminRFAPage() {
     try {
       const res = await fetch(`${API}/api/rfa/admin/submit-bid`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: 'brethart', team: actingAs, ...bidData }),
+        body: JSON.stringify({ password: 'Sickos26-Vault!Q7', team: actingAs, ...bidData }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
