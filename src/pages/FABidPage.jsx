@@ -8,7 +8,19 @@ import './FABidPage.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
 
+function useSeasonMode() {
+  const [mode, setMode] = useState(null)
+  useEffect(() => {
+    fetch(`${API_BASE}/system/season-mode`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => setMode(d?.season_mode || null))
+      .catch(() => setMode(null))
+  }, [])
+  return mode
+}
+
 export default function FABidPage() {
+  const seasonMode = useSeasonMode()
   const [searchParams] = useSearchParams()
   const navigate       = useNavigate()
   const { manager }    = useAuth()
@@ -172,6 +184,17 @@ export default function FABidPage() {
           </div>
         )}
       </div>
+
+      {seasonMode && seasonMode !== 'regular_season' && (
+        <div style={{
+          margin: '0 0 20px', padding: '12px 16px',
+          border: '1px solid var(--red)', borderRadius: 6,
+          background: 'rgba(217,79,79,0.08)', color: 'var(--red)',
+          fontFamily: 'var(--font-ui)', fontSize: 13, fontWeight: 600,
+        }}>
+          Free agent bidding is closed for the offseason. It opens automatically once the RFA, Rookie, and UFA drafts have all completed.
+        </div>
+      )}
 
       {/* Player card */}
       {(preId || preName) && (
@@ -402,7 +425,7 @@ export default function FABidPage() {
           <button
             className="fab-submit"
             onClick={handleSubmit}
-            disabled={submitting || !preId || !salary || errors.length > 0}
+            disabled={submitting || !preId || !salary || errors.length > 0 || (seasonMode && seasonMode !== 'regular_season')}
           >
             {submitting ? 'Submitting…' : 'Submit Sealed Bid'}
           </button>
