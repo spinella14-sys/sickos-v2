@@ -1,6 +1,6 @@
 export default function RFAMyBids({
   myBids, matchWindows, wave, isWaveOpen,
-  currentTeam, getTeamName, getTeamLogo,
+  currentTeam, getTeamName, getTeamLogo, myTeamData,
   onRerank, onWithdraw, onMatch,
 }) {
   const handleMoveUp = (index) => {
@@ -43,6 +43,9 @@ export default function RFAMyBids({
         {matchWindows.map(player => {
           const offer = player.rfa_bids;
           if (!offer) return null;
+          const capShortfall = myTeamData ? +(offer.y1_salary - myTeamData.cap_space).toFixed(2) : null;
+          const sbShortfall = myTeamData ? +(offer.signing_bonus - (myTeamData.sb_budget_remaining ?? 0)).toFixed(2) : null;
+          const canAfford = capShortfall !== null && capShortfall <= 0 && sbShortfall <= 0;
           return (
             <div key={`match-${player.id}`} className="rfa-match-card">
               <div className="rfa-match-card__header">
@@ -56,6 +59,18 @@ export default function RFAMyBids({
                 {offer.signing_bonus > 0 && ` + $${offer.signing_bonus} SB`}<br />
                 <strong>Total guaranteed: ${offer.total_guaranteed}</strong>
               </div>
+              {myTeamData && (
+                <div style={{
+                  fontSize: 11, marginTop: 6, padding: '6px 8px', borderRadius: 4,
+                  background: canAfford ? 'rgba(90,200,120,0.1)' : 'rgba(232,69,69,0.1)',
+                  color: canAfford ? 'var(--draft-green, #5ac878)' : 'var(--draft-red)',
+                  fontWeight: 700,
+                }}>
+                  {canAfford
+                    ? '✓ You can currently afford to match this offer'
+                    : `Need ${capShortfall > 0 ? `$${capShortfall.toFixed(2)} more cap space` : ''}${capShortfall > 0 && sbShortfall > 0 ? ' and ' : ''}${sbShortfall > 0 ? `$${sbShortfall.toFixed(2)} more signing bonus budget` : ''} — updates automatically if you trade or release a player`}
+                </div>
+              )}
               <div className="rfa-match-card__actions">
                 <button
                   className="rfa-match-card__match"
