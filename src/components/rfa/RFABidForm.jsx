@@ -4,28 +4,21 @@ const CAP_YEAR = 120;
 const MAX_SALARY = 21.82;
 const QB_MAX = 26.67;
 const HARD_CAP = 138;
-const RFA_MINS = { 1: 13.33, 2: 8.00 };
+// The ONLY minimum in RFA is the Wave 1 tender floor. Waves 2+ have no fixed
+// dollar minimum at all — a bid just needs to beat the incumbent's current
+// best bid. (Wave-by-wave minimums / "must touch max" are a UFA-only
+// concept and do not apply here.)
+const RFA_TENDER_FLOOR = { 1: 12.00, 2: 8.00 }; // Round 1 = 10% of LTL, Round 2 = LTL/15
 
 function getWaveMin(wave, draftRound) {
-  switch (wave) {
-    case 1: return RFA_MINS[draftRound];
-    case 2: return null; // must touch max
-    case 3: return RFA_MINS[1] + 3; // 16.33
-    case 4: return RFA_MINS[1];     // 13.33
-    case 5: return RFA_MINS[2];     // 8.00
-    default: return RFA_MINS[2];
-  }
+  if (wave !== 1) return null;
+  return RFA_TENDER_FLOOR[draftRound];
 }
 
 function calcSalaries(y1) {
   const y2 = parseFloat((y1 * 1.1).toFixed(2));
   const y3 = parseFloat((y2 * 1.1).toFixed(2));
   return [y1, y2, y3];
-}
-
-function touchesMax(y1, y2, y3, isQB) {
-  const max = isQB ? QB_MAX : MAX_SALARY;
-  return y1 >= max || y2 >= max || y3 >= max;
 }
 
 export default function RFABidForm({
@@ -37,8 +30,10 @@ export default function RFABidForm({
   const waveMin = getWaveMin(wave, player.draft_round);
   const existingBid = myBids.find(b => b.player_id === player.id);
 
-  const [y1, setY1] = useState(existingBid?.y1_salary || waveMin || RFA_MINS[player.draft_round]);
-  const [guaranteedYears, setGuaranteedYears] = useState(existingBid?.guaranteed_years || 2);
+  const [y1, setY1] = useState(existingBid?.y1_salary || waveMin || RFA_TENDER_FLOOR[player.draft_round]);
+  // Wave 1 tenders are always fully guaranteed (3 years, no exceptions) —
+  // only Wave 2+ challengers get to choose 2 or 3 guaranteed years.
+  const [guaranteedYears, setGuaranteedYears] = useState(wave === 1 ? 3 : (existingBid?.guaranteed_years || 2));
   const [signingBonus, setSigningBonus] = useState(existingBid?.signing_bonus || 0);
   const [withdrawIfHigher, setWithdrawIfHigher] = useState(existingBid?.withdraw_if_higher_wins || false);
   const [conditionalOnCap, setConditionalOnCap] = useState(existingBid?.conditional_on_cap || false);
@@ -64,7 +59,6 @@ export default function RFABidForm({
     if (!y1Num || y1Num <= 0) return 'Please enter a Y1 salary';
     if (waveMin && y1Num < waveMin) return `Y1 salary must be at least $${waveMin} in Wave ${wave}`;
     if (y1Num > maxSal) return `Y1 salary cannot exceed the max ($${maxSal})`;
-    if (wave === 2 && !touchesMax(y1Num, y2, y3, isQB)) return `Wave 2 offers must touch the max ($${maxSal}) at some point`;
     if (wouldExceedHardCap) return `This offer would exceed the hard cap ($${HARD_CAP}). Hard cap can never be crossed.`;
     if (insufficientCap) return `Insufficient cap space. You have $${capSpace.toFixed(2)} available, offer requires $${y1Num.toFixed(2)}.`;
     if (signingBonus > (myTeamData?.sb_budget_remaining || 0)) return `Signing bonus exceeds your remaining budget ($${(myTeamData?.sb_budget_remaining || 0).toFixed(2)})`;
@@ -180,7 +174,7 @@ export default function RFABidForm({
               style={{ ...inputStyle, flex: 1, borderColor: validationError?.includes('Y1') || validationError?.includes('cap') ? '#E84545' : 'rgba(255,255,255,0.07)' }}
               value={y1}
               onChange={e => setY1(e.target.value)}
-              min={waveMin || RFA_MINS[player.draft_round]}
+              min={waveMin || RFA_TENDER_FLOOR[player.draft_round]}
               max={maxSal}
               step={0.01}
             />
@@ -219,7 +213,14 @@ export default function RFABidForm({
           </div>
         </div>
 
-        {/* Guaranteed years */}
+        {/* Guaranteed years — Wave 1 tenders are always fully guaranteed;
+            only Wave 2+ challengers get to choose */}
+        {wave === 1 ? (
+          <div className="rfa-bid-form__section">
+            <label className="rfa-bid-form__label">Guaranteed Years</label>
+            <div className="rfa-bid-form__hint">All 3 years fully guaranteed (required for a tender)</div>
+          </div>
+        ) : (
         <div className="rfa-bid-form__section">
           <label className="rfa-bid-form__label">Guaranteed Years</label>
           <div className="rfa-bid-form__gtd-toggle">
@@ -235,6 +236,7 @@ export default function RFABidForm({
           </div>
           <span className="rfa-bid-form__hint">Only the final year can be non-guaranteed</span>
         </div>
+        )}
 
         {/* Signing bonus */}
         <div className="rfa-bid-form__section">
