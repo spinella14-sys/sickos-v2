@@ -4,6 +4,7 @@ import RFAHero        from '../../components/rfa/RFAHero'
 import RFAPool        from '../../components/rfa/RFAPool'
 import RFAMyBids      from '../../components/rfa/RFAMyBids'
 import RFAMatchWindow from '../../components/rfa/RFAMatchWindow'
+import RFAWaveSummaryModal from '../../components/rfa/RFAWaveSummaryModal'
 import './RFADraft.css'
 
 const API    = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
@@ -22,6 +23,7 @@ export default function RFADraft({ currentTeam, isCommissioner }) {
   const [timeLeft,       setTimeLeft]      = useState(null)
   const [selectedPlayer, setSelectedPlayer] = useState(null)
   const [matchModal,     setMatchModal]    = useState(null)
+  const [waveSummary,    setWaveSummary]   = useState(null)
   const [loading,        setLoading]       = useState(true)
   const clockRef = useRef(null)
 
@@ -43,6 +45,24 @@ export default function RFADraft({ currentTeam, isCommissioner }) {
       setMyTeamData(teamRes)
       // FIX: field is wave_closes_at, not wave_end_time
       setWaveCloseTime(stateRes?.wave_closes_at || null)
+
+      // Show the wave-summary popup once per new wave — tracked in
+      // localStorage per-team so it doesn't repeat on every page load.
+      const currentWave = stateRes?.current_wave
+      if (currentWave && currentWave > 1) {
+        const seenKey = `rfa_last_seen_wave_${currentTeam}`
+        const lastSeen = parseInt(localStorage.getItem(seenKey) || '0')
+        if (currentWave > lastSeen) {
+          const closedWave = currentWave - 1
+          fetch(`${API}/rfa/results-log?season=${SEASON}&wave=${closedWave}`)
+            .then(r => r.ok ? r.json() : [])
+            .then(results => {
+              setWaveSummary({ closedWave, currentWave, results })
+              localStorage.setItem(seenKey, String(currentWave))
+            })
+            .catch(() => {})
+        }
+      }
     } catch (e) {
       console.error('RFA load error', e)
     } finally {
@@ -169,6 +189,17 @@ export default function RFADraft({ currentTeam, isCommissioner }) {
           onMatch={handleMatch}
           onDecline={() => setMatchModal(null)}
           onClose={() => setMatchModal(null)}
+        />
+      )}
+
+      {waveSummary && (
+        <RFAWaveSummaryModal
+          closedWave={waveSummary.closedWave}
+          currentWave={waveSummary.currentWave}
+          lastWaveResults={waveSummary.results}
+          matchWindows={matchWindows}
+          myBids={myBids}
+          onClose={() => setWaveSummary(null)}
         />
       )}
     </div>

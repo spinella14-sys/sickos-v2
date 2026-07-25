@@ -46,10 +46,20 @@ export default function RFAMyBids({
           const capShortfall = myTeamData ? +(offer.y1_salary - myTeamData.cap_space).toFixed(2) : null;
           const sbShortfall = myTeamData ? +(offer.signing_bonus - (myTeamData.sb_budget_remaining ?? 0)).toFixed(2) : null;
           const canAfford = capShortfall !== null && capShortfall <= 0 && sbShortfall <= 0;
+          const deadlineWave = (player.match_window_wave || 0) + 1;
+          const isLastChance = wave >= deadlineWave;
           return (
             <div key={`match-${player.id}`} className="rfa-match-card">
               <div className="rfa-match-card__header">
                 ⚠ Match Decision Required
+              </div>
+              <div style={{
+                fontSize: 12, fontWeight: 700, marginBottom: 6,
+                color: isLastChance ? 'var(--draft-red)' : 'var(--draft-amber)',
+              }}>
+                {isLastChance
+                  ? `⏰ LAST CHANCE — this locks in when Wave ${wave} closes`
+                  : `You must act before Wave ${deadlineWave} closes, or this player goes to the challenger`}
               </div>
               <div className="rfa-match-card__player">{player.full_name}</div>
               <div className="rfa-match-card__offer">
