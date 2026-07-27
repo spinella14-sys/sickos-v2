@@ -589,6 +589,21 @@ export default function DashboardPage() {
       .catch(() => {})
   }, [abbrev])
 
+  // Buy-in payment notice — shows once when the admin marks this team paid
+  const [paymentNotice, setPaymentNotice] = useState(false)
+  useEffect(() => {
+    if (!abbrev) return
+    fetch(`${API_BASE}/payouts/${CURRENT_SEASON}/notice/${abbrev}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.show) setPaymentNotice(true) })
+      .catch(() => {})
+  }, [abbrev])
+
+  const acknowledgePaymentNotice = () => {
+    setPaymentNotice(false)
+    fetch(`${API_BASE}/payouts/${CURRENT_SEASON}/notice/${abbrev}/acknowledge`, { method: 'POST' }).catch(() => {})
+  }
+
   // Standings widget state
   const [standings,      setStandings]      = useState([])
   const [standingsView,  setStandingsView]  = useState('division')
@@ -1126,6 +1141,33 @@ export default function DashboardPage() {
             <Shortcut to="/rules"               emoji="📋" label="Rules"       colors={colors}/>
           </div>
 
+        </div>
+      )}
+
+      {paymentNotice && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000,
+        }}>
+          <div style={{
+            background: '#14171c', borderRadius: 12, padding: 24,
+            maxWidth: 420, width: '92%', border: '1px solid rgba(90,200,120,0.4)',
+            textAlign: 'center',
+          }}>
+            <div style={{ fontSize: 32, marginBottom: 8 }}>✅</div>
+            <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>
+              Trade Machine Access Granted
+            </div>
+            <div style={{ fontSize: 13, color: '#8B949E', marginBottom: 20 }}>
+              Your buy-in has been confirmed — you can now propose and accept trades, and drop players from your roster.
+            </div>
+            <button onClick={acknowledgePaymentNotice} style={{
+              width: '100%', padding: '10px 0', borderRadius: 8, border: 'none',
+              background: 'var(--draft-amber, #f0b429)', color: '#000', fontWeight: 700, cursor: 'pointer',
+            }}>
+              Got it
+            </button>
+          </div>
         </div>
       )}
     </div>
