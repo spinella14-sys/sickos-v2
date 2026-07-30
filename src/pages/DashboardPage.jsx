@@ -604,17 +604,30 @@ export default function DashboardPage() {
     fetch(`${API_BASE}/payouts/${CURRENT_SEASON}/notice/${abbrev}/acknowledge`, { method: 'POST' }).catch(() => {})
   }
 
-  // Standings widget state
+  // Standings widget state -- season follows season_mode (offseason shows
+  // last year's final standings since this year has no games yet; regular
+  // season shows this year's live standings). Was previously hardcoded to
+  // CURRENT_SEASON always.
   const [standings,      setStandings]      = useState([])
   const [standingsView,  setStandingsView]  = useState('division')
   const [standingsLoaded,setStandingsLoaded]= useState(false)
+  const [standingsSeason,setStandingsSeason]= useState(CURRENT_SEASON)
 
   useEffect(() => {
-    fetch(`${API_BASE}/standings?season=${CURRENT_SEASON}`)
+    fetch(`${API_BASE}/system/season-mode`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (d?.season_mode === 'offseason') setStandingsSeason(CURRENT_SEASON - 1)
+      })
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    fetch(`${API_BASE}/standings?season=${standingsSeason}`)
       .then(r => r.ok ? r.json() : { standings: [] })
       .then(d => { setStandings(d.standings || []); setStandingsLoaded(true) })
       .catch(() => setStandingsLoaded(true))
-  }, [])
+  }, [standingsSeason])
 
   // Cap calculations
   const totalCapHit = useMemo(()=>{
