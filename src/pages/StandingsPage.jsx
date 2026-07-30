@@ -148,6 +148,19 @@ export default function StandingsPage() {
   const [loading,     setLoading]     = useState(true)
   const [oddsLoading, setOddsLoading] = useState(true)
 
+  // During offseason, show last year's FINAL standings (this year has no
+  // games yet); once season_mode flips to regular_season, switch to this
+  // year's live standings. This was the original design but was never
+  // actually wired -- season stayed hardcoded to CURRENT_SEASON always.
+  useEffect(() => {
+    fetch(`${API_BASE}/system/season-mode`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (d?.season_mode === 'offseason') setSeason(CURRENT_SEASON - 1)
+      })
+      .catch(() => {})
+  }, [])
+
   useEffect(() => {
     setLoading(true)
     setOddsLoading(true)
