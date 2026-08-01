@@ -47,12 +47,31 @@ function PlayerStatus({ player, projPts, isFinal }) {
     return <span className="mp-player-status mp-status-playing">PLAYING</span>
   }
   if (!hasStats && !isLocked) {
+    const oppText = gameInfo?.opponent
+      ? `${gameInfo.is_home ? 'vs' : '@'} ${gameInfo.opponent}${formatKickoff(gameInfo.game_date)}`
+      : null
     if (projPts != null) {
-      return <span className="mp-player-status mp-status-proj">PROJ {projPts.toFixed(1)}</span>
+      return (
+        <span className="mp-player-status mp-status-proj">
+          PROJ {projPts.toFixed(1)}{oppText ? ` · ${oppText}` : ''}
+        </span>
+      )
+    }
+    if (oppText) {
+      return <span className="mp-player-status mp-status-upcoming">{oppText}</span>
     }
     return <span className="mp-player-status mp-status-upcoming">UPCOMING</span>
   }
   return null
+}
+
+function formatKickoff(gameDate) {
+  if (!gameDate) return ''
+  const d = new Date(gameDate)
+  if (isNaN(d.getTime())) return ''
+  const day  = d.toLocaleDateString('en-US', { weekday: 'short' })
+  const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+  return ` · ${day} ${time}`
 }
 
 function buildRows(homeLineup, awayLineup) {
@@ -74,9 +93,10 @@ function buildRows(homeLineup, awayLineup) {
   })
 }
 
-function PlayerCell({ player, side, projMap, isFinal }) {
+function PlayerCell({ player, side, projMap, opponentMap, isFinal }) {
   const isRight  = side === 'away'
   const projPts  = player ? (projMap[player.sleeper_id] ?? null) : null
+  const gameInfo = player ? (opponentMap[player.nfl_team] ?? null) : null
   const pts      = player?.week_pts != null ? player.week_pts.toFixed(1) : null
   const hasPlayed = player?.week_pts !== null
 
@@ -104,7 +124,7 @@ function PlayerCell({ player, side, projMap, isFinal }) {
           <span className="mp-stat-line">{player.stat_line}</span>
         )}
       </div>
-      <PlayerStatus player={player} projPts={projPts} isFinal={isFinal} />
+      <PlayerStatus player={player} projPts={projPts} isFinal={isFinal} gameInfo={gameInfo} />
     </div>
   )
 
@@ -138,7 +158,8 @@ export default function MatchupPage() {
   const [matchup,  setMatchup]  = useState(null)
   const [loading,  setLoading]  = useState(true)
   const [error,    setError]    = useState(null)
-  const [projMap,  setProjMap]  = useState({})
+  const [projMap,      setProjMap]      = useState({})
+  const [opponentMap,  setOpponentMap]  = useState({})
   const [lastPoll, setLastPoll] = useState(null)
   const pollRef   = useRef(null)
 
@@ -179,6 +200,16 @@ export default function MatchupPage() {
         ;(Array.isArray(data) ? data : []).forEach(p => { map[p.sleeper_id] = parseFloat(p.proj_pts || 0) })
         setProjMap(map)
       })
+      .catch(() => {})
+  }, [matchup?.season, matchup?.week])
+
+  // Fetch real per-NFL-team opponent + kickoff time for this week, so
+  // "UPCOMING" can show real matchup info instead of a generic label.
+  useEffect(() => {
+    if (!matchup?.season || !matchup?.week) return
+    fetch(`${API_BASE}/schedule/opponents?season=${matchup.season}&week=${matchup.week}`)
+      .then(r => r.ok ? r.json() : {})
+      .then(data => setOpponentMap(data || {}))
       .catch(() => {})
   }, [matchup?.season, matchup?.week])
 
@@ -312,13 +343,13 @@ export default function MatchupPage() {
             <div className="mp-rows">
               {displayRows.map(({ slot, home, away }, i) => (
                 <div key={`${slot}-${i}`} className="mp-row">
-                  <PlayerCell player={home} side="home" projMap={projMap} isFinal={isFinal} />
+                  <PlayerCell player={home} side="home" projMap={projMap} opponentMap={opponentMap} isFinal={isFinal} />
                   <div className="mp-slot-center">
                     <span className="mp-slot-badge" style={{ color: POS_COLOR[slot] || 'var(--text-muted)' }}>
                       {slot}
                     </span>
                   </div>
-                  <PlayerCell player={away} side="away" projMap={projMap} isFinal={isFinal} />
+                  <PlayerCell player={away} side="away" projMap={projMap} opponentMap={opponentMap} isFinal={isFinal} />
                 </div>
               ))}
             </div>
