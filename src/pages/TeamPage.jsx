@@ -358,12 +358,12 @@ function DropConfirmModal({ contract, teamAbbrev, onClose, onDropped }) {
   return (
     <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.65)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000 }}>
       <div style={{ background:'#14171c', borderRadius:12, padding:24, maxWidth:440, width:'92%', border:'1px solid rgba(255,255,255,0.1)' }}>
-        <div style={{ fontSize:18, fontWeight:800, marginBottom:4 }}>Drop {p.full_name}?</div>
-        <div style={{ fontSize:13, color:'#8B929E', marginBottom:16 }}>
+        <div style={{ fontSize:18, fontWeight:800, marginBottom:4, color:'#fff' }}>Drop {p.full_name}?</div>
+        <div style={{ fontSize:13, color:'#B8BEC7', marginBottom:16 }}>
           This removes {p.full_name} from your roster and makes them a free agent. This cannot be undone.
         </div>
 
-        {loading && <div style={{ fontSize:13, color:'#8B929E' }}>Loading dead cap impact…</div>}
+        {loading && <div style={{ fontSize:13, color:'#B8BEC7' }}>Loading dead cap impact…</div>}
         {err && <div style={{ fontSize:13, color:'var(--red, #d94f4f)', marginBottom:12 }}>{err}</div>}
 
         {preview && (
