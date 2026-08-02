@@ -368,22 +368,43 @@ function DropConfirmModal({ contract, teamAbbrev, onClose, onDropped }) {
 
         {preview && (
           <div style={{ marginBottom:16 }}>
-            {['straight','frontload','stretch'].map(m => (
-              <label key={m} style={{
-                display:'flex', justifyContent:'space-between', alignItems:'center',
-                padding:'10px 12px', marginBottom:6, borderRadius:8, cursor:'pointer',
-                background: method === m ? 'rgba(240,180,41,0.12)' : 'rgba(255,255,255,0.04)',
-                border: method === m ? '1px solid var(--draft-amber, #f0b429)' : '1px solid transparent',
-              }}>
-                <span style={{ display:'flex', alignItems:'center', gap:8 }}>
-                  <input type="radio" name="release_method" checked={method === m} onChange={() => setMethod(m)}/>
-                  <span style={{ textTransform:'capitalize', fontSize:13 }}>{m}</span>
-                </span>
-                <span style={{ fontSize:13, fontWeight:700 }}>
-                  ${totalDeadCap(preview[m]).toFixed(2)} dead cap
-                </span>
-              </label>
-            ))}
+            {['straight','frontload','stretch'].map(m => {
+              const entries = preview[m] || []
+              const total   = totalDeadCap(entries)
+              return (
+                <label key={m} style={{
+                  display:'block', padding:'10px 12px', marginBottom:6, borderRadius:8, cursor:'pointer',
+                  background: method === m ? 'rgba(240,180,41,0.12)' : 'rgba(255,255,255,0.04)',
+                  border: method === m ? '1px solid var(--draft-amber, #f0b429)' : '1px solid transparent',
+                }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                    <span style={{ display:'flex', alignItems:'center', gap:8 }}>
+                      <input type="radio" name="release_method" checked={method === m} onChange={() => setMethod(m)}/>
+                      <span style={{ textTransform:'capitalize', fontSize:13, color:'#fff' }}>{m}</span>
+                    </span>
+                    <span style={{ fontSize:13, fontWeight:700, color:'#fff' }}>
+                      ${total.toFixed(2)} total
+                    </span>
+                  </div>
+                  {entries.length > 0 ? (
+                    <div style={{
+                      marginTop:8, paddingTop:8, borderTop:'1px solid rgba(255,255,255,0.08)',
+                      display:'flex', flexWrap:'wrap', gap:'6px 14px',
+                    }}>
+                      {entries.map(e => (
+                        <span key={e.season} style={{ fontSize:11, color:'#8B929E' }}>
+                          {e.season}: <span style={{ color:'#fff', fontWeight:600 }}>${e.amount.toFixed(2)}</span>
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ marginTop:6, fontSize:11, color:'#8B929E' }}>
+                      No guaranteed money remaining — $0 dead cap
+                    </div>
+                  )}
+                </label>
+              )
+            })}
           </div>
         )}
 
