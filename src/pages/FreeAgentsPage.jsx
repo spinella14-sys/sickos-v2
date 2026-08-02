@@ -168,9 +168,9 @@ export default function FreeAgentsPage() {
 
   const filtered = useMemo(() => {
     let rows = allPlayers.filter(p => {
-      if (!showRostered && rosteredIds.has(p.sleeper_id)) return false
+      if (rosteredIds.has(p.sleeper_id)) return false
       if (rfaFilter === 'rfa' && !rfaMap[p.sleeper_id]) return false
-      if (rfaFilter === 'my-rfa' && rfaMap[p.sleeper_id] !== myTeam) return false
+      if (rfaFilter === 'ufa' && rfaMap[p.sleeper_id]) return false
       if (pos !== 'All' && p.position !== pos) return false
       if (nflTeam === 'FA') { if (p.nfl_team) return false }
       else if (nflTeam !== 'All') { if (p.nfl_team !== nflTeam) return false }
@@ -254,14 +254,10 @@ export default function FreeAgentsPage() {
               </option>
             ))}
           </select>
-          <label className="fa-rostered-toggle">
-            <input type="checkbox" checked={showRostered} onChange={e => setShowRostered(e.target.checked)} />
-            Show rostered
-          </label>
           <select className="fa-team-select" value={rfaFilter} onChange={e => setRfaFilter(e.target.value)}>
-            <option value="all">RFA Status: All</option>
-            <option value="rfa">RFA Only</option>
-            <option value="my-rfa">My RFAs</option>
+            <option value="all">All FA</option>
+            <option value="rfa">RFA</option>
+            <option value="ufa">UFA</option>
           </select>
         </div>
       </div>
@@ -278,8 +274,8 @@ export default function FreeAgentsPage() {
                   <tr className="fa-thead-row">
                     {/* Player column — name + injury status underneath */}
                     <th className="fa-th fa-th-player"><SortHeader colKey="name" label="PLAYER" title="Player Name" /></th>
-                    <th className="fa-th"><SortHeader colKey="default" label="NFL" title="NFL Team" /></th>
                     <th className="fa-th">POS</th>
+                    <th className="fa-th">RFA</th>
                     <th className="fa-th"><SortHeader colKey="age" label="AGE" title="Age" /></th>
                     <th className="fa-th">EXP</th>
                     <th className="fa-th"><SortHeader colKey="fantasy_pts" label="PTS" title="Season Fantasy Points" /></th>
@@ -308,37 +304,25 @@ export default function FreeAgentsPage() {
                               onError={e => e.target.style.opacity = 0}
                             />
                             <div className="fa-player-info">
-                              <PlayerLink playerId={p.sleeper_id} onClick={e => e.stopPropagation()} style={{textDecoration:'none',color:'inherit'}}>
-                                {p.full_name || '—'}
-                              </PlayerLink>
-                              <div className="fa-player-meta">
+                              <div style={{display:'flex', alignItems:'center', gap:6, flexWrap:'wrap'}}>
+                                <PlayerLink playerId={p.sleeper_id} onClick={e => e.stopPropagation()} style={{textDecoration:'none',color:'inherit'}}>
+                                  {p.full_name || '—'}
+                                </PlayerLink>
+                                {rfaMap[p.sleeper_id] && (
+                                  <span style={{fontSize:9, fontWeight:800, letterSpacing:'0.06em', color:'#d94f4f'}}>
+                                    RFA
+                                  </span>
+                                )}
                                 <span style={{color: p.position==='QB'?'#e8822a':p.position==='RB'?'#3dba6e':p.position==='WR'?'#3a9fd4':'#d4a843', fontWeight:800, fontSize:10}}>
                                   {p.position}
                                 </span>
-                                {p.nfl_team && <span style={{color:'var(--text-muted)',fontSize:10}}> · {p.nfl_team}</span>}
-                                {rfaMap[p.sleeper_id] && (
-                                  <span style={{
-                                    marginLeft:6, fontSize:9, fontWeight:800, letterSpacing:'0.06em',
-                                    color: rfaMap[p.sleeper_id] === myTeam ? '#3dba6e' : '#d4a843',
-                                    border: `1px solid ${rfaMap[p.sleeper_id] === myTeam ? '#3dba6e' : '#d4a843'}`,
-                                    borderRadius:3, padding:'1px 4px',
-                                  }}>
-                                    RFA · {rfaMap[p.sleeper_id]}
-                                  </span>
-                                )}
+                                {p.nfl_team && <span style={{color:'var(--text-muted)',fontSize:10}}>{p.nfl_team}</span>}
                               </div>
                             </div>
-                            <button
-                              className="fa-wl-btn"
-                              onClick={() => toggleWatchlist(p.sleeper_id)}
-                              title={onWl ? 'Remove from watchlist' : 'Add to watchlist'}
-                            >
-                              {onWl ? '★' : '☆'}
-                            </button>
                           </div>
                         </td>
-                        <td className="fa-td fa-td-center">{p.nfl_team || '—'}</td>
                         <td className="fa-td fa-td-center">{p.position || '—'}</td>
+                        <td className="fa-td fa-td-center">{rfaMap[p.sleeper_id] || '—'}</td>
                         <td className="fa-td fa-td-center fa-stat">{p.age || '—'}</td>
                         <td className="fa-td fa-td-center fa-stat">{p.years_exp != null ? p.years_exp : '—'}</td>
                         <td className="fa-td fa-td-center fa-stat">{st?.fantasy_pts > 0 ? st.fantasy_pts.toFixed(1) : '—'}</td>
