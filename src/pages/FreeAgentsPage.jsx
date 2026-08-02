@@ -71,6 +71,8 @@ export default function FreeAgentsPage() {
   const [statsMap,     setStatsMap]     = useState({})
 
   const [rosteredIds,  setRosteredIds]  = useState(new Set())
+  const [rfaMap,       setRfaMap]       = useState({})   // { sleeper_id: incumbent_team }
+  const [rfaFilter,    setRfaFilter]    = useState('all') // 'all' | 'rfa' | 'my-rfa'
   const [watchlist,    setWatchlist]    = useState(new Set())
   const [wlBusy,       setWlBusy]       = useState({})
   const [loading,      setLoading]      = useState(true)
@@ -117,6 +119,20 @@ export default function FreeAgentsPage() {
       .catch(() => {})
   }, [])
 
+  // RFA pool -- shows which free agents are actually RFA-tagged and which
+  // team holds retention rights, so managers can see their own RFAs (this
+  // was previously only visible in the admin-only RFA Draft module).
+  useEffect(() => {
+    fetch(`${API_BASE}/rfa/pool`)
+      .then(r => r.ok ? r.json() : [])
+      .then(pool => {
+        const map = {}
+        ;(pool || []).forEach(p => { map[p.sleeper_id] = p.incumbent_team })
+        setRfaMap(map)
+      })
+      .catch(() => {})
+  }, [])
+
   useEffect(() => {
     if (!myTeam) return
     fetch(`${API_BASE}/watchlist`, { headers: { 'x-team-abbrev': myTeam } })
@@ -153,6 +169,8 @@ export default function FreeAgentsPage() {
   const filtered = useMemo(() => {
     let rows = allPlayers.filter(p => {
       if (!showRostered && rosteredIds.has(p.sleeper_id)) return false
+      if (rfaFilter === 'rfa' && !rfaMap[p.sleeper_id]) return false
+      if (rfaFilter === 'my-rfa' && rfaMap[p.sleeper_id] !== myTeam) return false
       if (pos !== 'All' && p.position !== pos) return false
       if (nflTeam === 'FA') { if (p.nfl_team) return false }
       else if (nflTeam !== 'All') { if (p.nfl_team !== nflTeam) return false }
@@ -240,6 +258,11 @@ export default function FreeAgentsPage() {
             <input type="checkbox" checked={showRostered} onChange={e => setShowRostered(e.target.checked)} />
             Show rostered
           </label>
+          <select className="fa-team-select" value={rfaFilter} onChange={e => setRfaFilter(e.target.value)}>
+            <option value="all">RFA Status: All</option>
+            <option value="rfa">RFA Only</option>
+            <option value="my-rfa">My RFAs</option>
+          </select>
         </div>
       </div>
 
@@ -293,6 +316,16 @@ export default function FreeAgentsPage() {
                                   {p.position}
                                 </span>
                                 {p.nfl_team && <span style={{color:'var(--text-muted)',fontSize:10}}> · {p.nfl_team}</span>}
+                                {rfaMap[p.sleeper_id] && (
+                                  <span style={{
+                                    marginLeft:6, fontSize:9, fontWeight:800, letterSpacing:'0.06em',
+                                    color: rfaMap[p.sleeper_id] === myTeam ? '#3dba6e' : '#d4a843',
+                                    border: `1px solid ${rfaMap[p.sleeper_id] === myTeam ? '#3dba6e' : '#d4a843'}`,
+                                    borderRadius:3, padding:'1px 4px',
+                                  }}>
+                                    RFA · {rfaMap[p.sleeper_id]}
+                                  </span>
+                                )}
                               </div>
                             </div>
                             <button
