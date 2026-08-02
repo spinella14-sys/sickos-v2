@@ -206,7 +206,7 @@ export default function FreeAgentsPage() {
       return sortDir === 'desc' ? bv - av : av - bv
     })
     return rows
-  }, [allPlayers, rosteredIds, pos, nflTeam, search, showRostered, sortKey, sortDir, statsMap])
+  }, [allPlayers, rosteredIds, pos, nflTeam, search, rfaFilter, rfaMap, sortKey, sortDir, statsMap])
 
   const availableCount = allPlayers.filter(p => !rosteredIds.has(p.sleeper_id)).length
 
