@@ -49,6 +49,7 @@ export default function FABidPage() {
   const [sigBonus,   setSigBonus]   = useState('')
   const [dropPlayer, setDropPlayer] = useState('')
   const [dropName,   setDropName]   = useState('')
+  const [dropReleaseMethod, setDropReleaseMethod] = useState('straight')
 
   // Load player info
   useEffect(() => {
@@ -162,6 +163,7 @@ export default function FABidPage() {
         signing_bonus: sbAmount || null,
         drop_player:   dropPlayer || null,
         drop_name:     dropName   || null,
+        drop_release_method: dropPlayer ? dropReleaseMethod : null,
         season:        SEASON,
       })
       setResult({ ok: true, msg: `Bid submitted for ${playerInfo?.player?.full_name || preName}. All bids are sealed — winner is determined when the window closes.` })
@@ -366,6 +368,21 @@ export default function FABidPage() {
             })}
           </select>
         </div>
+
+        {dropPlayer && (
+          <div className="fab-field">
+            <label className="fab-label">Release method for {dropName}</label>
+            <select
+              className="fab-select"
+              value={dropReleaseMethod}
+              onChange={e => setDropReleaseMethod(e.target.value)}
+            >
+              <option value="straight">Straight — dead cap mirrors original guaranteed schedule</option>
+              <option value="frontload">Frontload — all guaranteed money hits this season</option>
+              <option value="stretch">Stretch — spread evenly across (guaranteed years × 2) + 1 seasons</option>
+            </select>
+          </div>
+        )}
 
         {/* Contract preview */}
         {contractYears.length > 0 && (
