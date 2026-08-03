@@ -327,3 +327,14 @@
 .tp-cg-fa-tag--rfa {
   color: var(--red, #d94f4f) !important;
 }
+
+/* FA status badge (mirrors CapSheetPage.css) */
+.tp-fa-badge {
+  display:inline-block;
+  font-family:var(--font-ui); font-size:10px; font-weight:800; letter-spacing:0.12em;
+  text-transform:uppercase; padding:4px 8px; border-radius:2px; white-space:nowrap;
+}
+.tp-fa-rfa   { background:rgba(217,79,79,0.15); color:var(--red); border:1px solid var(--red); }
+.tp-fa-rfa-1 { border-style:solid; }
+.tp-fa-rfa-2 { border-style:dashed; }
+.tp-fa-ufa   { background:var(--green-dim); color:var(--green); border:1px solid var(--green); }

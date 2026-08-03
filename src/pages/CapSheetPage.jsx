@@ -570,7 +570,7 @@ export default function CapSheetPage() {
           if (isFAYear) {
             return (
               <td key={yr} className="cs-year-cell">
-                <span className={`cs-fa-badge ${fa.isRFA ? 'cs-fa-rfa' : 'cs-fa-ufa'}`}>
+                <span className={`cs-fa-badge ${fa.isRFA ? `cs-fa-rfa cs-fa-rfa-${fa.round}` : 'cs-fa-ufa'}`}>
                   {fa.type}
                 </span>
               </td>

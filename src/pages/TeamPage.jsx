@@ -499,6 +499,7 @@ export default function TeamPage() {
       const pc = p.projected_contract
       if (!pc) return
       for (let i = 0; i < pc.years; i++) years.add(p.season + i)
+      years.add(p.season + pc.years) // FA year (year after contract ends)
     })
     return Array.from(years).sort((a, b) => a - b)
   }, [ownedPicks])
@@ -1286,13 +1287,20 @@ export default function TeamPage() {
                     <table className="tp-table">
                       <thead>
                         <tr>
-                          <th>Season</th><th>Round</th><th>Pick</th><th>Origin</th><th>Status</th>
+                          <th>Season</th><th>Round</th><th>Pick</th><th>Origin</th>
                           {pickYearCols.map(y => <th key={y}>{y}</th>)}
                         </tr>
                       </thead>
                       <tbody>
                         {ownedPicks.map(p => {
                           const pc = p.projected_contract
+                          const faYear = pc ? p.season + pc.years : null
+                          const faBadgeClass = pc
+                            ? (pc.rfa_round ? `tp-fa-rfa tp-fa-rfa-${pc.rfa_round}` : 'tp-fa-ufa')
+                            : ''
+                          const faBadgeText = pc
+                            ? (pc.rfa_round ? `RFA (${pc.rfa_round === 1 ? '1st' : '2nd'})` : 'UFA')
+                            : ''
                           return (
                             <tr key={p.id} className="rtr">
                               <td style={{fontFamily:'var(--font-ui)',fontWeight:700}}>{p.season}</td>
@@ -1301,15 +1309,20 @@ export default function TeamPage() {
                               <td style={{fontFamily:'var(--font-ui)',fontSize:12,color:'var(--text-muted)'}}>
                                 {p.original_team_abbrev === abbrev?.toUpperCase() ? '—' : `via ${p.original_team_abbrev}`}
                               </td>
-                              <td style={{fontFamily:'var(--font-ui)',fontSize:12,fontWeight:700,color:'var(--text-muted)'}}>
-                                {pc?.rfa_status ?? '—'}
-                              </td>
                               {pickYearCols.map((y, i) => {
-                                if (!pc || i >= pc.years) {
+                                if (pc && y === faYear) {
+                                  return (
+                                    <td key={y}>
+                                      <span className={`tp-fa-badge ${faBadgeClass}`}>{faBadgeText}</span>
+                                    </td>
+                                  )
+                                }
+                                if (!pc || y < p.season || y >= faYear) {
                                   return <td key={y} style={{color:'var(--text-muted)'}}>—</td>
                                 }
-                                const isNG = i >= pc.guaranteed_years
-                                const sal = pc.salaries[i]
+                                const yearIdx = y - p.season
+                                const isNG = yearIdx >= pc.guaranteed_years
+                                const sal = pc.salaries[yearIdx]
                                 return (
                                   <td key={y} style={{fontFamily:'var(--font-ui)', color: isNG ? 'var(--purple)' : 'var(--orange)'}}>
                                     ${sal.toFixed(2)}
