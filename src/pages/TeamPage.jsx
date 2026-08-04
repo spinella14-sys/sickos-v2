@@ -246,8 +246,8 @@ function PlayerRow({ contract, slotLabel, slotColor, lineupAssign, onMove, slotO
     rowProps.onDragEnd   = () => { setDragCard(null); setDragOverKey(null) }
   }
   if (isDropZone) {
-    rowProps.onDragOver = e => { e.preventDefault(); setDragOverKey(dropKey) }
-    rowProps.onDrop     = e => { e.preventDefault(); if (dragCard) onAttemptMove(dragCard, dropKey, contract) }
+    rowProps.onDragOver = e => { e.preventDefault(); e.stopPropagation(); setDragOverKey(dropKey) }
+    rowProps.onDrop     = e => { e.preventDefault(); e.stopPropagation(); if (dragCard) onAttemptMove(dragCard, dropKey, contract) }
   }
 
   return (
@@ -324,8 +324,8 @@ function EmptySlotRow({ slot, canEdit, dragCard, dragOverKey, setDragOverKey, on
   const dropKey = `lineup:${slot.key}`
   const isHover = dragOverKey === dropKey
   const dropProps = dragCard ? {
-    onDragOver: e => { e.preventDefault(); setDragOverKey(dropKey) },
-    onDrop:     e => { e.preventDefault(); onAttemptMove(dragCard, dropKey) },
+    onDragOver: e => { e.preventDefault(); e.stopPropagation(); setDragOverKey(dropKey) },
+    onDrop:     e => { e.preventDefault(); e.stopPropagation(); onAttemptMove(dragCard, dropKey) },
   } : {}
   return (
     <tr {...dropProps} className={`rtr rtr--empty ${dragCard ? (isEligible ? 'rtr--dnd-eligible' : 'rtr--dnd-ineligible') : ''} ${isHover ? 'rtr--dnd-hover' : ''}`}>
@@ -338,6 +338,31 @@ function EmptySlotRow({ slot, canEdit, dragCard, dragOverKey, setDragOverKey, on
         <div className="rtr-empty-cell">
           <div className="rtr-empty-avatar"/>
           <span className="rtr-empty-text">Empty — move a {slot.eligible.join('/')} here</span>
+        </div>
+      </td>
+      <td colSpan={extraCols}/>
+    </tr>
+  )
+}
+
+function EmptyZoneRow({ zoneKey, label, colorVar, canEdit, dragCard, dragOverKey, setDragOverKey, onAttemptMove, isEligible }) {
+  const isHover = dragOverKey === zoneKey
+  const dropProps = dragCard ? {
+    onDragOver: e => { e.preventDefault(); e.stopPropagation(); setDragOverKey(zoneKey) },
+    onDrop:     e => { e.preventDefault(); e.stopPropagation(); onAttemptMove(dragCard, zoneKey) },
+  } : {}
+  const extraCols = canEdit ? 10 : 9
+  return (
+    <tr {...dropProps} className={`rtr rtr--empty ${dragCard ? (isEligible ? 'rtr--dnd-eligible' : 'rtr--dnd-ineligible') : ''} ${isHover ? 'rtr--dnd-hover' : ''}`}>
+      <td className="rtr-slot">
+        <span className="rtr-slot-label" style={{ borderLeftColor: colorVar || 'var(--border)', color:'var(--text-muted)' }}>
+          {label}
+        </span>
+      </td>
+      <td className="rtr-player">
+        <div className="rtr-empty-cell">
+          <div className="rtr-empty-avatar"/>
+          <span className="rtr-empty-text">Drop a player here</span>
         </div>
       </td>
       <td colSpan={extraCols}/>
@@ -1226,8 +1251,8 @@ export default function TeamPage() {
 
                 {/* Bench */}
                 <div className="tp-section-hdr tp-section-bench">
-                  <span>BENCH ({benchPlayers.length}/{BENCH_SLOTS})</span>
-                  <span className="tp-section-note">Active roster · Full cap hit · No scoring</span>
+                  <span>BENCH ({benchPlayers.length})</span>
+                  <span className="tp-section-note">Active roster · Full cap hit · No scoring · shares the 13-man active roster with your starters</span>
                 </div>
                 <div className={`tp-table-wrap ${dragCard ? (getValidTargets(dragCard).has('bench') ? 'tp-dnd-eligible' : 'tp-dnd-ineligible') : ''} ${dragOverKey==='bench' ? 'tp-dnd-hover' : ''}`}
                   onDragOver={e => { if (dragCard) { e.preventDefault(); setDragOverKey('bench') } }}
@@ -1247,13 +1272,6 @@ export default function TeamPage() {
                           onDrop={setDropTarget}
                           dragCard={dragCard} setDragCard={setDragCard} setDragOverKey={setDragOverKey}/>
                       ))}
-                      {Array.from({length:Math.max(0,BENCH_SLOTS-benchPlayers.length)}).map((_,i) => (
-                        <tr key={`eb${i}`} className="rtr rtr--empty">
-                          <td className="rtr-slot"><span className="rtr-slot-label" style={{borderLeftColor:'var(--border)',color:'var(--text-muted)'}}>Bench</span></td>
-                          <td className="rtr-player"><div className="rtr-empty-cell"><div className="rtr-empty-avatar"/><span className="rtr-empty-text">Empty bench slot</span></div></td>
-                          <td colSpan={extraColSpan}/>
-                        </tr>
-                      ))}
                     </tbody>
                   </table>
                 </div>
@@ -1271,13 +1289,7 @@ export default function TeamPage() {
                   <table className="tp-table">
                     <TableHeader/>
                     <tbody>
-                      {psRoster.length === 0 ? (
-                        <tr className="rtr rtr--empty">
-                          <td className="rtr-slot"><span className="rtr-slot-label" style={{borderLeftColor:'var(--blue)',color:'var(--text-muted)'}}>PS</span></td>
-                          <td className="rtr-player"><div className="rtr-empty-cell"><div className="rtr-empty-avatar"/><span className="rtr-empty-text">No players on practice squad</span></div></td>
-                          <td colSpan={extraColSpan}/>
-                        </tr>
-                      ) : psRoster.map((r,i) => (
+                      {psRoster.map((r,i) => (
                         <PlayerRow key={r.id||i} contract={r} slotLabel="PS"
                           slotColor="var(--blue)" lineupAssign={lineupAssign}
                           onMove={handleMove}
@@ -1290,6 +1302,12 @@ export default function TeamPage() {
                           dragCard={dragCard} setDragCard={setDragCard} setDragOverKey={setDragOverKey}
                           dropKey="ps" dragOverKey={dragOverKey} onAttemptMove={attemptMove}
                           isEligible={!!dragCard && (dragCard.id||dragCard.sleeper_id) !== (r.id||r.sleeper_id)}/>
+                      ))}
+                      {Array.from({length: Math.max(0, 4 - psRoster.length)}).map((_,i) => (
+                        <EmptyZoneRow key={`eps${i}`} zoneKey="ps" label="Open PS slot" colorVar="var(--blue)" canEdit={canEdit}
+                          dragCard={dragCard} dragOverKey={dragOverKey} setDragOverKey={setDragOverKey}
+                          onAttemptMove={attemptMove}
+                          isEligible={!!dragCard && getValidTargets(dragCard).has('ps')}/>
                       ))}
                     </tbody>
                   </table>
