@@ -27,7 +27,7 @@ function InjBadge({ status }) {
 }
 
 // Per-player game status indicator
-function PlayerStatus({ player, projPts, isFinal }) {
+function PlayerStatus({ player, projPts, isFinal, gameInfo }) {
   if (!player) return null
 
   const hasStats  = player.week_pts !== null
