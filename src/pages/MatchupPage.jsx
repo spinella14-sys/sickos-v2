@@ -26,8 +26,9 @@ function InjBadge({ status }) {
   )
 }
 
-// Per-player game status indicator
-function PlayerStatus({ player, projPts, isFinal, gameInfo }) {
+// Per-player game status indicator — informational only; the PROJ/TOT
+// numbers themselves live in the dedicated pts block next to each player.
+function PlayerStatus({ player, isFinal, gameInfo }) {
   if (!player) return null
 
   const hasStats  = player.week_pts !== null
@@ -40,29 +41,13 @@ function PlayerStatus({ player, projPts, isFinal, gameInfo }) {
   if (hasStats && isFinal) {
     return <span className="mp-player-status mp-status-final">FINAL</span>
   }
-  if (hasStats && isLocked) {
+  if (isLocked) {
     return <span className="mp-player-status mp-status-playing">PLAYING</span>
   }
-  if (!hasStats && isLocked) {
-    return <span className="mp-player-status mp-status-playing">PLAYING</span>
-  }
-  if (!hasStats && !isLocked) {
-    const oppText = gameInfo?.opponent
-      ? `${gameInfo.is_home ? 'vs' : '@'} ${gameInfo.opponent}${formatKickoff(gameInfo.game_date)}`
-      : null
-    if (projPts != null) {
-      return (
-        <span className="mp-player-status mp-status-proj">
-          PROJ {projPts.toFixed(1)}{oppText ? ` · ${oppText}` : ''}
-        </span>
-      )
-    }
-    if (oppText) {
-      return <span className="mp-player-status mp-status-upcoming">{oppText}</span>
-    }
-    return <span className="mp-player-status mp-status-upcoming">UPCOMING</span>
-  }
-  return null
+  const oppText = gameInfo?.opponent
+    ? `${gameInfo.is_home ? 'vs' : '@'} ${gameInfo.opponent}${formatKickoff(gameInfo.game_date)}`
+    : null
+  return <span className="mp-player-status mp-status-upcoming">{oppText || 'UPCOMING'}</span>
 }
 
 function formatKickoff(gameDate) {
@@ -95,10 +80,13 @@ function buildRows(homeLineup, awayLineup) {
 
 function PlayerCell({ player, side, projMap, opponentMap, isFinal }) {
   const isRight  = side === 'away'
-  const projPts  = player ? (projMap[player.sleeper_id] ?? null) : null
   const gameInfo = player ? (opponentMap[player.nfl_team] ?? null) : null
-  const pts      = player?.week_pts != null ? player.week_pts.toFixed(1) : null
   const hasPlayed = player?.week_pts !== null
+  // PROJ: frozen at lock time (never changes again), live rolling estimate before that
+  const projVal = player
+    ? (player.is_locked ? player.locked_proj_pts : (projMap[player.sleeper_id] ?? null))
+    : null
+  const projDisplay = projVal != null ? projVal.toFixed(1) : '—'
 
   if (!player) {
     return (
@@ -124,7 +112,7 @@ function PlayerCell({ player, side, projMap, opponentMap, isFinal }) {
           <span className="mp-stat-line">{player.stat_line}</span>
         )}
       </div>
-      <PlayerStatus player={player} projPts={projPts} isFinal={isFinal} gameInfo={gameInfo} />
+      <PlayerStatus player={player} isFinal={isFinal} gameInfo={gameInfo} />
     </div>
   )
 
@@ -133,14 +121,13 @@ function PlayerCell({ player, side, projMap, opponentMap, isFinal }) {
       className="mp-headshot" onError={e => e.target.style.opacity = 0} />
   )
 
-  // When no actual stats yet, show projection dimly in place of points
-  const displayPts = pts !== null ? pts : (projPts != null ? projPts.toFixed(1) : '—')
-  const ptsClass   = pts !== null
-    ? `mp-pts ${!hasPlayed ? 'mp-pts--zero' : ''}`
-    : 'mp-pts mp-pts--proj'
+  const totDisplay = player?.week_pts != null ? player.week_pts.toFixed(1) : '0.0'
 
   const ptsEl = (
-    <span className={ptsClass}>{displayPts}</span>
+    <div className="mp-pts-block">
+      <span className={`mp-pts-tot ${!hasPlayed ? 'mp-pts-tot--zero' : ''}`}>{totDisplay}</span>
+      <span className="mp-pts-proj">PROJ {projDisplay}</span>
+    </div>
   )
 
   return (
@@ -243,11 +230,15 @@ export default function MatchupPage() {
     myTeam === matchup.home_team ? homeScore > awayScore : awayScore > homeScore
   )
 
-  // Projected totals (for upcoming starters)
+  // Projected totals: frozen locked_proj_pts once a player is locked
+  // (never recalculated after), live rolling projMap estimate before that.
   const projTotal = (lineup) =>
     lineup
       .filter(p => STARTER_SLOTS.has(p.slot_type))
-      .reduce((s, p) => s + (p.week_pts ?? projMap[p.sleeper_id] ?? 0), 0)
+      .reduce((s, p) => {
+        const proj = p.is_locked ? (p.locked_proj_pts ?? 0) : (projMap[p.sleeper_id] ?? 0)
+        return s + proj
+      }, 0)
       .toFixed(2)
 
   return (
@@ -266,9 +257,6 @@ export default function MatchupPage() {
                 {matchup.home_team_name}
               </Link>
               <span className="mp-team-abbrev">{matchup.home_team}</span>
-              {(isLive || !isFinal) && (
-                <span className="mp-proj-score">Proj: {projTotal(matchup.home_lineup || [])}</span>
-              )}
             </div>
             <div className={`mp-score ${homeWins && isFinal ? 'mp-score--win' : !homeWins && isFinal ? 'mp-score--loss' : ''}`}>
               {homeScore.toFixed(2)}
@@ -305,9 +293,6 @@ export default function MatchupPage() {
                 {matchup.away_team_name}
               </Link>
               <span className="mp-team-abbrev">{matchup.away_team}</span>
-              {(isLive || !isFinal) && (
-                <span className="mp-proj-score">Proj: {projTotal(matchup.away_lineup || [])}</span>
-              )}
             </div>
             <img src={LOGOS[matchup.away_team]} alt={matchup.away_team}
               className="mp-team-logo" onError={e => e.target.style.opacity = 0} />
@@ -354,14 +339,20 @@ export default function MatchupPage() {
               ))}
             </div>
 
-            {/* Totals */}
+            {/* Totals — real PROJ + TOT always shown together */}
             <div className="mp-totals-row">
-              <div className={`mp-total-score ${homeWins ? 'mp-total--win' : 'mp-total--loss'}`}>
-                {homeScore.toFixed(2)}
+              <div className="mp-totals-side">
+                <div className={`mp-total-score ${homeWins ? 'mp-total--win' : 'mp-total--loss'}`}>
+                  {homeScore.toFixed(2)}
+                </div>
+                <div className="mp-total-proj">PROJ {projTotal(matchup.home_lineup || [])}</div>
               </div>
-              <div className="mp-totals-label">{isFinal ? 'FINAL' : isLive ? 'LIVE' : 'PROJECTED'}</div>
-              <div className={`mp-total-score mp-total-score--right ${awayWins ? 'mp-total--win' : 'mp-total--loss'}`}>
-                {awayScore.toFixed(2)}
+              <div className="mp-totals-label">{isFinal ? 'FINAL' : isLive ? 'LIVE' : 'PREVIEW'}</div>
+              <div className="mp-totals-side mp-totals-side--right">
+                <div className={`mp-total-score mp-total-score--right ${awayWins ? 'mp-total--win' : 'mp-total--loss'}`}>
+                  {awayScore.toFixed(2)}
+                </div>
+                <div className="mp-total-proj">PROJ {projTotal(matchup.away_lineup || [])}</div>
               </div>
             </div>
 

@@ -321,3 +321,14 @@
   font-family: var(--font-ui); font-size: 9px; color: rgba(255,255,255,0.3);
   letter-spacing: 0.06em; margin-top: 4px;
 }
+
+/* PROJ + TOT stacked per-player block (Scoreboard Stage 2) */
+.mp-pts-block { display: flex; flex-direction: column; align-items: center; min-width: 48px; }
+.mp-pts-tot { font-family: var(--font-ui); font-size: 18px; font-weight: 800; color: var(--text); }
+.mp-pts-tot--zero { color: var(--text-muted); }
+.mp-pts-proj { font-family: var(--font-ui); font-size: 10px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.05em; margin-top: 2px; }
+
+/* Totals row: PROJ + TOT stacked per side */
+.mp-totals-side { display: flex; flex-direction: column; align-items: center; }
+.mp-totals-side--right { align-items: center; }
+.mp-total-proj { font-family: var(--font-ui); font-size: 11px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.05em; margin-top: 4px; }
