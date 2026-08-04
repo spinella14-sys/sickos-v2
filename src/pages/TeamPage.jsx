@@ -224,7 +224,8 @@ function MoveDropdown({ contract, lineupAssign, onMove, currentSlotOverride, act
 }
 
 function PlayerRow({ contract, slotLabel, slotColor, lineupAssign, onMove, slotOverride,
-  playerStats, isLineupSlot, activeRoster, psRoster, isLocked, canEdit, opponents, defRankings, transNewsIds, onShowNews, onDrop }) {
+  playerStats, isLineupSlot, activeRoster, psRoster, isLocked, canEdit, opponents, defRankings, transNewsIds, onShowNews, onDrop,
+  dragCard, setDragCard, setDragOverKey, dropKey, dragOverKey, onAttemptMove, isEligible }) {
   const p    = contract.players || {}
   const sid  = p.sleeper_id || contract.sleeper_id
   const sal  = parseFloat(contract.salary || 0)
@@ -233,9 +234,24 @@ function PlayerRow({ contract, slotLabel, slotColor, lineupAssign, onMove, slotO
   const capHit = sal * disc
   const ps   = playerStats || {}
   const isPending = !!slotOverride
+  const cid  = contract.id || contract.sleeper_id
+  const isDraggingThis = dragCard && (dragCard.id || dragCard.sleeper_id) === cid
+  const isDropZone = !!dropKey
+  const isHover = isDropZone && dragOverKey === dropKey
+
+  const rowProps = {}
+  if (canEdit && !isLocked) {
+    rowProps.draggable = true
+    rowProps.onDragStart = () => setDragCard(contract)
+    rowProps.onDragEnd   = () => { setDragCard(null); setDragOverKey(null) }
+  }
+  if (isDropZone) {
+    rowProps.onDragOver = e => { e.preventDefault(); setDragOverKey(dropKey) }
+    rowProps.onDrop     = e => { e.preventDefault(); if (dragCard) onAttemptMove(dragCard, dropKey) }
+  }
 
   return (
-    <tr className={`rtr ${isPending ? 'rtr--pending' : ''} ${isLineupSlot ? 'rtr--lineup' : ''} ${isLocked ? 'rtr--locked' : ''}`}>
+    <tr {...rowProps} className={`rtr ${isPending ? 'rtr--pending' : ''} ${isLineupSlot ? 'rtr--lineup' : ''} ${isLocked ? 'rtr--locked' : ''} ${canEdit && !isLocked ? 'rtr--draggable' : ''} ${isDraggingThis ? 'rtr--dragging' : ''} ${isDropZone && dragCard ? (isEligible ? 'rtr--dnd-eligible' : 'rtr--dnd-ineligible') : ''} ${isHover ? 'rtr--dnd-hover' : ''}`}>
       <td className="rtr-slot">
         <span className="rtr-slot-label" style={{ borderLeftColor: slotColor || POS_COLOR[p.position] || 'var(--border)' }}>
           {slotLabel}{isLocked && <span className="rtr-lock" title="Locked">🔒</span>}
@@ -267,9 +283,7 @@ function PlayerRow({ contract, slotLabel, slotColor, lineupAssign, onMove, slotO
       </td>
       {canEdit && (
         <td className="rtr-action">
-          <MoveDropdown contract={contract} lineupAssign={lineupAssign} onMove={onMove}
-            currentSlotOverride={slotOverride} activeRoster={activeRoster}
-            psRoster={psRoster} isLocked={isLocked}/>
+          {!isLocked && <span className="rtr-drag-handle" title="Drag to move">⠿⠿</span>}
           <button className="rtr-drop-btn" onClick={() => onDrop && onDrop(contract)} title="Drop player">
             Drop
           </button>
@@ -305,10 +319,16 @@ function PlayerRow({ contract, slotLabel, slotColor, lineupAssign, onMove, slotO
   )
 }
 
-function EmptySlotRow({ slot, canEdit }) {
+function EmptySlotRow({ slot, canEdit, dragCard, dragOverKey, setDragOverKey, onAttemptMove, isEligible }) {
   const extraCols = canEdit ? 10 : 9
+  const dropKey = `lineup:${slot.key}`
+  const isHover = dragOverKey === dropKey
+  const dropProps = dragCard ? {
+    onDragOver: e => { e.preventDefault(); setDragOverKey(dropKey) },
+    onDrop:     e => { e.preventDefault(); onAttemptMove(dragCard, dropKey) },
+  } : {}
   return (
-    <tr className="rtr rtr--empty">
+    <tr {...dropProps} className={`rtr rtr--empty ${dragCard ? (isEligible ? 'rtr--dnd-eligible' : 'rtr--dnd-ineligible') : ''} ${isHover ? 'rtr--dnd-hover' : ''}`}>
       <td className="rtr-slot">
         <span className="rtr-slot-label" style={{ borderLeftColor:'var(--border)', color:'var(--text-muted)' }}>
           {slot.label}
@@ -596,6 +616,9 @@ export default function TeamPage() {
   const [saveMsg,         setSaveMsg]         = useState('')
   const [sbBalance,       setSbBalance]       = useState(null)
   const [dropTarget,      setDropTarget]      = useState(null)  // contract pending drop confirmation
+  const [dragCard,        setDragCard]        = useState(null)  // contract currently being dragged
+  const [dragOverKey,     setDragOverKey]     = useState(null)  // drop-zone key currently hovered
+  const [moveMsg,         setMoveMsg]         = useState('')    // instant-move feedback toast
 
   const canEdit   = isAdmin || manager?.team_abbrev === abbrev?.toUpperCase()
   const EXTRA_COL = canEdit ? 1 : 0  // the MOVE column
@@ -742,6 +765,98 @@ export default function TeamPage() {
   function isPlayerLocked(contract) {
     const sleeperId = contract.players?.sleeper_id || contract.sleeper_id
     return weeklyLineup.find(r => r.sleeper_id === sleeperId)?.is_locked ?? false
+  }
+
+  // ── Drag & drop: source location + valid target keys for a contract ────
+  function getEffectiveSlot(contract) {
+    const cid = contract.id || contract.sleeper_id
+    return slotOverrides[cid] || contract.roster_slots?.[0]?.slot_type || 'active'
+  }
+
+  function getSourceLoc(contract) {
+    const cid = contract.id || contract.sleeper_id
+    const effSlot = getEffectiveSlot(contract)
+    if (effSlot === 'ps') return 'ps'
+    if (effSlot === 'ir') return 'ir'
+    const lineupKey = Object.entries(lineupAssign).find(([, v]) => v === cid)?.[0]
+    return lineupKey ? `lineup:${lineupKey}` : 'bench'
+  }
+
+  function getValidTargets(contract) {
+    const cid = contract.id || contract.sleeper_id
+    const pos = contract.players?.position
+    const effSlot = getEffectiveSlot(contract)
+    const isOnPS = effSlot === 'ps'
+    const isOnIR = effSlot === 'ir'
+    const activeQBs = (activeRoster || []).filter(r =>
+      r.players?.position === 'QB' && (r.id || r.sleeper_id) !== cid
+    ).length
+    const targets = new Set()
+
+    if (isOnPS || isOnIR) {
+      const canActivate = pos !== 'QB' || activeQBs < 2
+      if (canActivate) {
+        targets.add('bench')
+        for (const slot of LINEUP_SLOTS) {
+          if (slot.eligible.includes(pos)) targets.add(`lineup:${slot.key}`)
+        }
+      }
+    } else {
+      for (const slot of LINEUP_SLOTS) {
+        if (slot.eligible.includes(pos)) targets.add(`lineup:${slot.key}`)
+      }
+      targets.add('bench')
+      const psQBs = (psRoster || []).filter(r => r.players?.position === 'QB').length
+      if (!(pos === 'QB' && psQBs >= 1)) targets.add('ps')
+      if (['Out','IR','PUP'].includes(contract.players?.injury_status)) targets.add('ir')
+    }
+    return targets
+  }
+
+  // ── Drag & drop: attempt a move. Pure lineup<->bench shuffles (no cap
+  // implications) save INSTANTLY. Anything touching PS/IR stays on the
+  // existing staged flow (Save Lineup button) since that's where cap/QB-limit
+  // validation lives.
+  async function attemptMove(contract, targetKey) {
+    const cid = contract.id || contract.sleeper_id
+    if (!getValidTargets(contract).has(targetKey)) {
+      setMoveMsg('Invalid move ✗')
+      setTimeout(() => setMoveMsg(''), 2000)
+      return
+    }
+    const sourceLoc      = getSourceLoc(contract)
+    const sourceIsActive = sourceLoc === 'bench' || sourceLoc.startsWith('lineup:')
+    const targetIsActive = targetKey === 'bench' || targetKey.startsWith('lineup:')
+
+    if (sourceIsActive && targetIsActive) {
+      const sleeperId = contract.players?.sleeper_id || contract.sleeper_id
+      if (!sleeperId) return
+      const newSlotType = targetKey === 'bench' ? 'BN' : keyToSlotType(targetKey.split(':')[1])
+      const headers = {
+        'Content-Type':     'application/json',
+        'x-team-abbrev':    manager?.team_abbrev || '',
+        'x-admin-password': isAdmin ? (localStorage.getItem('adminPw') || '') : '',
+      }
+      try {
+        const r = await fetch(`${API_BASE}/lineup/${abbrev.toUpperCase()}/move`, {
+          method:'PATCH', headers,
+          body: JSON.stringify({ sleeper_id: sleeperId, new_slot: newSlotType, season: CURRENT_SEASON, week: currentWeek }),
+        })
+        if (r.ok) {
+          const { lineup } = await r.json()
+          setWeeklyLineup(Array.isArray(lineup) ? lineup : [])
+          setMoveMsg('Saved ✓')
+        } else {
+          const body = await r.json().catch(() => ({}))
+          setMoveMsg(body.error || 'Move failed ✗')
+        }
+      } catch {
+        setMoveMsg('Move failed ✗')
+      }
+      setTimeout(() => setMoveMsg(''), 2000)
+    } else {
+      handleMove(cid, targetKey)
+    }
   }
 
   // ── Handle move — only updates UI state, no API calls ─────────────────
@@ -967,6 +1082,7 @@ export default function TeamPage() {
         <div className="tp-tab-right">
           <span className="tp-week-label">Week {currentWeek}</span>
           {saveMsg && <span className="tp-save-msg">{saveMsg}</span>}
+          {moveMsg && <span className="tp-save-msg">{moveMsg}</span>}
           {isDirty && canEdit && (
             <>
               <span className="tp-pending-note">{pendingCount} unsaved change{pendingCount !== 1 ? 's' : ''}</span>
@@ -999,7 +1115,13 @@ export default function TeamPage() {
                       {LINEUP_SLOTS.map(slot => {
                         const cid      = lineupAssign[slot.key]
                         const contract = cid ? roster.find(r => (r.id||r.sleeper_id) === cid) : null
-                        if (!contract) return <EmptySlotRow key={slot.key} slot={slot} canEdit={canEdit}/>
+                        const dropKey  = `lineup:${slot.key}`
+                        const isEligible = dragCard ? getValidTargets(dragCard).has(dropKey) : false
+                        if (!contract) return (
+                          <EmptySlotRow key={slot.key} slot={slot} canEdit={canEdit}
+                            dragCard={dragCard} dragOverKey={dragOverKey} setDragOverKey={setDragOverKey}
+                            onAttemptMove={attemptMove} isEligible={isEligible}/>
+                        )
                         const sid = contract.players?.sleeper_id || contract.sleeper_id
                         return (
                           <PlayerRow key={slot.key} contract={contract}
@@ -1011,7 +1133,9 @@ export default function TeamPage() {
                             activeRoster={activeRoster} psRoster={psRoster}
                             isLocked={isPlayerLocked(contract)} canEdit={canEdit}
                             opponents={opponents} defRankings={defRankings} transNewsIds={transNewsIds} onShowNews={showNews}
-                            onDrop={setDropTarget}/>
+                            onDrop={setDropTarget}
+                            dragCard={dragCard} setDragCard={setDragCard} setDragOverKey={setDragOverKey}
+                            dropKey={dropKey} dragOverKey={dragOverKey} onAttemptMove={attemptMove} isEligible={isEligible}/>
                         )
                       })}
                     </tbody>
@@ -1045,7 +1169,9 @@ export default function TeamPage() {
                   <span>BENCH ({benchPlayers.length}/{BENCH_SLOTS})</span>
                   <span className="tp-section-note">Active roster · Full cap hit · No scoring</span>
                 </div>
-                <div className="tp-table-wrap">
+                <div className={`tp-table-wrap ${dragCard ? (getValidTargets(dragCard).has('bench') ? 'tp-dnd-eligible' : 'tp-dnd-ineligible') : ''} ${dragOverKey==='bench' ? 'tp-dnd-hover' : ''}`}
+                  onDragOver={e => { if (dragCard) { e.preventDefault(); setDragOverKey('bench') } }}
+                  onDrop={e => { if (dragCard) { e.preventDefault(); attemptMove(dragCard, 'bench') } }}>
                   <table className="tp-table">
                     <TableHeader/>
                     <tbody>
@@ -1058,7 +1184,8 @@ export default function TeamPage() {
                           isLineupSlot={false} activeRoster={activeRoster}
                           psRoster={psRoster} canEdit={canEdit}
                           opponents={opponents} defRankings={defRankings} transNewsIds={transNewsIds} onShowNews={showNews}
-                          onDrop={setDropTarget}/>
+                          onDrop={setDropTarget}
+                          dragCard={dragCard} setDragCard={setDragCard} setDragOverKey={setDragOverKey}/>
                       ))}
                       {Array.from({length:Math.max(0,BENCH_SLOTS-benchPlayers.length)}).map((_,i) => (
                         <tr key={`eb${i}`} className="rtr rtr--empty">
@@ -1078,7 +1205,9 @@ export default function TeamPage() {
                     50% cap hit · Salary ≤ $20 total ({psSalaryOver && <strong style={{color:'var(--red)'}}>OVER LIMIT</strong>}{!psSalaryOver && `$${psSalaryUsed.toFixed(2)} used`}) · Max 1 QB
                   </span>
                 </div>
-                <div className="tp-table-wrap">
+                <div className={`tp-table-wrap ${dragCard ? (getValidTargets(dragCard).has('ps') ? 'tp-dnd-eligible' : 'tp-dnd-ineligible') : ''} ${dragOverKey==='ps' ? 'tp-dnd-hover' : ''}`}
+                  onDragOver={e => { if (dragCard) { e.preventDefault(); setDragOverKey('ps') } }}
+                  onDrop={e => { if (dragCard) { e.preventDefault(); attemptMove(dragCard, 'ps') } }}>
                   <table className="tp-table">
                     <TableHeader/>
                     <tbody>
@@ -1097,7 +1226,8 @@ export default function TeamPage() {
                           isLineupSlot={false} activeRoster={activeRoster}
                           psRoster={psRoster} canEdit={canEdit}
                           opponents={opponents} defRankings={defRankings} transNewsIds={transNewsIds} onShowNews={showNews}
-                          onDrop={setDropTarget}/>
+                          onDrop={setDropTarget}
+                          dragCard={dragCard} setDragCard={setDragCard} setDragOverKey={setDragOverKey}/>
                       ))}
                     </tbody>
                   </table>
@@ -1108,7 +1238,9 @@ export default function TeamPage() {
                   <span>INJURED RESERVE ({irRoster.length})</span>
                   <span className="tp-section-note">50% cap hit · Must have Out/IR/PUP designation · Unlimited slots</span>
                 </div>
-                <div className="tp-table-wrap">
+                <div className={`tp-table-wrap ${dragCard ? (getValidTargets(dragCard).has('ir') ? 'tp-dnd-eligible' : 'tp-dnd-ineligible') : ''} ${dragOverKey==='ir' ? 'tp-dnd-hover' : ''}`}
+                  onDragOver={e => { if (dragCard) { e.preventDefault(); setDragOverKey('ir') } }}
+                  onDrop={e => { if (dragCard) { e.preventDefault(); attemptMove(dragCard, 'ir') } }}>
                   <table className="tp-table">
                     <TableHeader/>
                     <tbody>
@@ -1127,7 +1259,8 @@ export default function TeamPage() {
                           isLineupSlot={false} activeRoster={activeRoster}
                           psRoster={psRoster} canEdit={canEdit}
                           opponents={opponents} defRankings={defRankings} transNewsIds={transNewsIds} onShowNews={showNews}
-                          onDrop={setDropTarget}/>
+                          onDrop={setDropTarget}
+                          dragCard={dragCard} setDragCard={setDragCard} setDragOverKey={setDragOverKey}/>
                       ))}
                     </tbody>
                   </table>
