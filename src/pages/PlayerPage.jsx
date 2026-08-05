@@ -2,6 +2,19 @@ import { useState, useEffect, useMemo } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ComposedChart, XAxis, YAxis, Tooltip, ReferenceLine, ResponsiveContainer, Bar, Line, Cell } from 'recharts'
 import { TEAMS, LOGOS } from '../data/league'
+
+const PP_TXN_TYPE_META = {
+  signing:     { label: 'Signing',     color: 'var(--green)' },
+  release:     { label: 'Release',     color: 'var(--text-muted)' },
+  trade:       { label: 'Trade',       color: 'var(--blue)' },
+  bid_lost:    { label: 'Failed Bid',  color: 'var(--gold)' },
+  draft_batch: { label: 'Draft',       color: 'var(--text-primary)' },
+}
+function fmtTxnDate(d) {
+  if (!d) return ''
+  const dt = new Date(d + 'T00:00:00')
+  return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })
+}
 import { useAuth } from '../context/AuthContext'
 import {
   calcFantasyPts,
@@ -355,6 +368,8 @@ export default function PlayerPage() {
   const [onWatchlist,       setOnWatchlist]       = useState(false)
   const [watchlistLoading,  setWatchlistLoading]  = useState(false)
   const [activeTab,         setActiveTab]         = useState('season')
+  const [txns,              setTxns]              = useState([])
+  const [txnsLoading,       setTxnsLoading]       = useState(false)
   const [season,            setSeason]            = useState(CURRENT_SEASON)
   const [viewMode,          setViewMode]          = useState('total')
   const [loading,           setLoading]           = useState(true)
@@ -436,6 +451,15 @@ export default function PlayerPage() {
       .then(r => r.ok ? r.json() : [])
       .then(data => { setNews(Array.isArray(data) ? data : []); setNewsLoading(false) })
       .catch(() => { setNews([]); setNewsLoading(false) })
+  }, [activeTab, id])
+
+  useEffect(() => {
+    if (activeTab !== 'transactions' || !id) return
+    setTxnsLoading(true)
+    fetch(`${API_BASE}/transactions?player=${id}&season=all`)
+      .then(r => r.ok ? r.json() : [])
+      .then(data => { setTxns(Array.isArray(data) ? data : []); setTxnsLoading(false) })
+      .catch(() => { setTxns([]); setTxnsLoading(false) })
   }, [activeTab, id])
 
   useEffect(() => {
@@ -547,12 +571,13 @@ export default function PlayerPage() {
   const accentColor = teamColor?.accent || '#e8822a'
 
   const TABS = [
-    { id: 'season',   label: 'Season Stats' },
-    { id: 'gamelog',  label: 'Game Log'     },
-    { id: 'trends',   label: 'Trends'       },
-    { id: 'news',     label: 'News & Notes' },
-    { id: 'career',   label: 'Career'       },
-    { id: 'contract', label: 'Contract'     },
+    { id: 'season',       label: 'Season Stats' },
+    { id: 'gamelog',      label: 'Game Log'     },
+    { id: 'trends',       label: 'Trends'       },
+    { id: 'news',         label: 'News & Notes' },
+    { id: 'career',       label: 'Career'       },
+    { id: 'contract',     label: 'Contract'     },
+    { id: 'transactions', label: 'Transactions' },
   ]
 
   if (loading) return <div className="pp-root pp-loading"><div className="pp-loading-text">Loading player…</div></div>
@@ -939,6 +964,47 @@ export default function PlayerPage() {
         )}
 
         {/* CAREER */}
+        {/* TRANSACTIONS */}
+        {activeTab === 'transactions' && (
+          <div className="pp-transactions">
+            {txnsLoading && <div className="pp-inner-loading">Loading transaction history…</div>}
+            {!txnsLoading && !txns.length && (
+              <div className="pp-no-data">No transaction history recorded for this player.</div>
+            )}
+            {!txnsLoading && txns.length > 0 && (
+              <div className="pp-txn-list">
+                {txns.map(txn => {
+                  const meta = PP_TXN_TYPE_META[txn.type] || { label: txn.type, color: 'var(--text-muted)' }
+                  const asset = (txn.transaction_assets || []).find(a => a.player_id === id) || (txn.transaction_assets || [])[0]
+                  const total = asset?.contract_years
+                    ? Object.values(asset.contract_years).reduce((s, y) => s + (parseFloat(y.salary) || 0), 0)
+                    : null
+                  const years = asset?.contract_years ? Object.keys(asset.contract_years).length : 0
+                  return (
+                    <div key={txn.id} className="pp-txn-item">
+                      <div className="pp-txn-date">{fmtTxnDate(txn.transaction_date)}</div>
+                      <span className="pp-txn-badge" style={{ color: meta.color, borderColor: meta.color }}>
+                        {meta.label}
+                      </span>
+                      <div className="pp-txn-team">
+                        {asset?.team_abbrev && LOGOS[asset.team_abbrev] && (
+                          <img src={LOGOS[asset.team_abbrev]} alt={asset.team_abbrev} className="pp-txn-logo" />
+                        )}
+                        <span>{asset?.team_abbrev || '—'}</span>
+                      </div>
+                      <div className="pp-txn-detail">
+                        {total != null
+                          ? `${years}yr / $${total.toFixed(2)}${asset.sign_bonus ? ` + $${parseFloat(asset.sign_bonus).toFixed(2)} SB` : ''}`
+                          : (txn.notes || '—')}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
         {activeTab === 'career' && (
           <div className="pp-career">
             {careerLoading && <div className="pp-inner-loading">Loading career stats…</div>}
