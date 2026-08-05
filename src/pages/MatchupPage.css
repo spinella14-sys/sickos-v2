@@ -263,7 +263,8 @@
   border-bottom: 1px solid var(--border);
 }
 .mp-bench-player:last-child { border-bottom: none; }
-.mp-bench-player--right { flex-direction: row-reverse; }
+/* .mp-bench-player--right intentionally does NOT reverse flex-direction —
+   BenchPlayerRow's JSX already swaps element order to mirror home. */
 
 .mp-bench-headshot {
   width: 28px; height: 28px; border-radius: 3px;
@@ -333,3 +334,10 @@
 .mp-totals-side { display: flex; flex-direction: column; align-items: center; }
 .mp-totals-side--right { align-items: center; }
 .mp-total-proj { font-family: var(--font-ui); font-size: 11px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.05em; margin-top: 4px; }
+
+/* Bench: name row (name + injury badge) + compact PROJ/TOT variant */
+.mp-bench-name-row { display: flex; align-items: center; gap: 4px; }
+.mp-bench-name-row--right { flex-direction: row-reverse; }
+.mp-pts-block--bench { min-width: 40px; }
+.mp-pts-tot--bench { font-size: 13px; }
+.mp-pts-proj--bench { font-size: 8px; }

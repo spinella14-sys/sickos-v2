@@ -137,6 +137,44 @@ function PlayerCell({ player, side, projMap, opponentMap, isFinal }) {
   )
 }
 
+// Bench player row — same PROJ/TOT + opponent-info treatment as starters,
+// compact layout, mirrored home/away the same way (JSX order, no CSS reversal).
+function BenchPlayerRow({ player, side, projMap, opponentMap, isFinal }) {
+  const isRight   = side === 'away'
+  const gameInfo  = opponentMap[player.nfl_team] ?? null
+  const hasPlayed = player.week_pts !== null
+  const projVal = player.is_locked ? player.locked_proj_pts : (projMap[player.sleeper_id] ?? null)
+  const projDisplay = projVal != null ? projVal.toFixed(1) : '—'
+  const totDisplay  = player.week_pts != null ? player.week_pts.toFixed(1) : '0.0'
+
+  const headshot = (
+    <img src={headshotUrl(player.sleeper_id)} alt="" className="mp-bench-headshot"
+      onError={e => e.target.style.opacity = 0} />
+  )
+  const info = (
+    <div className={`mp-bench-info ${isRight ? 'mp-bench-info--right' : ''}`}>
+      <div className={`mp-bench-name-row ${isRight ? 'mp-bench-name-row--right' : ''}`}>
+        <PlayerLink playerId={player.sleeper_id} className="mp-bench-name">{player.full_name}</PlayerLink>
+        <InjBadge status={player.injury_status} />
+      </div>
+      <span className="mp-bench-meta" style={{ color: POS_COLOR[player.position] }}>{player.position}</span>
+      <PlayerStatus player={player} isFinal={isFinal} gameInfo={gameInfo} />
+    </div>
+  )
+  const pts = (
+    <div className="mp-pts-block mp-pts-block--bench">
+      <span className={`mp-pts-tot mp-pts-tot--bench ${!hasPlayed ? 'mp-pts-tot--zero' : ''}`}>{totDisplay}</span>
+      <span className="mp-pts-proj mp-pts-proj--bench">PROJ {projDisplay}</span>
+    </div>
+  )
+
+  return (
+    <div className={`mp-bench-player ${isRight ? 'mp-bench-player--right' : ''} ${player.is_locked && !isFinal ? 'mp-player--live' : ''}`}>
+      {isRight ? <>{pts}{info}{headshot}</> : <>{headshot}{info}{pts}</>}
+    </div>
+  )
+}
+
 export default function MatchupPage() {
   const { matchupId } = useParams()
   const navigate      = useNavigate()
@@ -363,33 +401,15 @@ export default function MatchupPage() {
                 <div className="mp-bench-grid">
                   <div className="mp-bench-col">
                     {homeBench.map(p => (
-                      <div key={p.sleeper_id} className="mp-bench-player">
-                        <img src={headshotUrl(p.sleeper_id)} alt="" className="mp-bench-headshot"
-                          onError={e => e.target.style.opacity = 0} />
-                        <div className="mp-bench-info">
-                          <PlayerLink playerId={p.sleeper_id} className="mp-bench-name">{p.full_name}</PlayerLink>
-                          <span className="mp-bench-meta" style={{ color: POS_COLOR[p.position] }}>{p.position}</span>
-                        </div>
-                        <span className="mp-bench-pts">
-                          {p.week_pts?.toFixed(1) ?? (projMap[p.sleeper_id] ? `(${projMap[p.sleeper_id].toFixed(1)})` : '—')}
-                        </span>
-                      </div>
+                      <BenchPlayerRow key={p.sleeper_id} player={p} side="home"
+                        projMap={projMap} opponentMap={opponentMap} isFinal={isFinal} />
                     ))}
                   </div>
                   <div className="mp-bench-spacer" />
                   <div className="mp-bench-col mp-bench-col--right">
                     {awayBench.map(p => (
-                      <div key={p.sleeper_id} className="mp-bench-player mp-bench-player--right">
-                        <span className="mp-bench-pts">
-                          {p.week_pts?.toFixed(1) ?? (projMap[p.sleeper_id] ? `(${projMap[p.sleeper_id].toFixed(1)})` : '—')}
-                        </span>
-                        <div className="mp-bench-info mp-bench-info--right">
-                          <PlayerLink playerId={p.sleeper_id} className="mp-bench-name">{p.full_name}</PlayerLink>
-                          <span className="mp-bench-meta" style={{ color: POS_COLOR[p.position] }}>{p.position}</span>
-                        </div>
-                        <img src={headshotUrl(p.sleeper_id)} alt="" className="mp-bench-headshot"
-                          onError={e => e.target.style.opacity = 0} />
-                      </div>
+                      <BenchPlayerRow key={p.sleeper_id} player={p} side="away"
+                        projMap={projMap} opponentMap={opponentMap} isFinal={isFinal} />
                     ))}
                   </div>
                 </div>
