@@ -983,7 +983,7 @@ export default function TradeMachinePage() {
   async function handleAdminProcess(tradeId, action) {
     const r = await fetch(`${API}/trades/${tradeId}/process`,{
       method:'PATCH',
-      headers:{'Content-Type':'application/json','x-admin-password':'Sickos26-Vault!Q7'},
+      headers:{'Content-Type':'application/json','x-admin-password':'dt1mExDJxmaxcr4rNVqb'},
       body:JSON.stringify({action})
     })
     const d = await r.json()

@@ -114,7 +114,7 @@ export default function AdminUFAPage() {
     try {
       const res = await fetch(`${API}/api/ufa/${endpoint}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: 'Sickos26-Vault!Q7', ...body }),
+        body: JSON.stringify({ password: 'dt1mExDJxmaxcr4rNVqb', ...body }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -128,7 +128,7 @@ export default function AdminUFAPage() {
     try {
       const res = await fetch(`${API}/api/ufa/admin/submit-bid`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: 'Sickos26-Vault!Q7', team: actingAs, ...bidData }),
+        body: JSON.stringify({ password: 'dt1mExDJxmaxcr4rNVqb', team: actingAs, ...bidData }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);

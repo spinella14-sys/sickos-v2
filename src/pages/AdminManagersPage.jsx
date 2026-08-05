@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase'
 import './AdminManagersPage.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
-const ADMIN_PW = 'Sickos26-Vault!Q7'
+const ADMIN_PW = 'dt1mExDJxmaxcr4rNVqb'
 
 export default function AdminManagersPage() {
   const [managers,  setManagers]  = useState([])
@@ -123,7 +123,7 @@ function ManagerModal({ manager, onClose, onSave, onError }) {
 
     const r = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001/api'}/admin/managers${isNew ? '' : `/${manager.id}`}`, {
       method: isNew ? 'POST' : 'PATCH',
-      headers: { 'Content-Type':'application/json', 'x-admin-password': 'Sickos26-Vault!Q7' },
+      headers: { 'Content-Type':'application/json', 'x-admin-password': 'dt1mExDJxmaxcr4rNVqb' },
       body: JSON.stringify({
         email, password: password || undefined,
         display_name: displayName, team_abbrev: teamAbbrev,

@@ -174,7 +174,7 @@ export default function InboxPage() {
   const headers = useCallback(() => ({
     'Content-Type': 'application/json',
     'x-team-abbrev': myTeam || '',
-    ...(isAdmin ? { 'x-admin-password': 'Sickos26-Vault!Q7' } : {}),
+    ...(isAdmin ? { 'x-admin-password': 'dt1mExDJxmaxcr4rNVqb' } : {}),
   }), [myTeam, isAdmin])
 
   // ── Mark all old-system messages as read on mount ────────────────────────
