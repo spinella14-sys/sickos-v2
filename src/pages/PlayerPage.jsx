@@ -975,7 +975,7 @@ export default function PlayerPage() {
               <div className="pp-txn-list">
                 {txns.map(txn => {
                   const meta = PP_TXN_TYPE_META[txn.type] || { label: txn.type, color: 'var(--text-muted)' }
-                  const asset = (txn.transaction_assets || []).find(a => a.player_id === id) || (txn.transaction_assets || [])[0]
+                  const asset = (txn.assets || []).find(a => a.player_id === id) || (txn.assets || [])[0]
                   const total = asset?.contract_years
                     ? Object.values(asset.contract_years).reduce((s, y) => s + (parseFloat(y.salary) || 0), 0)
                     : null
