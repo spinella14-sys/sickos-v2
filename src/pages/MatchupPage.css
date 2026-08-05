@@ -341,3 +341,29 @@
 .mp-pts-block--bench { min-width: 40px; }
 .mp-pts-tot--bench { font-size: 13px; }
 .mp-pts-proj--bench { font-size: 8px; }
+
+/* Week matchups strip (collapsible) */
+.mp-week-strip { margin-bottom: 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg1); overflow: hidden; }
+.mp-week-strip-toggle {
+  width: 100%; display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 14px; background: none; border: none; cursor: pointer;
+  font-family: var(--font-ui); font-size: 12px; font-weight: 800; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--text-muted);
+}
+.mp-week-strip-arrow { font-size: 10px; }
+.mp-week-strip-list { border-top: 1px solid var(--border); }
+.mp-week-strip-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 14px; gap: 10px; border-bottom: 1px solid var(--border); cursor: pointer;
+  transition: background 0.12s;
+}
+.mp-week-strip-item:last-child { border-bottom: none; }
+.mp-week-strip-item:hover { background: var(--bg2); }
+.mp-week-strip-item--current { background: rgba(232,130,42,0.06); cursor: default; }
+.mp-week-strip-team { display: flex; align-items: center; gap: 6px; flex: 1; }
+.mp-week-strip-team--away { justify-content: flex-end; }
+.mp-week-strip-logo { width: 20px; height: 20px; border-radius: 3px; object-fit: cover; }
+.mp-week-strip-abbrev { font-family: var(--font-ui); font-size: 11px; font-weight: 700; color: var(--text-primary); }
+.mp-week-strip-score { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--text-primary); min-width: 32px; text-align: center; }
+.mp-week-strip-proj { font-family: var(--font-ui); font-size: 9px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.03em; }
+.mp-week-strip-status { font-family: var(--font-ui); font-size: 9px; font-weight: 800; letter-spacing: 0.08em; color: var(--orange); min-width: 34px; text-align: center; }

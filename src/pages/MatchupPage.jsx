@@ -175,6 +175,62 @@ function BenchPlayerRow({ player, side, projMap, opponentMap, isFinal }) {
   )
 }
 
+// Collapsible strip: every matchup for the week, real score + real PROJ,
+// click any other matchup to jump to its box score.
+function WeekMatchupsStrip({ season, week, currentMatchupId }) {
+  const navigate = useNavigate()
+  const [matchups, setMatchups] = useState([])
+  const [open, setOpen] = useState(false)
+
+  useEffect(() => {
+    if (!season || !week) return
+    fetch(`${API_BASE}/matchups?season=${season}&week=${week}`)
+      .then(r => r.ok ? r.json() : [])
+      .then(data => setMatchups(Array.isArray(data) ? data : []))
+      .catch(() => {})
+  }, [season, week])
+
+  if (!matchups.length) return null
+
+  return (
+    <div className="mp-week-strip">
+      <button className="mp-week-strip-toggle" onClick={() => setOpen(o => !o)}>
+        <span>Week {week} Matchups</span>
+        <span className="mp-week-strip-arrow">{open ? '▲' : '▼'}</span>
+      </button>
+      {open && (
+        <div className="mp-week-strip-list">
+          {matchups.map(m => {
+            const isCurrent = m.id === currentMatchupId
+            const statusLabel = m.status === 'final' ? 'FINAL' : m.status === 'in_progress' ? 'LIVE' : ''
+            return (
+              <div
+                key={m.id}
+                className={`mp-week-strip-item ${isCurrent ? 'mp-week-strip-item--current' : ''}`}
+                onClick={() => !isCurrent && navigate(`/matchup/${m.id}`)}
+              >
+                <div className="mp-week-strip-team">
+                  <img src={LOGOS[m.home_team]} alt="" className="mp-week-strip-logo" onError={e => e.target.style.opacity = 0} />
+                  <span className="mp-week-strip-abbrev">{m.home_team}</span>
+                  <span className="mp-week-strip-score">{(m.home_score || 0).toFixed(1)}</span>
+                  <span className="mp-week-strip-proj">P {(m.home_proj || 0).toFixed(1)}</span>
+                </div>
+                <span className="mp-week-strip-status">{statusLabel}</span>
+                <div className="mp-week-strip-team mp-week-strip-team--away">
+                  <span className="mp-week-strip-proj">P {(m.away_proj || 0).toFixed(1)}</span>
+                  <span className="mp-week-strip-score">{(m.away_score || 0).toFixed(1)}</span>
+                  <span className="mp-week-strip-abbrev">{m.away_team}</span>
+                  <img src={LOGOS[m.away_team]} alt="" className="mp-week-strip-logo" onError={e => e.target.style.opacity = 0} />
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function MatchupPage() {
   const { matchupId } = useParams()
   const navigate      = useNavigate()
@@ -281,6 +337,8 @@ export default function MatchupPage() {
 
   return (
     <div className="mp-root">
+
+      <WeekMatchupsStrip season={matchup.season} week={matchup.week} currentMatchupId={matchup.id} />
 
       {/* ── Scoreboard header ── */}
       <div className="mp-header">
