@@ -342,28 +342,48 @@
 .mp-pts-tot--bench { font-size: 13px; }
 .mp-pts-proj--bench { font-size: 8px; }
 
-/* Week matchups strip (collapsible) */
-.mp-week-strip { margin-bottom: 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg1); overflow: hidden; }
-.mp-week-strip-toggle {
-  width: 100%; display: flex; justify-content: space-between; align-items: center;
-  padding: 10px 14px; background: none; border: none; cursor: pointer;
-  font-family: var(--font-ui); font-size: 12px; font-weight: 800; letter-spacing: 0.08em;
-  text-transform: uppercase; color: var(--text-muted);
+/* Week matchups sidebar (fixed, slides in from the right) */
+.mp-sidebar-tab {
+  position: fixed; top: 50%; right: 0; transform: translateY(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  background: var(--bg1); border: 1px solid var(--border); border-right: none;
+  border-radius: 8px 0 0 8px; padding: 12px 6px; cursor: pointer; z-index: 40;
+  transition: right 0.2s ease;
 }
-.mp-week-strip-arrow { font-size: 10px; }
-.mp-week-strip-list { border-top: 1px solid var(--border); }
-.mp-week-strip-item {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 8px 14px; gap: 10px; border-bottom: 1px solid var(--border); cursor: pointer;
-  transition: background 0.12s;
+.mp-sidebar-tab--open { right: 280px; }
+.mp-sidebar-tab-label {
+  writing-mode: vertical-rl; font-family: var(--font-ui); font-size: 11px;
+  font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted);
 }
-.mp-week-strip-item:last-child { border-bottom: none; }
-.mp-week-strip-item:hover { background: var(--bg2); }
-.mp-week-strip-item--current { background: rgba(232,130,42,0.06); cursor: default; }
-.mp-week-strip-team { display: flex; align-items: center; gap: 6px; flex: 1; }
-.mp-week-strip-team--away { justify-content: flex-end; }
-.mp-week-strip-logo { width: 20px; height: 20px; border-radius: 3px; object-fit: cover; }
-.mp-week-strip-abbrev { font-family: var(--font-ui); font-size: 11px; font-weight: 700; color: var(--text-primary); }
-.mp-week-strip-score { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--text-primary); min-width: 32px; text-align: center; }
-.mp-week-strip-proj { font-family: var(--font-ui); font-size: 9px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.03em; }
-.mp-week-strip-status { font-family: var(--font-ui); font-size: 9px; font-weight: 800; letter-spacing: 0.08em; color: var(--orange); min-width: 34px; text-align: center; }
+.mp-sidebar-tab-arrow { font-size: 14px; color: var(--text-muted); }
+
+.mp-sidebar {
+  position: fixed; top: 0; right: -280px; width: 280px; height: 100vh;
+  background: var(--bg1); border-left: 1px solid var(--border);
+  overflow-y: auto; z-index: 39; transition: right 0.2s ease;
+}
+.mp-sidebar--open { right: 0; }
+.mp-sidebar-header {
+  padding: 16px 14px 10px; font-family: var(--font-ui); font-size: 12px;
+  font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+.mp-sidebar-list { padding: 8px; display: flex; flex-direction: column; gap: 8px; }
+.mp-sidebar-card {
+  border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px;
+  cursor: pointer; transition: background 0.12s; position: relative;
+}
+.mp-sidebar-card:hover { background: var(--bg2); }
+.mp-sidebar-card--current { background: rgba(232,130,42,0.06); cursor: default; border-color: var(--orange); }
+.mp-sidebar-card-status {
+  position: absolute; top: 6px; right: 8px; font-family: var(--font-ui); font-size: 8px;
+  font-weight: 800; letter-spacing: 0.08em; color: var(--orange);
+}
+.mp-sidebar-row { display: flex; align-items: center; gap: 8px; padding: 3px 0; }
+.mp-sidebar-logo { width: 22px; height: 22px; border-radius: 3px; object-fit: cover; flex-shrink: 0; }
+.mp-sidebar-team-info { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.mp-sidebar-abbrev { font-family: var(--font-ui); font-size: 12px; font-weight: 700; color: var(--text-primary); }
+.mp-sidebar-record { font-family: var(--font-ui); font-size: 9px; color: var(--text-muted); }
+.mp-sidebar-nums { display: flex; flex-direction: column; align-items: flex-end; }
+.mp-sidebar-score { font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--text-primary); }
+.mp-sidebar-proj { font-family: var(--font-ui); font-size: 8px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.03em; }

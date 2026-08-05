@@ -175,11 +175,12 @@ function BenchPlayerRow({ player, side, projMap, opponentMap, isFinal }) {
   )
 }
 
-// Collapsible strip: every matchup for the week, real score + real PROJ,
-// click any other matchup to jump to its box score.
-function WeekMatchupsStrip({ season, week, currentMatchupId }) {
+// Fixed right-edge sidebar: every matchup for the week, real score + PROJ +
+// team record, click any other matchup to jump to its box score.
+function WeekMatchupsSidebar({ season, week, currentMatchupId }) {
   const navigate = useNavigate()
   const [matchups, setMatchups] = useState([])
+  const [records, setRecords]   = useState({})
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
@@ -188,46 +189,70 @@ function WeekMatchupsStrip({ season, week, currentMatchupId }) {
       .then(r => r.ok ? r.json() : [])
       .then(data => setMatchups(Array.isArray(data) ? data : []))
       .catch(() => {})
+    fetch(`${API_BASE}/matchups/standings?season=${season}`)
+      .then(r => r.ok ? r.json() : [])
+      .then(data => {
+        const map = {}
+        ;(Array.isArray(data) ? data : []).forEach(t => { map[t.team] = t })
+        setRecords(map)
+      })
+      .catch(() => {})
   }, [season, week])
 
   if (!matchups.length) return null
 
+  const recordFor = (abbrev) => {
+    const r = records[abbrev]
+    return r ? `${r.wins}-${r.losses}${r.ties ? `-${r.ties}` : ''}` : '0-0'
+  }
+
   return (
-    <div className="mp-week-strip">
-      <button className="mp-week-strip-toggle" onClick={() => setOpen(o => !o)}>
-        <span>Week {week} Matchups</span>
-        <span className="mp-week-strip-arrow">{open ? '▲' : '▼'}</span>
+    <>
+      <button className={`mp-sidebar-tab ${open ? 'mp-sidebar-tab--open' : ''}`} onClick={() => setOpen(o => !o)}>
+        <span className="mp-sidebar-tab-label">Week {week}</span>
+        <span className="mp-sidebar-tab-arrow">{open ? '›' : '‹'}</span>
       </button>
-      {open && (
-        <div className="mp-week-strip-list">
+      <div className={`mp-sidebar ${open ? 'mp-sidebar--open' : ''}`}>
+        <div className="mp-sidebar-header">Week {week} Matchups</div>
+        <div className="mp-sidebar-list">
           {matchups.map(m => {
             const isCurrent = m.id === currentMatchupId
             const statusLabel = m.status === 'final' ? 'FINAL' : m.status === 'in_progress' ? 'LIVE' : ''
             return (
               <div
                 key={m.id}
-                className={`mp-week-strip-item ${isCurrent ? 'mp-week-strip-item--current' : ''}`}
+                className={`mp-sidebar-card ${isCurrent ? 'mp-sidebar-card--current' : ''}`}
                 onClick={() => !isCurrent && navigate(`/matchup/${m.id}`)}
               >
-                <div className="mp-week-strip-team">
-                  <img src={LOGOS[m.home_team]} alt="" className="mp-week-strip-logo" onError={e => e.target.style.opacity = 0} />
-                  <span className="mp-week-strip-abbrev">{m.home_team}</span>
-                  <span className="mp-week-strip-score">{(m.home_score || 0).toFixed(1)}</span>
-                  <span className="mp-week-strip-proj">P {(m.home_proj || 0).toFixed(1)}</span>
+                {statusLabel && <div className="mp-sidebar-card-status">{statusLabel}</div>}
+                <div className="mp-sidebar-row">
+                  <img src={LOGOS[m.home_team]} alt="" className="mp-sidebar-logo" onError={e => e.target.style.opacity = 0} />
+                  <div className="mp-sidebar-team-info">
+                    <span className="mp-sidebar-abbrev">{m.home_team}</span>
+                    <span className="mp-sidebar-record">{recordFor(m.home_team)}</span>
+                  </div>
+                  <div className="mp-sidebar-nums">
+                    <span className="mp-sidebar-score">{(m.home_score || 0).toFixed(1)}</span>
+                    <span className="mp-sidebar-proj">PROJ {(m.home_proj || 0).toFixed(1)}</span>
+                  </div>
                 </div>
-                <span className="mp-week-strip-status">{statusLabel}</span>
-                <div className="mp-week-strip-team mp-week-strip-team--away">
-                  <span className="mp-week-strip-proj">P {(m.away_proj || 0).toFixed(1)}</span>
-                  <span className="mp-week-strip-score">{(m.away_score || 0).toFixed(1)}</span>
-                  <span className="mp-week-strip-abbrev">{m.away_team}</span>
-                  <img src={LOGOS[m.away_team]} alt="" className="mp-week-strip-logo" onError={e => e.target.style.opacity = 0} />
+                <div className="mp-sidebar-row">
+                  <img src={LOGOS[m.away_team]} alt="" className="mp-sidebar-logo" onError={e => e.target.style.opacity = 0} />
+                  <div className="mp-sidebar-team-info">
+                    <span className="mp-sidebar-abbrev">{m.away_team}</span>
+                    <span className="mp-sidebar-record">{recordFor(m.away_team)}</span>
+                  </div>
+                  <div className="mp-sidebar-nums">
+                    <span className="mp-sidebar-score">{(m.away_score || 0).toFixed(1)}</span>
+                    <span className="mp-sidebar-proj">PROJ {(m.away_proj || 0).toFixed(1)}</span>
+                  </div>
                 </div>
               </div>
             )
           })}
         </div>
-      )}
-    </div>
+      </div>
+    </>
   )
 }
 
@@ -338,7 +363,7 @@ export default function MatchupPage() {
   return (
     <div className="mp-root">
 
-      <WeekMatchupsStrip season={matchup.season} week={matchup.week} currentMatchupId={matchup.id} />
+      <WeekMatchupsSidebar season={matchup.season} week={matchup.week} currentMatchupId={matchup.id} />
 
       {/* ── Scoreboard header ── */}
       <div className="mp-header">
