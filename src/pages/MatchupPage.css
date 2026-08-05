@@ -164,7 +164,9 @@
   display: flex; align-items: center; gap: 10px; padding: 10px 14px;
   min-width: 0;
 }
-.mp-player--right { flex-direction: row-reverse; }
+/* .mp-player--right intentionally does NOT reverse flex-direction — the JSX
+   already swaps element order ([pts, bio, headshot]) to mirror home's
+   [headshot, bio, pts]. Adding row-reverse here would cancel that out. */
 .mp-player--empty {
   padding: 10px 14px; opacity: 0.3; font-family: var(--font-ui);
   font-size: 11px; color: var(--text-muted);
@@ -215,7 +217,6 @@
   color: var(--orange); flex-shrink: 0; white-space: nowrap;
   min-width: 44px; text-align: right;
 }
-.mp-player--right .mp-pts { text-align: left; }
 .mp-pts--zero { color: var(--text-muted); font-size: 16px; }
 
 /* ─── Totals row ─────────────────────────────────────────────────────────── */
