@@ -81,6 +81,25 @@ export default function SettingsPage() {
   const [pwSaving,  setPwSaving]  = useState(false)
   const [pwMsg,     setPwMsg]     = useState(null)
 
+  // ── Email notifications ──────────────────────────────────────────────────
+  const [emailEnabled, setEmailEnabled] = useState(!!manager?.email_notifications_enabled)
+  const [emailSaving,  setEmailSaving]  = useState(false)
+  const [emailMsg,     setEmailMsg]     = useState(null)
+
+  async function saveEmailPref() {
+    setEmailSaving(true); setEmailMsg(null)
+    const r = await fetch(`${API}/admin/managers/me`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'x-team-abbrev': abbrev },
+      body: JSON.stringify({ email_notifications_enabled: emailEnabled }),
+    })
+    const d = await r.json()
+    setEmailSaving(false)
+    setEmailMsg(r.ok
+      ? { type:'ok', text:'Preference saved!' }
+      : { type:'err', text: d.error || 'Failed to save preference' })
+  }
+
   async function changePassword() {
     if (!newPw || !confirmPw) { setPwMsg({ type:'err', text:'Fill in all fields' }); return }
     if (newPw !== confirmPw)  { setPwMsg({ type:'err', text:'New passwords do not match' }); return }
@@ -175,6 +194,29 @@ export default function SettingsPage() {
             </button>
           </div>
           {logoMsg && <div className={`settings-msg settings-msg--${logoMsg.type}`}>{logoMsg.text}</div>}
+        </div>
+
+        {/* ── Email Notifications ── */}
+        <div className="settings-card">
+          <div className="settings-card-title">Email Notifications</div>
+          <div className="settings-card-desc">
+            Get emailed when you receive a trade offer, in addition to the in-app inbox notification.
+            More notification types coming soon.
+          </div>
+          <label className="settings-checkbox-row">
+            <input
+              type="checkbox"
+              checked={emailEnabled}
+              onChange={e => setEmailEnabled(e.target.checked)}
+            />
+            <span>Email me about trade offers</span>
+          </label>
+          <div className="settings-actions">
+            <button className="settings-btn settings-btn--primary" onClick={saveEmailPref} disabled={emailSaving}>
+              {emailSaving ? 'Saving…' : 'Save Preference'}
+            </button>
+          </div>
+          {emailMsg && <div className={`settings-msg settings-msg--${emailMsg.type}`}>{emailMsg.text}</div>}
         </div>
 
         {/* ── Password ── */}

@@ -170,3 +170,6 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.settings-checkbox-row { display: flex; align-items: center; gap: 8px; margin: 10px 0; font-family: var(--font-ui); font-size: 13px; color: var(--text-primary); cursor: pointer; }
+.settings-checkbox-row input { width: 16px; height: 16px; cursor: pointer; }
