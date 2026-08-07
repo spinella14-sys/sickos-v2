@@ -164,9 +164,9 @@ export default function PendingTradesWidget() {
           <span className="ptw-notify-dot"/>
           <span className="ptw-notify-text">
             {trades.length === 1
-              ? 'You have 1 pending trade offer'
+              ? '⚠️ You have 1 pending trade offer — action needed'
               : trades.length > 0
-                ? `You have ${trades.length} pending trade offer${trades.length>1?'s':''}`
+                ? `⚠️ You have ${trades.length} pending trade offer${trades.length>1?'s':''} — action needed`
                 : waitingTrades.length > 0
                   ? `${waitingTrades.length} trade proposal${waitingTrades.length>1?'s':''} awaiting response`
                   : 'No pending trades'}
