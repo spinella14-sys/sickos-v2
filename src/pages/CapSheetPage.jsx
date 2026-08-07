@@ -850,7 +850,6 @@ export default function CapSheetPage() {
       </div>
 
       {/* SB Projection Widget */}
-      <SBWidget abbrev={abbrev?.toUpperCase()} salary={team?.salary || 0} />
 
       {/* Edit modal */}
       {editing && (

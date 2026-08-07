@@ -6,6 +6,8 @@ import PendingTradesWidget from '../components/PendingTradesWidget'
 import { useAuth } from '../context/AuthContext'
 import { headshotUrl, nflTeamLogoUrl } from '../hooks/useSleeper'
 import PlayerLink from '../components/PlayerCard/PlayerLink'
+import CapSheetPage from './CapSheetPage'
+import SBTab from './SBTab'
 import DefenseRankBadge, { OppRankCell } from '../components/DefenseRankBadge'
 import { normalizeTeamAbbrev } from '../utils/defenseRankUtils'
 import NewsCard from '../components/NewsCard'
@@ -1155,7 +1157,8 @@ export default function TeamPage() {
       <div className="tp-tabs-wrap">
         <div className="tp-tabs">
           <button className={`tp-tab ${activeTab==='roster'?'tp-tab--active':''}`} onClick={() => setActiveTab('roster')}>Roster</button>
-          <button className="tp-tab" onClick={() => navigate(`/team/${abbrev}/cap`)}>Cap Sheet</button>
+          <button className={`tp-tab ${activeTab==='cap'?'tp-tab--active':''}`} onClick={() => setActiveTab('cap')}>Cap Sheet</button>
+          <button className={`tp-tab ${activeTab==='signingbonus'?'tp-tab--active':''}`} onClick={() => setActiveTab('signingbonus')}>Signing Bonus</button>
           <button className={`tp-tab ${activeTab==='injuries'?'tp-tab--active':''}`} onClick={() => setActiveTab('injuries')}>
             Injuries{roster.filter(r=>r.players?.injury_status).length > 0 ? ` (${roster.filter(r=>r.players?.injury_status).length})` : ''}
           </button>
@@ -1179,6 +1182,10 @@ export default function TeamPage() {
       </div>
 
       <div className="tp-content">
+
+        {activeTab === 'cap' && <CapSheetPage />}
+
+        {activeTab === 'signingbonus' && <SBTab abbrev={abbrev} />}
 
         {activeTab === 'roster' && (
           <div className="tp-roster-view">
