@@ -55,8 +55,30 @@
 .rp-content { display: flex; flex-direction: column; gap: 4px; }
 .rp-block {
   background: var(--bg1); border: 1px solid var(--border); border-radius: 8px;
-  padding: 4px 20px 16px; margin-bottom: 10px;
+  padding: 4px 20px 16px; margin-bottom: 10px; position: relative;
 }
+.rp-block-edit-btn {
+  position: absolute; top: 12px; right: 14px;
+  font-family: var(--font-ui); font-size: 11px; font-weight: 700;
+  padding: 4px 10px; border-radius: 5px; cursor: pointer;
+  background: transparent; border: 1px solid var(--border); color: var(--text-muted);
+}
+.rp-block-edit-btn:hover { border-color: var(--orange); color: var(--orange); }
+
+.rp-section-editor { display: flex; flex-direction: column; gap: 10px; padding-top: 12px; }
+.rp-section-textarea {
+  width: 100%; min-height: 220px; padding: 14px; border-radius: 8px;
+  background: var(--bg0); border: 1px solid var(--border); color: var(--text-primary);
+  font-family: 'SF Mono', Consolas, monospace; font-size: 13px; line-height: 1.6; resize: vertical;
+}
+.rp-section-textarea:focus { outline: none; border-color: var(--orange); }
+.rp-pw-input {
+  padding: 8px 12px; border-radius: 6px; max-width: 220px;
+  background: var(--bg0); border: 1px solid var(--border); color: var(--text-primary);
+  font-family: var(--font-ui); font-size: 13px;
+}
+.rp-pw-input:focus { outline: none; border-color: var(--orange); }
+.rp-section-actions { display: flex; align-items: center; gap: 12px; }
 
 .rp-block h1 { font-family: var(--font-display); font-size: 24px; color: var(--text-primary); }
 .rp-block h2 {
