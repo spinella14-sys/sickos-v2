@@ -757,6 +757,14 @@ export default function TeamPage() {
 
   // ── Derived state ──────────────────────────────────────────────────────
   const capUsed       = teamData?.cap_used       ?? 0
+  const [violations, setViolations] = useState([])
+  useEffect(() => {
+    if (!abbrev) return
+    fetch(`${API_BASE}/teams/${abbrev.toUpperCase()}/violations?season=${CURRENT_SEASON}`)
+      .then(r => r.ok ? r.json() : [])
+      .then(data => setViolations(Array.isArray(data) ? data : []))
+      .catch(() => {})
+  }, [abbrev])
   const capSpace      = teamData?.cap_space      ?? 0
   const hardCap       = teamData?.hard_cap       ?? CAP.hardCap
   const isLux         = teamData?.over_tax       ?? false
@@ -1147,6 +1155,14 @@ export default function TeamPage() {
         </div>
         <div className="tp-cap-section" style={{ background:"rgba(0,0,0,0.28)", padding:"6px 14px", borderRadius:6, backdropFilter:"blur(4px)" }}>
           <CapBar capUsed={capUsed} hardCap={hardCap} taxLine={TAX_LINE}/>
+          {violations.length > 0 && (
+            <div style={{
+              marginTop:6, fontFamily:'var(--font-ui)', fontSize:11, fontWeight:800,
+              color:'#d94f4f', display:'flex', alignItems:'center', gap:6,
+            }}>
+              🚨 {violations.length} roster compliance issue{violations.length>1?'s':''} -- see notice
+            </div>
+          )}
         </div>
       </div>
 
