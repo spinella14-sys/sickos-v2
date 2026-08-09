@@ -7,6 +7,7 @@ import { TEAMS } from '../data/league'
 import { getSeasonConsts } from '../utils/contractCalc'
 import LOGOS from '../assets/logos/index.js'
 import PendingTradesWidget from '../components/PendingTradesWidget'
+import RosterViolationPopup from '../components/RosterViolationPopup'
 import CalendarWidget from '../components/CalendarWidget'
 import TradeBlockWidget from '../components/TradeBlockWidget'
 import NewsTickerWidget from '../components/NewsTickerWidget'
@@ -737,6 +738,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Pending trades */}
+      <RosterViolationPopup />
       <PendingTradesWidget />
 
       {/* ── WIDGET CANVAS ── */}
