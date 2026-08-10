@@ -82,22 +82,33 @@ export default function SettingsPage() {
   const [pwMsg,     setPwMsg]     = useState(null)
 
   // ── Email notifications ──────────────────────────────────────────────────
-  const [emailEnabled, setEmailEnabled] = useState(!!manager?.email_notifications_enabled)
-  const [emailSaving,  setEmailSaving]  = useState(false)
-  const [emailMsg,     setEmailMsg]     = useState(null)
+  const EMAIL_NOTIFICATION_TYPES = [
+    { key: 'trade_offer',       label: 'Trade offers',            desc: 'When another team sends you a trade proposal.', available: true },
+    { key: 'bid_results',       label: 'Bid results',              desc: 'When a free agent bid you placed is won or lost.', available: true },
+    { key: 'roster_compliance', label: 'Roster compliance alerts', desc: 'Cap violations, IR-lock issues, and roster minimum warnings.', available: true },
+    { key: 'payment_reminder',  label: 'Payment reminders',        desc: 'Coming soon.', available: false },
+    { key: 'calendar',          label: 'Calendar notifications',   desc: 'Coming soon.', available: false },
+  ]
+  const [emailTypes,  setEmailTypes]  = useState(manager?.email_notification_types || [])
+  const [emailSaving, setEmailSaving] = useState(false)
+  const [emailMsg,    setEmailMsg]    = useState(null)
+
+  function toggleEmailType(key) {
+    setEmailTypes(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key])
+  }
 
   async function saveEmailPref() {
     setEmailSaving(true); setEmailMsg(null)
     const r = await fetch(`${API}/admin/managers/me`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', 'x-team-abbrev': abbrev },
-      body: JSON.stringify({ email_notifications_enabled: emailEnabled }),
+      body: JSON.stringify({ email_notification_types: emailTypes }),
     })
     const d = await r.json()
     setEmailSaving(false)
     setEmailMsg(r.ok
-      ? { type:'ok', text:'Preference saved!' }
-      : { type:'err', text: d.error || 'Failed to save preference' })
+      ? { type:'ok', text:'Preferences saved!' }
+      : { type:'err', text: d.error || 'Failed to save preferences' })
   }
 
   async function changePassword() {
@@ -196,24 +207,29 @@ export default function SettingsPage() {
           {logoMsg && <div className={`settings-msg settings-msg--${logoMsg.type}`}>{logoMsg.text}</div>}
         </div>
 
-        {/* ── Email Notifications ── */}
+        {/* -- Email Notifications -- */}
         <div className="settings-card">
           <div className="settings-card-title">Email Notifications</div>
           <div className="settings-card-desc">
-            Get emailed when you receive a trade offer, in addition to the in-app inbox notification.
-            More notification types coming soon.
+            Choose which events email you, in addition to the in-app inbox notification.
           </div>
-          <label className="settings-checkbox-row">
-            <input
-              type="checkbox"
-              checked={emailEnabled}
-              onChange={e => setEmailEnabled(e.target.checked)}
-            />
-            <span>Email me about trade offers</span>
-          </label>
+          {EMAIL_NOTIFICATION_TYPES.map(t => (
+            <label key={t.key} className="settings-checkbox-row" style={{ opacity: t.available ? 1 : 0.5 }}>
+              <input
+                type="checkbox"
+                checked={emailTypes.includes(t.key)}
+                disabled={!t.available}
+                onChange={() => toggleEmailType(t.key)}
+              />
+              <span>
+                {t.label}
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{t.desc}</div>
+              </span>
+            </label>
+          ))}
           <div className="settings-actions">
             <button className="settings-btn settings-btn--primary" onClick={saveEmailPref} disabled={emailSaving}>
-              {emailSaving ? 'Saving…' : 'Save Preference'}
+              {emailSaving ? 'Saving…' : 'Save Preferences'}
             </button>
           </div>
           {emailMsg && <div className={`settings-msg settings-msg--${emailMsg.type}`}>{emailMsg.text}</div>}
