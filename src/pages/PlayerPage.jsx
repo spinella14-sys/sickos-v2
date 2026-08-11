@@ -603,7 +603,7 @@ export default function PlayerPage() {
               )}
             </div>
 
-            <div className="pp-bio">
+            <div className="pp-bio" style={{ color: teamColor?.text || '#fff' }}>
               <div className="pp-pos-tag" style={{
                 color: { QB:'#e8822a', RB:'#3dba6e', WR:'#3a9fd4', TE:'#d4a843' }[pos] || '#e8822a',
                 background: '#000',
@@ -611,8 +611,6 @@ export default function PlayerPage() {
               <h1 className="pp-name">{player.full_name}</h1>
               <div className="pp-meta-row">
                 <span className="pp-nfl-team">{nflTeam || 'FA'}</span>
-                <span className="pp-dot">·</span>
-                <span className="pp-detail">#{player.number || '—'}</span>
               </div>
               <div className="pp-meta-row pp-physical">
                 <span>{formatHeight(player.height)}</span>
@@ -661,6 +659,7 @@ export default function PlayerPage() {
                     </span>
                     {manager && (
                       <button className={`pp-watchlist-btn-sm ${onWatchlist ? 'pp-watchlist-btn-sm--active' : ''}`}
+                        style={!onWatchlist && teamColor ? { color: teamColor.text, borderColor: `${teamColor.text}33` } : {}}
                         onClick={toggleWatchlist} disabled={watchlistLoading}>
                         {watchlistLoading ? '…' : onWatchlist ? '★ Watchlist' : '☆ Watch'}
                       </button>
@@ -714,12 +713,6 @@ export default function PlayerPage() {
             </div>
           </div>
 
-          <div className="pp-ranks">
-            <VertBar value={games > 0 ? `#${posRank}` : '—'} label="POS RANK"
-              pct={games > 0 ? Math.max(0, 100 - (posRank / 80) * 100) : 0} color={accentColor}/>
-            <VertBar value={games > 0 ? ptsPerG.toFixed(1) : '—'} label="PTS/GAME"
-              pct={games > 0 ? Math.min(100, (ptsPerG / 40) * 100) : 0} color="#3a9fd4"/>
-          </div>
         </div>
       </div>
 
