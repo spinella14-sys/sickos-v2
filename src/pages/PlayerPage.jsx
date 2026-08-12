@@ -466,6 +466,27 @@ export default function PlayerPage() {
     })
   }, [career, id])
 
+  const [careerAnalytics, setCareerAnalytics] = useState({}) // { [season]: /analytics response }
+
+  // Fetch raw analytics (rate stats) once per season present in career data
+  useEffect(() => {
+    if (!career || !career.length || !id) return
+    const seasonsNeeded = career.map(s => s.season).filter(s => !careerAnalytics[s])
+    if (!seasonsNeeded.length) return
+    Promise.all(seasonsNeeded.map(s =>
+      fetch(`${API_BASE}/stats/player/${id}/analytics?season=${s}`)
+        .then(r => r.ok ? r.json() : null)
+        .then(data => ({ season: s, data }))
+        .catch(() => ({ season: s, data: null }))
+    )).then(results => {
+      setCareerAnalytics(prev => {
+        const next = { ...prev }
+        results.forEach(r => { next[r.season] = r.data })
+        return next
+      })
+    })
+  }, [career, id])
+
   // CTG-style diverging percentile color: low = blue, mid = near-white, high = orange
   function percentileColor(pct) {
     if (pct == null) return null
@@ -1096,6 +1117,45 @@ export default function PlayerPage() {
                   </tbody>
                 </table>
                 <div className="pp-career-note">Colored badges show percentile rank vs. same-position players that season. Stats reflect seasons with recorded data in the Sickos Only database.</div>
+
+                <h3 className="pp-career-subheading">Analytics</h3>
+                <table className="pp-career-table pp-career-table--pct">
+                  <thead>
+                    <tr>
+                      <th>YEAR</th>
+                      {pos==='QB' && <><th>YDS/ATT</th><th>TD RATE</th><th>SACK RATE</th><th>EPA</th></>}
+                      {(pos==='RB') && <><th>CARRY RATE</th><th>RUSH TD RATE</th></>}
+                      {(pos==='WR'||pos==='TE'||pos==='RB') && <><th>TARGET RATE</th><th>CATCH RATE</th><th>YDS/TGT</th><th>REC TD RATE</th></>}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {career.map(s => {
+                      const pctSrc = careerRanks[s.season]?.analytics_percentile
+                      const an = careerAnalytics[s.season]
+                      const epaVal = pos==='QB' ? an?.passing?.epa : pos==='RB' ? an?.rushing?.epa : an?.receiving?.epa
+                      return (
+                      <tr key={s.season} className={`pp-career-row ${s.season===CURRENT_SEASON?'pp-career-row--current':''}`}>
+                        <td className="pp-career-year">{s.season}</td>
+                        {pos==='QB' && <>
+                          <PctCell value={an?.passing?.yds_per_att ?? '—'} percentile={pctSrc?.yds_per_att}/>
+                          <PctCell value={an?.passing?.td_rate!=null?`${an.passing.td_rate}%`:'—'} percentile={pctSrc?.td_rate_pass}/>
+                          <PctCell value={an?.passing?.sack_rate!=null?`${an.passing.sack_rate}%`:'—'} percentile={pctSrc?.sack_rate}/>
+                          <PctCell value={epaVal ?? '—'} percentile={pctSrc?.epa_total}/>
+                        </>}
+                        {pos==='RB' && <>
+                          <PctCell value={an?.rushing?.carry_rate!=null?`${an.rushing.carry_rate}%`:'—'} percentile={pctSrc?.carry_rate}/>
+                          <PctCell value={an?.rushing?.td_rate!=null?`${an.rushing.td_rate}%`:'—'} percentile={pctSrc?.td_rate_rush}/>
+                        </>}
+                        {(pos==='WR'||pos==='TE'||pos==='RB') && <>
+                          <PctCell value={an?.receiving?.target_rate!=null?`${an.receiving.target_rate}%`:'—'} percentile={pctSrc?.target_rate}/>
+                          <PctCell value={an?.receiving?.catch_rate!=null?`${an.receiving.catch_rate}%`:'—'} percentile={pctSrc?.catch_rate}/>
+                          <PctCell value={an?.receiving?.yds_per_target ?? '—'} percentile={pctSrc?.yds_per_target}/>
+                          <PctCell value={an?.receiving?.td_rate!=null?`${an.receiving.td_rate}%`:'—'} percentile={pctSrc?.td_rate_rec}/>
+                        </>}
+                      </tr>
+                    )})}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>
