@@ -435,6 +435,9 @@ export default function PlayerPage() {
       .catch(() => setStatsLoading(false))
   }, [player?.sleeper_id, season])
 
+  const [careerViewMode, setCareerViewMode] = useState('total') // 'total' | 'perGame'
+  const [careerRanks,    setCareerRanks]    = useState({}) // { [season]: position-ranks response }
+
   useEffect(() => {
     if (activeTab !== 'career' || career || !id) return
     setCareerLoading(true)
@@ -443,6 +446,54 @@ export default function PlayerPage() {
       .then(data => { setCareer(data); setCareerLoading(false) })
       .catch(() => setCareerLoading(false))
   }, [activeTab, player?.sleeper_id])
+
+  // Fetch position-ranks (rank + percentile) once per season present in career data
+  useEffect(() => {
+    if (!career || !career.length || !id) return
+    const seasonsNeeded = career.map(s => s.season).filter(s => !careerRanks[s])
+    if (!seasonsNeeded.length) return
+    Promise.all(seasonsNeeded.map(s =>
+      fetch(`${API_BASE}/stats/player/${id}/position-ranks?season=${s}`)
+        .then(r => r.ok ? r.json() : null)
+        .then(data => ({ season: s, data }))
+        .catch(() => ({ season: s, data: null }))
+    )).then(results => {
+      setCareerRanks(prev => {
+        const next = { ...prev }
+        results.forEach(r => { next[r.season] = r.data })
+        return next
+      })
+    })
+  }, [career, id])
+
+  // CTG-style diverging percentile color: low = blue, mid = near-white, high = orange
+  function percentileColor(pct) {
+    if (pct == null) return null
+    if (pct < 50) {
+      const t = pct / 50
+      const r = Math.round(70 + t * (255 - 70))
+      const g = Math.round(130 + t * (255 - 130))
+      const b = Math.round(220 + t * (255 - 220))
+      return `rgb(${r},${g},${b})`
+    }
+    const t = (pct - 50) / 50
+    const r = 255
+    const g = Math.round(255 - t * (255 - 140))
+    const b = Math.round(255 - t * (255 - 40))
+    return `rgb(${r},${g},${b})`
+  }
+
+  function PctCell({ value, percentile }) {
+    const bg = percentileColor(percentile)
+    return (
+      <td className="pp-career-pct-cell">
+        {percentile != null && (
+          <span className="pp-career-pct-badge" style={{ background: bg }}>{percentile}</span>
+        )}
+        <span className="pp-career-pct-val">{value}</span>
+      </td>
+    )
+  }
 
   useEffect(() => {
     if (activeTab !== 'news' || !id) return
@@ -1004,7 +1055,11 @@ export default function PlayerPage() {
             {!careerLoading && (!career||career.length===0) && <div className="pp-no-data">No career data found.</div>}
             {!careerLoading && career && career.length > 0 && (
               <div className="pp-career-wrap">
-                <table className="pp-career-table">
+                <div className="pp-career-toggle">
+                  <button className={careerViewMode==='total'?'pp-toggle-btn pp-toggle-btn--active':'pp-toggle-btn'} onClick={()=>setCareerViewMode('total')}>Total</button>
+                  <button className={careerViewMode==='perGame'?'pp-toggle-btn pp-toggle-btn--active':'pp-toggle-btn'} onClick={()=>setCareerViewMode('perGame')}>Per Game</button>
+                </div>
+                <table className="pp-career-table pp-career-table--pct">
                   <thead>
                     <tr>
                       <th>YEAR</th><th>G</th><th>PTS</th><th>PTS/G</th>
@@ -1018,24 +1073,29 @@ export default function PlayerPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {career.map(s => (
+                    {career.map(s => {
+                      const ranks = careerRanks[s.season]
+                      const pctSrc = careerViewMode==='perGame' ? ranks?.perGame_percentile : ranks?.total_percentile
+                      const divisor = careerViewMode==='perGame' && s.games ? s.games : 1
+                      const dispVal = (raw) => raw==null ? '—' : fmt(divisor>1 ? raw/divisor : raw, divisor>1?1:0)
+                      return (
                       <tr key={s.season} className={`pp-career-row ${s.season===CURRENT_SEASON?'pp-career-row--current':''}`}>
                         <td className="pp-career-year">{s.season}</td>
                         <td>{s.games}</td>
                         <td style={{color:accentColor,fontWeight:700}}>{fmt(calcFantasyPts(s,pos),1)}</td>
                         <td>{s.games?fmt(calcFantasyPts(s,pos)/s.games,1):'—'}</td>
-                        {(pos==='QB'||career.some(c=>c.pass_yd>0))&&<td>{fmt(s.pass_yd)||'—'}</td>}
-                        {(pos==='QB'||career.some(c=>c.pass_td>0))&&<td>{fmt(s.pass_td)||'—'}</td>}
-                        {(pos==='QB'||career.some(c=>c.pass_int>0))&&<td>{fmt(s.pass_int)||'—'}</td>}
-                        {(pos!=='QB'||career.some(c=>c.rush_yd>0))&&<td>{fmt(s.rush_yd)||'—'}</td>}
-                        <td>{fmt(s.rush_td)||'—'}</td>
-                        {(pos!=='QB'||career.some(c=>c.rec_yd>0))&&<td>{fmt(s.rec_yd)||'—'}</td>}
-                        <td>{fmt(s.rec_td)||'—'}</td>
+                        {(pos==='QB'||career.some(c=>c.pass_yd>0))&&<PctCell value={dispVal(s.pass_yd)} percentile={pctSrc?.pass_yd}/>}
+                        {(pos==='QB'||career.some(c=>c.pass_td>0))&&<PctCell value={dispVal(s.pass_td)} percentile={pctSrc?.pass_td}/>}
+                        {(pos==='QB'||career.some(c=>c.pass_int>0))&&<PctCell value={dispVal(s.pass_int)} percentile={pctSrc?.pass_int}/>}
+                        {(pos!=='QB'||career.some(c=>c.rush_yd>0))&&<PctCell value={dispVal(s.rush_yd)} percentile={pctSrc?.rush_yd}/>}
+                        <PctCell value={dispVal(s.rush_td)} percentile={pctSrc?.rush_td}/>
+                        {(pos!=='QB'||career.some(c=>c.rec_yd>0))&&<PctCell value={dispVal(s.rec_yd)} percentile={pctSrc?.rec_yd}/>}
+                        <PctCell value={dispVal(s.rec_td)} percentile={pctSrc?.rec_td}/>
                       </tr>
-                    ))}
+                    )})}
                   </tbody>
                 </table>
-                <div className="pp-career-note">Stats reflect seasons with recorded data in the Sickos Only database.</div>
+                <div className="pp-career-note">Colored badges show percentile rank vs. same-position players that season. Stats reflect seasons with recorded data in the Sickos Only database.</div>
               </div>
             )}
           </div>

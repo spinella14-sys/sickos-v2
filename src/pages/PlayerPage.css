@@ -608,3 +608,18 @@
   color: #fff;
   border-radius: 3px;
 }
+
+/* ---- Career tab: percentile heatmap ---- */
+.pp-career-toggle { display: flex; gap: 6px; margin-bottom: 12px; }
+.pp-toggle-btn {
+  font-family: var(--font-ui); font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 6px 14px; border-radius: 5px; border: 1px solid var(--border);
+  background: transparent; color: var(--text-muted); cursor: pointer;
+}
+.pp-toggle-btn--active { background: var(--orange); color: #000; border-color: var(--orange); }
+.pp-career-table--pct .pp-career-pct-cell { padding: 4px 8px; text-align: center; }
+.pp-career-pct-badge {
+  display: inline-block; min-width: 26px; padding: 2px 6px; border-radius: 4px;
+  font-family: var(--font-ui); font-size: 12px; font-weight: 800; color: #1a1a2e; margin-right: 6px;
+}
+.pp-career-pct-val { font-family: var(--font-ui); font-size: 13px; color: var(--text-primary); }
