@@ -623,3 +623,13 @@
   font-family: var(--font-ui); font-size: 12px; font-weight: 800; color: #1a1a2e; margin-right: 6px;
 }
 .pp-career-pct-val { font-family: var(--font-ui); font-size: 13px; color: var(--text-primary); }
+
+
+/* ---- Career table: heatmap rework ---- */
+.pp-career-table th, .pp-career-table td { text-align: center; }
+.pp-career-table .pp-career-year { text-align: left; font-weight: 800; }
+.pp-toggle-sep { width: 1px; background: var(--border); margin: 2px 4px; }
+.pp-career-pct-stack { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.pp-career-pct-sub { font-family: var(--font-ui); font-size: 10px; font-weight: 800; }
+.pp-career-pct-cell--heatmap { border-radius: 4px; }
+.pp-career-pct-cell--heatmap .pp-career-pct-val { color: #1a1a2e; font-weight: 700; }

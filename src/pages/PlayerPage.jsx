@@ -488,30 +488,39 @@ export default function PlayerPage() {
   }, [career, id])
 
   // CTG-style diverging percentile color: low = blue, mid = near-white, high = orange
-  function percentileColor(pct) {
-    if (pct == null) return null
-    if (pct < 50) {
-      const t = pct / 50
-      const r = Math.round(70 + t * (255 - 70))
-      const g = Math.round(130 + t * (255 - 130))
-      const b = Math.round(220 + t * (255 - 220))
-      return `rgb(${r},${g},${b})`
-    }
-    const t = (pct - 50) / 50
-    const r = 255
-    const g = Math.round(255 - t * (255 - 140))
-    const b = Math.round(255 - t * (255 - 40))
-    return `rgb(${r},${g},${b})`
+  const [heatmapMode, setHeatmapMode] = useState(false)
+
+  // Red (bad) -> Yellow (neutral) -> Green (good)
+  function percentileColor(pctile) {
+    if (pctile == null) return null
+    const RED = [217,79,79], YELLOW = [232,175,41], GREEN = [61,186,110]
+    const a = pctile <= 50 ? RED : YELLOW
+    const b = pctile <= 50 ? YELLOW : GREEN
+    const t = pctile <= 50 ? pctile/50 : (pctile-50)/50
+    const r = Math.round(a[0] + t*(b[0]-a[0]))
+    const g = Math.round(a[1] + t*(b[1]-a[1]))
+    const bl = Math.round(a[2] + t*(b[2]-a[2]))
+    return `rgb(${r},${g},${bl})`
   }
 
-  function PctCell({ value, percentile }) {
-    const bg = percentileColor(percentile)
+  // value: main display number. percentile: drives color. subText: optional
+  // override for the small line below the value (defaults to "{percentile}%").
+  function PctCell({ value, percentile, subText }) {
+    const color = percentileColor(percentile)
+    const sub = subText !== undefined ? subText : (percentile != null ? `${percentile}%` : null)
+    if (heatmapMode) {
+      return (
+        <td className="pp-career-pct-cell pp-career-pct-cell--heatmap" style={{ background: color || undefined }}>
+          <span className="pp-career-pct-val">{value}</span>
+        </td>
+      )
+    }
     return (
       <td className="pp-career-pct-cell">
-        {percentile != null && (
-          <span className="pp-career-pct-badge" style={{ background: bg }}>{percentile}</span>
-        )}
-        <span className="pp-career-pct-val">{value}</span>
+        <div className="pp-career-pct-stack">
+          <span className="pp-career-pct-val">{value}</span>
+          {sub != null && <span className="pp-career-pct-sub" style={{ color }}>{sub}</span>}
+        </div>
       </td>
     )
   }
@@ -1079,6 +1088,8 @@ export default function PlayerPage() {
                 <div className="pp-career-toggle">
                   <button className={careerViewMode==='total'?'pp-toggle-btn pp-toggle-btn--active':'pp-toggle-btn'} onClick={()=>setCareerViewMode('total')}>Total</button>
                   <button className={careerViewMode==='perGame'?'pp-toggle-btn pp-toggle-btn--active':'pp-toggle-btn'} onClick={()=>setCareerViewMode('perGame')}>Per Game</button>
+                  <span className="pp-toggle-sep"/>
+                  <button className={heatmapMode?'pp-toggle-btn pp-toggle-btn--active':'pp-toggle-btn'} onClick={()=>setHeatmapMode(m=>!m)}>Heatmap</button>
                 </div>
                 <table className="pp-career-table pp-career-table--pct">
                   <thead>
@@ -1103,8 +1114,12 @@ export default function PlayerPage() {
                       <tr key={s.season} className={`pp-career-row ${s.season===CURRENT_SEASON?'pp-career-row--current':''}`}>
                         <td className="pp-career-year">{s.season}</td>
                         <td>{s.games}</td>
-                        <td style={{color:accentColor,fontWeight:700}}>{fmt(calcFantasyPts(s,pos),1)}</td>
-                        <td>{s.games?fmt(calcFantasyPts(s,pos)/s.games,1):'—'}</td>
+                        <PctCell value={fmt(calcFantasyPts(s,pos),1)}
+                          percentile={careerViewMode==='perGame' ? ranks?.fpts_pg_percentile : ranks?.fpts_total_percentile}
+                          subText={(() => { const r = careerViewMode==='perGame' ? ranks?.fpts_pg : ranks?.fpts_total; return r!=null ? `${pos}${r}` : null })()}/>
+                        <PctCell value={s.games?fmt(calcFantasyPts(s,pos)/s.games,1):'—'}
+                          percentile={ranks?.fpts_pg_percentile}
+                          subText={ranks?.fpts_pg!=null ? `${pos}${ranks.fpts_pg}` : null}/>
                         {(pos==='QB'||career.some(c=>c.pass_yd>0))&&<PctCell value={dispVal(s.pass_yd)} percentile={pctSrc?.pass_yd}/>}
                         {(pos==='QB'||career.some(c=>c.pass_td>0))&&<PctCell value={dispVal(s.pass_td)} percentile={pctSrc?.pass_td}/>}
                         {(pos==='QB'||career.some(c=>c.pass_int>0))&&<PctCell value={dispVal(s.pass_int)} percentile={pctSrc?.pass_int}/>}
