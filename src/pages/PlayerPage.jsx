@@ -1133,6 +1133,49 @@ export default function PlayerPage() {
                 </table>
                 <div className="pp-career-note">Colored badges show percentile rank vs. same-position players that season. Stats reflect seasons with recorded data in the Sickos Only database.</div>
 
+                <h3 className="pp-career-subheading">Full Stats</h3>
+                <table className="pp-career-table pp-career-table--pct">
+                  <thead>
+                    <tr>
+                      <th>YEAR</th>
+                      {pos==='QB' && <><th>CMP</th><th>ATT</th><th>CMP%</th><th>SACK</th></>}
+                      {pos==='RB' && <><th>RUSH ATT</th><th>TGT</th><th>REC</th></>}
+                      {(pos==='WR'||pos==='TE') && <><th>TGT</th><th>REC</th><th>RUSH ATT</th></>}
+                      <th>FUM LOST</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {career.map(s => {
+                      const ranks = careerRanks[s.season]
+                      const pctSrc = careerViewMode==='perGame' ? ranks?.perGame_percentile : ranks?.total_percentile
+                      const divisor = careerViewMode==='perGame' && s.games ? s.games : 1
+                      const dv = (raw) => raw==null ? '—' : fmt(divisor>1 ? raw/divisor : raw, divisor>1?1:0)
+                      const cmpPct = s.pass_att ? fmt((s.pass_cmp/s.pass_att)*100, 1) + '%' : '—'
+                      return (
+                      <tr key={s.season} className={`pp-career-row ${s.season===CURRENT_SEASON?'pp-career-row--current':''}`}>
+                        <td className="pp-career-year">{s.season}</td>
+                        {pos==='QB' && <>
+                          <PctCell value={dv(s.pass_cmp)} percentile={pctSrc?.pass_cmp}/>
+                          <PctCell value={dv(s.pass_att)} percentile={pctSrc?.pass_att}/>
+                          <td>{cmpPct}</td>
+                          <PctCell value={dv(s.pass_sack)} percentile={pctSrc?.pass_sack}/>
+                        </>}
+                        {pos==='RB' && <>
+                          <PctCell value={dv(s.rush_att)} percentile={pctSrc?.rush_att}/>
+                          <PctCell value={dv(s.targets)} percentile={pctSrc?.targets}/>
+                          <PctCell value={dv(s.rec)} percentile={pctSrc?.rec}/>
+                        </>}
+                        {(pos==='WR'||pos==='TE') && <>
+                          <PctCell value={dv(s.targets)} percentile={pctSrc?.targets}/>
+                          <PctCell value={dv(s.rec)} percentile={pctSrc?.rec}/>
+                          <PctCell value={dv(s.rush_att)} percentile={pctSrc?.rush_att}/>
+                        </>}
+                        <td>{fmt(s.fumbles_lost)||'—'}</td>
+                      </tr>
+                    )})}
+                  </tbody>
+                </table>
+
                 <h3 className="pp-career-subheading">Analytics</h3>
                 <table className="pp-career-table pp-career-table--pct">
                   <thead>
