@@ -633,3 +633,9 @@
 .pp-career-pct-sub { font-family: var(--font-ui); font-size: 10px; font-weight: 800; }
 .pp-career-pct-cell--heatmap { border-radius: 4px; }
 .pp-career-pct-cell--heatmap .pp-career-pct-val { color: #1a1a2e; font-weight: 700; }
+
+
+.pp-career-group-label {
+  font-family: var(--font-ui); font-size: 11px; font-weight: 800; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text-muted); margin: 14px 0 6px;
+}
