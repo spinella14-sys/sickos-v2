@@ -714,7 +714,7 @@ export default function PlayerPage() {
               {(player.injury_status || tradeBlockStatus) && (
                 <div className="pp-badges-row">
                   {player.injury_status && (
-                    <span className="pp-badge pp-badge--injury">🏥 {player.injury_status}</span>
+                    <span className="pp-badge pp-badge--injury">🏥 {player.injury_status}{player.injury_body_part ? ` — ${player.injury_body_part}` : ''}</span>
                   )}
                   {tradeBlockStatus && (
                     <span className="pp-badge" style={{
