@@ -797,6 +797,14 @@ export default function TradeMachinePage() {
   const counterTeamsParam = searchParams.get('teams')
   const counterThreeWay   = searchParams.get('three') === '1'
 
+  const [pastDeadline, setPastDeadline] = useState(false)
+  useEffect(() => {
+    fetch(`${API}/trades/deadline-status`)
+      .then(r => r.ok ? r.json() : { isPastDeadline: false })
+      .then(d => setPastDeadline(!!d.isPastDeadline))
+      .catch(() => {})
+  }, [])
+
   const [threeWay,   setThreeWay]   = useState(counterThreeWay)
   const [teams,      setTeams]      = useState(() => {
     if (counterTeamsParam) {
@@ -1114,10 +1122,13 @@ export default function TradeMachinePage() {
               {result && (
                 <div className={`tm-result ${result.ok?'tm-result--ok':'tm-result--err'}`}>{result.msg}</div>
               )}
+              {pastDeadline && (
+                <div className="tm-warn-msg">⏰ The trade deadline has passed — no new trades can be submitted for the rest of the season. You can still build and review trades here.</div>
+              )}
             </div>
             <button className="tm-submit" onClick={() => setShowConfirm(true)}
-              disabled={!canSubmit || !hasAnyAssets}>
-              {!hasAnyAssets ? 'Add players or picks to trade' : 'Propose Trade →'}
+              disabled={!canSubmit || !hasAnyAssets || pastDeadline}>
+              {pastDeadline ? 'Trade Deadline Has Passed' : !hasAnyAssets ? 'Add players or picks to trade' : 'Propose Trade →'}
             </button>
           </div>
         </div>
