@@ -232,8 +232,21 @@ export default function CalendarPage() {
   const eventsByDate = useMemo(() => {
     const map = {}
     events.forEach(e => {
-      if (!map[e.event_date]) map[e.event_date] = []
-      map[e.event_date].push(e)
+      // Multi-day events (end_date set, later than event_date) show on
+      // every day in their range, not just the start day.
+      if (e.end_date && e.end_date > e.event_date) {
+        let cursor = new Date(e.event_date + 'T00:00:00')
+        const end = new Date(e.end_date + 'T00:00:00')
+        while (cursor <= end) {
+          const key = cursor.toISOString().split('T')[0]
+          if (!map[key]) map[key] = []
+          map[key].push(e)
+          cursor.setDate(cursor.getDate() + 1)
+        }
+      } else {
+        if (!map[e.event_date]) map[e.event_date] = []
+        map[e.event_date].push(e)
+      }
     })
     return map
   }, [events])
