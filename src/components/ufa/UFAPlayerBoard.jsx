@@ -15,8 +15,16 @@ export default function UFAPlayerBoard({
   const [posFilter, setPosFilter] = useState('ALL');
   const [sortKey,   setSortKey]   = useState('full_name');
 
+  const activeQBCount = useMemo(() => {
+    return (myCapData?.roster || []).filter(c =>
+      c.roster_slots?.[0]?.slot_type === 'active' && c.players?.position === 'QB'
+    ).length;
+  }, [myCapData]);
+  const qbLimitReached = activeQBCount >= 2;
+
   const filtered = useMemo(() => {
     let list = [...players];
+    if (qbLimitReached) list = list.filter(p => p.position !== 'QB');
     if (posFilter !== 'ALL') list = list.filter(p => p.position === posFilter);
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -27,7 +35,7 @@ export default function UFAPlayerBoard({
     }
     list.sort((a, b) => String(a[sortKey] || '').toLowerCase().localeCompare(String(b[sortKey] || '').toLowerCase()));
     return list;
-  }, [players, posFilter, search, sortKey]);
+  }, [players, posFilter, search, sortKey, qbLimitReached]);
 
   const hasBidOnPlayer = (sleeperId) =>
     myBids.some(b => b.ufa_pool?.sleeper_id === sleeperId || b.player_sleeper_id === sleeperId);
@@ -82,6 +90,16 @@ export default function UFAPlayerBoard({
           </select>
         </div>
       </div>
+
+      {qbLimitReached && (
+        <div style={{
+          padding: '8px 16px', fontSize: 12, fontWeight: 600,
+          color: 'var(--draft-amber)', background: 'rgba(232,168,67,0.12)',
+          borderBottom: '1px solid var(--draft-border)',
+        }}>
+          ⚠ QBs are hidden from this pool -- your roster is already at the 2-QB active limit.
+        </div>
+      )}
 
       <div style={{
         display: 'grid', gridTemplateColumns: GRID,

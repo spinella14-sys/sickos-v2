@@ -9,7 +9,15 @@ export default function RFAPool({
   const [search, setSearch] = useState('');
   const [posFilter, setPosFilter] = useState('ALL');
 
+  const activeQBCount = (myTeamData?.roster || []).filter(c =>
+    c.roster_slots?.[0]?.slot_type === 'active' && c.players?.position === 'QB'
+  ).length;
+  const qbLimitReached = activeQBCount >= 2;
+
   const filtered = pool.filter(p => {
+    // Wave 1 is retention-only (player already on your roster) -- QB limit
+    // never applies there. Wave 2+ is a genuine new acquisition.
+    if (wave > 1 && qbLimitReached && p.position === 'QB') return false;
     if (posFilter !== 'ALL' && p.position !== posFilter) return false;
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -118,6 +126,16 @@ export default function RFAPool({
           </div>
         )}
       </div>
+
+      {wave > 1 && qbLimitReached && (
+        <div style={{
+          padding: '8px 16px', fontSize: 12, fontWeight: 600,
+          color: 'var(--draft-amber)', background: 'rgba(232,168,67,0.12)',
+          borderBottom: '1px solid var(--draft-border)',
+        }}>
+          ⚠ QBs are hidden from this pool -- your roster is already at the 2-QB active limit.
+        </div>
+      )}
 
       <div className="rfa-pool__col-headers">
         <span>RD</span>
