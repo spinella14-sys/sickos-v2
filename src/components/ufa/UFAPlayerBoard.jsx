@@ -15,12 +15,15 @@ export default function UFAPlayerBoard({
   const [posFilter, setPosFilter] = useState('ALL');
   const [sortKey,   setSortKey]   = useState('full_name');
 
-  const activeQBCount = useMemo(() => {
-    return (myCapData?.roster || []).filter(c =>
-      c.roster_slots?.[0]?.slot_type === 'active' && c.players?.position === 'QB'
-    ).length;
+  const totalQBCount = useMemo(() => {
+    return (myCapData?.roster || []).filter(c => {
+      const slot = c.roster_slots?.[0]?.slot_type;
+      return (slot === 'active' || slot === 'ps') && c.players?.position === 'QB';
+    }).length;
   }, [myCapData]);
-  const qbLimitReached = activeQBCount >= 2;
+  // Real rule: max 2 active + max 1 PS (3 total, active+PS combined). IR is
+  // unlimited and excluded from this count entirely.
+  const qbLimitReached = totalQBCount >= 3;
 
   const filtered = useMemo(() => {
     let list = [...players];

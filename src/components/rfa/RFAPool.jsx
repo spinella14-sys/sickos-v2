@@ -9,10 +9,13 @@ export default function RFAPool({
   const [search, setSearch] = useState('');
   const [posFilter, setPosFilter] = useState('ALL');
 
-  const activeQBCount = (myTeamData?.roster || []).filter(c =>
-    c.roster_slots?.[0]?.slot_type === 'active' && c.players?.position === 'QB'
-  ).length;
-  const qbLimitReached = activeQBCount >= 2;
+  const totalQBCount = (myTeamData?.roster || []).filter(c => {
+    const slot = c.roster_slots?.[0]?.slot_type;
+    return (slot === 'active' || slot === 'ps') && c.players?.position === 'QB';
+  }).length;
+  // Real rule: max 2 active + max 1 PS (3 total, active+PS combined). IR is
+  // unlimited and excluded from this count entirely.
+  const qbLimitReached = totalQBCount >= 3;
 
   const filtered = pool.filter(p => {
     // Wave 1 is retention-only (player already on your roster) -- QB limit
