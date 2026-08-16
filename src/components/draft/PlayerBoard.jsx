@@ -19,6 +19,7 @@ export default function PlayerBoard({
   onPick,
   currentTeam,
   ownership = {},   // { sleeper_id: pct_owned }
+  myTeamData = null,
 }) {
   const [search,        setSearch]        = useState('');
   const [posFilter,     setPosFilter]     = useState('ALL');
@@ -26,12 +27,25 @@ export default function PlayerBoard({
   const [sortAsc,       setSortAsc]       = useState(true);
   const [hoveredPlayer, setHoveredPlayer] = useState(null);
 
+  const totalQBCount = useMemo(() => {
+    return (myTeamData?.roster || []).filter(c => {
+      const slot = c.roster_slots?.[0]?.slot_type;
+      return (slot === 'active' || slot === 'ps') && c.players?.position === 'QB';
+    }).length;
+  }, [myTeamData]);
+  // Real rule: max 2 active + max 1 PS (3 total, active+PS combined). IR is
+  // unlimited and excluded from this count entirely.
+  const qbLimitReached = totalQBCount >= 3;
+
   const filtered = useMemo(() => {
     let list = rookies.map(r => ({
       ...r,
       percent_owned: ownership[r.sleeper_id] ?? 0,
     }));
 
+    if (qbLimitReached) {
+      list = list.filter(r => r.position !== 'QB');
+    }
     if (posFilter !== 'ALL') {
       list = list.filter(r => r.position === posFilter);
     }
@@ -103,6 +117,16 @@ export default function PlayerBoard({
           </select>
         </div>
       </div>
+
+      {qbLimitReached && (
+        <div style={{
+          padding: '8px 16px', fontSize: 12, fontWeight: 600,
+          color: 'var(--draft-amber)', background: 'rgba(232,168,67,0.12)',
+          borderBottom: '1px solid var(--draft-border)',
+        }}>
+          ⚠ QBs are hidden from this pool — your roster is already at the 2-active/1-PS QB limit.
+        </div>
+      )}
 
       {/* Column headers — 7 cols: rank | player | pos | nfl team | college | % own | action */}
       <div className="player-board__col-headers" style={{

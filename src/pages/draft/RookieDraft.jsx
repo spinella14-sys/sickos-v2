@@ -45,6 +45,15 @@ export default function RookieDraft({ currentTeam, isCommissioner }) {
   const autoPickRef  = useRef(null)
   const autoClockRef = useRef(null)
 
+  const [myTeamData, setMyTeamData] = useState(null)
+  useEffect(() => {
+    if (!effectiveTeam) return
+    fetch(`${API}/teams/${effectiveTeam}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(setMyTeamData)
+      .catch(() => {})
+  }, [effectiveTeam])
+
   // ── Fetch all draft data ──────────────────────────────────────────────────
   const fetchAll = useCallback(async () => {
     try {
@@ -466,6 +475,7 @@ export default function RookieDraft({ currentTeam, isCommissioner }) {
           onPick={handlePick}
           currentTeam={effectiveTeam}
           ownership={ownership}
+          myTeamData={myTeamData}
         />
         <TeamPanel
           viewingTeam={viewingTeam || team || TEAMS[0]?.abbrev}
