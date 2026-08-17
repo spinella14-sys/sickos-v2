@@ -5,6 +5,7 @@ import RFAPool        from '../../components/rfa/RFAPool'
 import RFAMyBids      from '../../components/rfa/RFAMyBids'
 import RFAMatchWindow from '../../components/rfa/RFAMatchWindow'
 import RFAWaveSummaryModal from '../../components/rfa/RFAWaveSummaryModal'
+import DraftTradeModal from '../../components/draft/DraftTradeModal'
 import './RFADraft.css'
 
 const API    = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
@@ -25,6 +26,7 @@ export default function RFADraft({ currentTeam, isCommissioner }) {
   const [matchModal,     setMatchModal]    = useState(null)
   const [waveSummary,    setWaveSummary]   = useState(null)
   const [loading,        setLoading]       = useState(true)
+  const [showTradeModal, setShowTradeModal] = useState(false)
   const clockRef = useRef(null)
 
   // ── Load all RFA data ───────────────────────────────────────────────────
@@ -150,7 +152,9 @@ export default function RFADraft({ currentTeam, isCommissioner }) {
         getTeamLogo={getTeamLogo}
         isCommissioner={isCommissioner}
         onRefresh={load}
+        onOpenTrade={() => setShowTradeModal(true)}
       />
+      <DraftTradeModal isOpen={showTradeModal} onClose={() => setShowTradeModal(false)} />
 
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         <RFAMyBids

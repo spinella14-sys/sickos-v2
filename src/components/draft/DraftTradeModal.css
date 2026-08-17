@@ -1,0 +1,83 @@
+.dtm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.dtm-panel {
+  background: var(--draft-surface, #14171c);
+  border: 1px solid var(--draft-border, #2a2e35);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 1400px;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.dtm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--draft-border, #2a2e35);
+  flex-shrink: 0;
+}
+
+.dtm-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.dtm-tab {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--draft-border, #2a2e35);
+  background: transparent;
+  color: var(--draft-text-muted, #8a92a3);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.dtm-tab--active {
+  background: var(--draft-amber, #e8a843);
+  border-color: var(--draft-amber, #e8a843);
+  color: #000;
+}
+
+.dtm-close {
+  font-size: 18px;
+  background: transparent;
+  border: none;
+  color: var(--draft-text-muted, #8a92a3);
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+
+.dtm-close:hover {
+  background: var(--draft-surface-2, #1c2028);
+  color: var(--draft-text, #e6e9ef);
+}
+
+.dtm-body {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.dtm-pending-wrap {
+  padding: 20px;
+}

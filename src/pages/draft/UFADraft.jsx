@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import UFAHero        from '../../components/ufa/UFAHero'
 import UFAPlayerBoard from '../../components/ufa/UFAPlayerBoard'
 import UFAMyBids      from '../../components/ufa/UFAMyBids'
+import DraftTradeModal from '../../components/draft/DraftTradeModal'
 import './RFADraft.css'
 
 const API    = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
@@ -17,6 +18,7 @@ export default function UFADraft({ currentTeam, isCommissioner }) {
   const [timeLeft,       setTimeLeft]       = useState(null)
   const [selectedPlayer, setSelectedPlayer] = useState(null)
   const [loading,        setLoading]        = useState(true)
+  const [showTradeModal, setShowTradeModal] = useState(false)
   const clockRef = useRef(null)
 
   // ── Load all UFA data ───────────────────────────────────────────────────
@@ -110,7 +112,9 @@ export default function UFADraft({ currentTeam, isCommissioner }) {
         timeLeft={timeLeft}
         currentTeam={currentTeam}
         bidsThisWave={bidsThisWave}
+        onOpenTrade={() => setShowTradeModal(true)}
       />
+      <DraftTradeModal isOpen={showTradeModal} onClose={() => setShowTradeModal(false)} />
 
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         <UFAMyBids

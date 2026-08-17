@@ -19,7 +19,7 @@ function getUrgency(s) {
   return '';
 }
 
-export default function UFAHero({ ufaState, timeLeft, currentTeam, bidsThisWave }) {
+export default function UFAHero({ ufaState, timeLeft, currentTeam, bidsThisWave, onOpenTrade }) {
   const navigate = useNavigate();
   const wave   = ufaState?.current_wave || 1;
   const tier   = TIER_FOR_WAVE(wave);
@@ -75,7 +75,7 @@ export default function UFAHero({ ufaState, timeLeft, currentTeam, bidsThisWave 
         </div>
         <button
           className="rfa-hero__trade-btn"
-          onClick={() => navigate('/trade')}
+          onClick={onOpenTrade}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4" />

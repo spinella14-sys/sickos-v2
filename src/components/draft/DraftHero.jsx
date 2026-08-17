@@ -15,7 +15,7 @@ function getClockUrgency(seconds) {
   return '';
 }
 
-export default function DraftHero({ currentPick, timeLeft, isMyPick, draftState, getTeamName, getTeamLogo }) {
+export default function DraftHero({ currentPick, timeLeft, isMyPick, draftState, getTeamName, getTeamLogo, onOpenTrade }) {
   const navigate = useNavigate();
 
   if (!currentPick || !draftState) {
@@ -62,14 +62,13 @@ export default function DraftHero({ currentPick, timeLeft, isMyPick, draftState,
       <div className="draft-hero__actions">
         <button
           className="draft-hero__trade-btn"
-          onClick={() => navigate('/trade-machine')}
-          title="Trade Machine (coming soon)"
+          onClick={onOpenTrade}
+          title="Trade Machine"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4" />
           </svg>
           TRADE MACHINE
-          <span className="draft-hero__trade-badge">SOON</span>
         </button>
       </div>
     </div>

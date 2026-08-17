@@ -5,6 +5,7 @@ import DraftHero       from '../../components/draft/DraftHero'
 import DraftOrderPanel from '../../components/draft/DraftOrderPanel'
 import PlayerBoard     from '../../components/draft/PlayerBoard'
 import TeamPanel       from '../../components/draft/TeamPanel'
+import DraftTradeModal from '../../components/draft/DraftTradeModal'
 import './RookieDraft.css'
 
 const API = (import.meta.env.VITE_API_URL || 'http://localhost:3001/api').replace(/\/api$/, '') + '/api'
@@ -30,6 +31,7 @@ export default function RookieDraft({ currentTeam, isCommissioner }) {
   const [submitting,   setSubmitting]   = useState(false)
   const [error,        setError]        = useState(null)
   const [loading,      setLoading]      = useState(true)
+  const [showTradeModal, setShowTradeModal] = useState(false)
   const [actingAs,     setActingAs]     = useState('')
   const [viewingTeam,  setViewingTeam]  = useState('')
   const [syncing,      setSyncing]      = useState(false)
@@ -375,8 +377,10 @@ export default function RookieDraft({ currentTeam, isCommissioner }) {
       {/* DraftHero (active only) */}
       {draftIsActive && (
         <DraftHero currentPick={currentPick} timeLeft={timeLeft} isMyPick={isMyPick}
-          draftState={draftState} getTeamName={getTeamName} getTeamLogo={getTeamLogo}/>
+          draftState={draftState} getTeamName={getTeamName} getTeamLogo={getTeamLogo}
+          onOpenTrade={() => setShowTradeModal(true)}/>
       )}
+      <DraftTradeModal isOpen={showTradeModal} onClose={() => setShowTradeModal(false)} />
 
       {/* Autodraft toggle + countdown (shown when it's your pick and draft is active) */}
       {draftIsActive && isMyPick && (

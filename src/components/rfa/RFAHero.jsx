@@ -33,7 +33,7 @@ function getClockUrgency(seconds) {
 
 export default function RFAHero({
   rfaState, timeLeft, matchWindows, currentTeam,
-  getTeamName, getTeamLogo, isCommissioner, onRefresh,
+  getTeamName, getTeamLogo, isCommissioner, onRefresh, onOpenTrade,
 }) {
   const navigate = useNavigate();
 
@@ -80,7 +80,7 @@ export default function RFAHero({
         )}
         <button
           className="rfa-hero__trade-btn"
-          onClick={() => navigate('/trade')}
+          onClick={onOpenTrade}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4" />
