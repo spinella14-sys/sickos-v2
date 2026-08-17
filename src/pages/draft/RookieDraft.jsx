@@ -106,10 +106,10 @@ export default function RookieDraft({ currentTeam, isCommissioner }) {
 
   // ── Ownership ─────────────────────────────────────────────────────────────
   useEffect(() => {
-    fetch(`${API}/stats/ownership-bulk`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ position: ['QB','RB','WR','TE'] }),
-    })
+    // GET, no body -- the backend endpoint (confirmed) ignores any
+    // request body/position filter entirely and always returns the full
+    // ownership map for every player. The prior POST call always 404'd.
+    fetch(`${API}/stats/ownership-bulk`)
       .then(r => r.ok ? r.json() : {})
       .then(d => { if (d && typeof d === 'object') setOwnership(d) })
       .catch(() => {})
