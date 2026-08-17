@@ -189,8 +189,9 @@ export default function InboxPage() {
       .then(msgs => {
         const unread = (msgs || []).filter(m => !m.is_read)
         unread.forEach(m => {
-          fetch(`${API}/messages/${m.id}/read`, {
-            method: 'PATCH',
+          // GET /:id marks the message read as a side effect (backend
+          // confirmed) -- there is no separate PATCH .../read endpoint.
+          fetch(`${API}/messages/${m.id}`, {
             headers: { 'x-team-abbrev': myTeam },
           }).catch(() => {})
         })
