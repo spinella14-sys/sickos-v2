@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 
 const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:3001/api').replace(/\/api$/, '');
 
-export default function TeamPanel({ viewingTeam, setViewingTeam, teams, currentTeam, getTeamName, getTeamLogo }) {
+export default function TeamPanel({ viewingTeam, setViewingTeam, teams, currentTeam, getTeamName, getTeamLogo, showDraftPicks = true }) {
   const [teamData,       setTeamData]       = useState(null);
   const [draftedByTeam,  setDraftedByTeam]  = useState([]);
+  const [sbData,         setSbData]         = useState(null);
 
   useEffect(() => {
     if (!viewingTeam) return;
@@ -14,15 +15,22 @@ export default function TeamPanel({ viewingTeam, setViewingTeam, teams, currentT
       .then(d => { if (d) setTeamData(d); })
       .catch(() => {});
 
-    fetch(`${API_BASE}/api/draft/picks`)
-      .then(r => r.ok ? r.json() : [])
-      .then(picks => {
-        setDraftedByTeam(
-          picks.filter(p => p.current_team === viewingTeam && p.status === 'completed')
-        );
-      })
+    fetch(`${API_BASE}/api/bids/sb-projection/${viewingTeam}?salary=0`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) setSbData(d); })
       .catch(() => {});
-  }, [viewingTeam]);
+
+    if (showDraftPicks) {
+      fetch(`${API_BASE}/api/draft/picks`)
+        .then(r => r.ok ? r.json() : [])
+        .then(picks => {
+          setDraftedByTeam(
+            picks.filter(p => p.current_team === viewingTeam && p.status === 'completed')
+          );
+        })
+        .catch(() => {});
+    }
+  }, [viewingTeam, showDraftPicks]);
 
   // Upcoming picks this team still holds
   const upcomingPicks = (teamData && []) || [];
@@ -85,6 +93,20 @@ export default function TeamPanel({ viewingTeam, setViewingTeam, teams, currentT
         </div>
       )}
 
+      {sbData && (
+        <div className="team-panel__cap">
+          <div className="team-panel__section-title">SIGNING BONUS BUDGET</div>
+          <div className="cap-row">
+            <span>Available</span>
+            <span className="amber">${(sbData.balance ?? 0).toFixed(2)}</span>
+          </div>
+          <div className="cap-row">
+            <span>Season Start</span>
+            <span>${(sbData.startBalance ?? 0).toFixed(2)}</span>
+          </div>
+        </div>
+      )}
+
       {teamData?.roster && (
         <div className="team-panel__roster-counts">
           <div className="team-panel__section-title">ROSTER SPOTS</div>
@@ -116,7 +138,7 @@ export default function TeamPanel({ viewingTeam, setViewingTeam, teams, currentT
         </div>
       )}
 
-      {draftedByTeam.length > 0 && (
+      {showDraftPicks && draftedByTeam.length > 0 && (
         <div className="team-panel__draft-picks">
           <div className="team-panel__section-title">PICKS MADE</div>
           {draftedByTeam.map(pick => (

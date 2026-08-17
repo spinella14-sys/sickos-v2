@@ -6,6 +6,7 @@ import RFAMyBids      from '../../components/rfa/RFAMyBids'
 import RFAMatchWindow from '../../components/rfa/RFAMatchWindow'
 import RFAWaveSummaryModal from '../../components/rfa/RFAWaveSummaryModal'
 import DraftTradeModal from '../../components/draft/DraftTradeModal'
+import TeamPanel from '../../components/draft/TeamPanel'
 import './RFADraft.css'
 
 const API    = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
@@ -27,6 +28,7 @@ export default function RFADraft({ currentTeam, isCommissioner }) {
   const [waveSummary,    setWaveSummary]   = useState(null)
   const [loading,        setLoading]       = useState(true)
   const [showTradeModal, setShowTradeModal] = useState(false)
+  const [viewingTeam, setViewingTeam] = useState(currentTeam)
   const clockRef = useRef(null)
 
   // ── Load all RFA data ───────────────────────────────────────────────────
@@ -183,6 +185,16 @@ export default function RFADraft({ currentTeam, isCommissioner }) {
           getTeamName={getTeamName}
           getTeamLogo={getTeamLogo}
           onBidSubmit={handleBidSubmit}
+        />
+
+        <TeamPanel
+          viewingTeam={viewingTeam || currentTeam}
+          setViewingTeam={setViewingTeam}
+          teams={TEAMS}
+          currentTeam={currentTeam}
+          getTeamName={getTeamName}
+          getTeamLogo={getTeamLogo}
+          showDraftPicks={false}
         />
       </div>
 

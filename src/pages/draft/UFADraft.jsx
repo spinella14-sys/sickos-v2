@@ -3,9 +3,13 @@ import UFAHero        from '../../components/ufa/UFAHero'
 import UFAPlayerBoard from '../../components/ufa/UFAPlayerBoard'
 import UFAMyBids      from '../../components/ufa/UFAMyBids'
 import DraftTradeModal from '../../components/draft/DraftTradeModal'
+import TeamPanel from '../../components/draft/TeamPanel'
+import { TEAMS, LOGOS } from '../../data/league'
 import './RFADraft.css'
 
 const API    = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
+const getTeamName = (abbrev) => TEAMS.find(t => t.abbrev === abbrev)?.name || abbrev
+const getTeamLogo = (abbrev) => LOGOS[abbrev] || null
 const SEASON = new Date().getFullYear()
 const MAX_BIDS_PER_WAVE = 3
 
@@ -19,6 +23,7 @@ export default function UFADraft({ currentTeam, isCommissioner }) {
   const [selectedPlayer, setSelectedPlayer] = useState(null)
   const [loading,        setLoading]        = useState(true)
   const [showTradeModal, setShowTradeModal] = useState(false)
+  const [viewingTeam, setViewingTeam] = useState(currentTeam)
   const clockRef = useRef(null)
 
   // ── Load all UFA data ───────────────────────────────────────────────────
@@ -138,6 +143,16 @@ export default function UFADraft({ currentTeam, isCommissioner }) {
           setSelectedPlayer={setSelectedPlayer}
           onBidSubmit={handleBidSubmit}
           bidsRemaining={bidsRemaining}
+        />
+
+        <TeamPanel
+          viewingTeam={viewingTeam || currentTeam}
+          setViewingTeam={setViewingTeam}
+          teams={TEAMS}
+          currentTeam={currentTeam}
+          getTeamName={getTeamName}
+          getTeamLogo={getTeamLogo}
+          showDraftPicks={false}
         />
       </div>
     </div>
