@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { TEAMS, LOGOS } from '../../data/league';
 
 const TIER_NAMES = { 1: 'Tier 1 — Premium ($18+)', 2: 'Tier 2 — Mid-Range ($9.60+)', 3: 'Tier 3 — Open Market' };
 const TIER_MINS  = { 1: '$18.00', 2: '$9.60', 3: '$2.40' };
@@ -26,13 +27,20 @@ export default function UFAHero({ ufaState, timeLeft, currentTeam, bidsThisWave 
   const isOpen = status === 'wave_open';
   const urgency = getUrgency(timeLeft);
 
+  const teamInfo = TEAMS.find(t => t.abbrev === currentTeam);
+
   return (
     <div className="rfa-hero">
+      <div className="rfa-hero__team">
+        {LOGOS[currentTeam] && <img className="rfa-hero__team-logo" src={LOGOS[currentTeam]} alt={currentTeam} />}
+        <span className="rfa-hero__team-name">{teamInfo?.name || currentTeam}</span>
+      </div>
+
       {/* Left: Wave + tier info */}
       <div className="rfa-hero__wave">
         <span className="rfa-hero__wave-label">UFA Draft — 2026 · Wave {wave} of 9</span>
         <span className="rfa-hero__wave-name">{TIER_NAMES[tier]}</span>
-        <span style={{ fontSize: 10, color: 'var(--draft-text-muted)' }}>
+        <span className="rfa-hero__wave-caption">
           Wave {WAVE_IN_TIER(wave)} of 3 in this tier · Min offer: {TIER_MINS[tier]}
         </span>
       </div>
@@ -67,13 +75,12 @@ export default function UFAHero({ ufaState, timeLeft, currentTeam, bidsThisWave 
         </div>
         <button
           className="rfa-hero__trade-btn"
-          onClick={() => navigate('/trade-machine')}
+          onClick={() => navigate('/trade')}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4" />
           </svg>
           TRADE MACHINE
-          <span className="rfa-hero__trade-badge">SOON</span>
         </button>
       </div>
     </div>

@@ -44,11 +44,16 @@ export default function RFAHero({
 
   return (
     <div className="rfa-hero">
+      <div className="rfa-hero__team">
+        {getTeamLogo?.(currentTeam) && <img className="rfa-hero__team-logo" src={getTeamLogo(currentTeam)} alt={currentTeam} />}
+        <span className="rfa-hero__team-name">{getTeamName?.(currentTeam) || currentTeam}</span>
+      </div>
+
       {/* Left: Wave info */}
       <div className="rfa-hero__wave">
         <span className="rfa-hero__wave-label">RFA Draft — 2026</span>
         <span className="rfa-hero__wave-name">{WAVE_NAMES[wave]}</span>
-        <span style={{ fontSize: '10px', color: 'var(--draft-text-muted)' }}>
+        <span className="rfa-hero__wave-caption">
           {WAVE_DESCRIPTIONS[wave]}
         </span>
       </div>
@@ -75,13 +80,12 @@ export default function RFAHero({
         )}
         <button
           className="rfa-hero__trade-btn"
-          onClick={() => navigate('/trade-machine')}
+          onClick={() => navigate('/trade')}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4" />
           </svg>
           TRADE MACHINE
-          <span className="rfa-hero__trade-badge">SOON</span>
         </button>
       </div>
     </div>
