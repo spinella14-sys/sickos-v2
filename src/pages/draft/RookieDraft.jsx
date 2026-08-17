@@ -46,13 +46,6 @@ export default function RookieDraft({ currentTeam, isCommissioner }) {
   const autoClockRef = useRef(null)
 
   const [myTeamData, setMyTeamData] = useState(null)
-  useEffect(() => {
-    if (!effectiveTeam) return
-    fetch(`${API}/teams/${effectiveTeam}`)
-      .then(r => r.ok ? r.json() : null)
-      .then(setMyTeamData)
-      .catch(() => {})
-  }, [effectiveTeam])
 
   // ── Fetch all draft data ──────────────────────────────────────────────────
   const fetchAll = useCallback(async () => {
@@ -192,6 +185,14 @@ export default function RookieDraft({ currentTeam, isCommissioner }) {
   // ── Autodraft countdown ───────────────────────────────────────────────────
   // Fires when it's this team's pick AND autodraft is ON
   const effectiveTeam  = isCommissioner && actingAs ? actingAs : team
+
+  useEffect(() => {
+    if (!effectiveTeam) return
+    fetch(`${API}/teams/${effectiveTeam}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(setMyTeamData)
+      .catch(() => {})
+  }, [effectiveTeam])
   const draftIsActive  = draftState?.status === 'active'
   const isMyPick       = draftIsActive &&
                          currentPick?.current_team === effectiveTeam &&
