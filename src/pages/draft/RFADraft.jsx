@@ -29,6 +29,9 @@ export default function RFADraft({ currentTeam, isCommissioner }) {
   const [loading,        setLoading]       = useState(true)
   const [showTradeModal, setShowTradeModal] = useState(false)
   const [viewingTeam, setViewingTeam] = useState(currentTeam)
+  const [statsView, setStatsView] = useState('2026') // '2026' | '2025' -- 2026 projections is the default
+  const [trendWindow, setTrendWindow] = useState('last_week') // 'last_week' | '3week' | 'season'
+  const [poolStats, setPoolStats] = useState([])
   const clockRef = useRef(null)
 
   // ── Load all RFA data ───────────────────────────────────────────────────
@@ -82,6 +85,23 @@ export default function RFADraft({ currentTeam, isCommissioner }) {
     return () => clearInterval(iv)
   }, [load])
 
+  // ── Load pool-stats (bye week, ADP, ownership trend, swappable season
+  // stats) -- separate from the main load() above, since switching the
+  // stats view/trend toggle shouldn't re-fetch bids/state/team data.
+  const loadPoolStats = useCallback(async () => {
+    try {
+      const res = await fetch(
+        `${API}/rfa/pool-stats?season=${SEASON}&view=${statsView}&trend=${trendWindow}`
+      )
+      const data = res.ok ? await res.json() : null
+      setPoolStats(Array.isArray(data?.players) ? data.players : [])
+    } catch (e) {
+      console.error('RFA pool-stats load error', e)
+    }
+  }, [statsView, trendWindow])
+
+  useEffect(() => { loadPoolStats() }, [loadPoolStats])
+
   // ── Countdown clock — recalculates from timestamp each second ────────────
   useEffect(() => {
     if (clockRef.current) clearInterval(clockRef.current)
@@ -93,6 +113,23 @@ export default function RFADraft({ currentTeam, isCommissioner }) {
     clockRef.current = setInterval(tick, 1000)
     return () => clearInterval(clockRef.current)
   }, [waveCloseTime])
+
+  // Merge pool-stats (bye week, ADP, ownership, view-swappable stat line)
+  // onto the existing pool by sleeper_id -- additive only, never touches
+  // pool's own fields (id, bid_count, etc.) that bid/status logic depends on.
+  const statsBySleeperId = {}
+  ;(poolStats || []).forEach(p => { statsBySleeperId[p.sleeper_id] = p })
+  const enrichedPool = pool.map(p => {
+    const s = statsBySleeperId[p.sleeper_id]
+    return s ? {
+      ...p,
+      bye_week: s.bye_week,
+      adp_dynasty_2qb: s.adp_dynasty_2qb,
+      owned_pct: s.owned_pct,
+      owned_trend: s.owned_trend,
+      stats: s.stats,
+    } : p
+  })
 
   const wave     = rfaState?.current_wave || 1
   const isOpen   = rfaState?.status === 'wave_open'
@@ -173,11 +210,15 @@ export default function RFADraft({ currentTeam, isCommissioner }) {
         />
 
         <RFAPool
-          pool={pool}
+          pool={enrichedPool}
           wave={wave}
           isWaveOpen={isOpen}
           isPreRfa={isPreRfa}
           currentTeam={currentTeam}
+          statsView={statsView}
+          setStatsView={setStatsView}
+          trendWindow={trendWindow}
+          setTrendWindow={setTrendWindow}
           myBids={myBids}
           myTeamData={myTeamData}
           selectedPlayer={selectedPlayer}
