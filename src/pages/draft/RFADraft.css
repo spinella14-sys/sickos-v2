@@ -484,6 +484,7 @@
 .rfa-pool__list {
   overflow-y: auto;
   flex: 1;
+  scrollbar-gutter: stable; /* keeps header/row columns aligned when a vertical scrollbar appears */
 }
 
 .rfa-pool__empty {

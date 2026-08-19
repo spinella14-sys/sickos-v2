@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import RFABidForm from './RFABidForm';
 
 // Stat columns swap based on the position filter -- QB's passing-heavy
@@ -20,6 +21,7 @@ const STAT_COLUMNS = {
     { key: 'rush_yd', label: 'RUSH YD' },
     { key: 'rush_td', label: 'RUSH TD' },
     { key: 'rec', label: 'REC' },
+    { key: 'targets', label: 'TAR' }, // 2025 view only -- Sleeper's 2026 projections have no targets field
     { key: 'rec_yd', label: 'REC YD' },
     { key: 'rec_td', label: 'REC TD' },
   ],
@@ -396,7 +398,7 @@ export default function RFAPool({
                       onError={e => { e.target.src = '/placeholder-player.png'; }}
                     />
                     <div>
-                      <span className="rfa-player-row__name">{player.full_name}</span>
+                      <Link to={`/player/${player.sleeper_id}`} className="rfa-player-row__name">{player.full_name}</Link>
                       <span className="rfa-player-row__meta">
                         {player.nfl_team || '—'}
                         {isMyPlayer && (
