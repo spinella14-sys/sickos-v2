@@ -161,7 +161,7 @@ export default function RFAPool({
     return 'rfa-action-btn rfa-action-btn--bid';
   };
 
-  if (isPreRfa && wave === 1) {
+  if (isPreRfa && wave === 1 && pool.length === 0) {
     return (
       <main className="rfa-pool">
         <div className="rfa-pool__header">
