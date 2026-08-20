@@ -469,7 +469,11 @@
 
 .rfa-pool__col-headers {
   display: grid;
-  grid-template-columns: 40px 1fr 60px 100px 80px 80px 100px;
+  /* grid-template-columns intentionally omitted here -- set dynamically
+     via inline style in RFAPool.jsx, since column count varies by the
+     selected position filter. The old fixed 7-column value that used to
+     live here is removed rather than left to fight the inline style. */
+  column-gap: 12px;
   padding: 7px 16px;
   font-size: 10px;
   font-weight: 700;
@@ -504,6 +508,7 @@
 
 /* RFA Player Row */
 .rfa-player-row {
+  column-gap: 12px;
   display: grid;
   grid-template-columns: 40px 1fr 60px 100px 80px 80px 100px;
   align-items: center;
