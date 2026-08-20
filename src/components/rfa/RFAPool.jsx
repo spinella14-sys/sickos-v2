@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import RFABidForm from './RFABidForm';
+import RFATradeBlockTab from './RFATradeBlockTab';
+import RFACapOverviewTab from './RFACapOverviewTab';
 
 // Stat columns swap based on the position filter -- QB's passing-heavy
 // line and RB/WR/TE's rushing/receiving line don't share column meaning,
@@ -321,12 +323,8 @@ export default function RFAPool({
         )}
       </div>
 
-      {activeTab !== 'board' && (
-        <div className="rfa-pool__empty">
-          <div className="rfa-pool__empty-title">Coming Soon</div>
-          <p>{activeTab === 'tradeblock' ? 'Trade Block' : 'Cap Overview'} isn't built yet.</p>
-        </div>
-      )}
+      {activeTab === 'tradeblock' && <RFATradeBlockTab />}
+      {activeTab === 'cap' && <RFACapOverviewTab myTeam={currentTeam} />}
 
       {activeTab === 'board' && (
         <>
