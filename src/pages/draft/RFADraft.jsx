@@ -90,11 +90,10 @@ export default function RFADraft({ currentTeam, isCommissioner }) {
   // stats view/trend toggle shouldn't re-fetch bids/state/team data.
   const loadPoolStats = useCallback(async () => {
     try {
-      const url = `${API}/rfa/pool-stats?season=${SEASON}&view=${statsView}&trend=${trendWindow}`
-      console.log('[DEBUG] fetching pool-stats:', url)
-      const res = await fetch(url)
+      const res = await fetch(
+        `${API}/rfa/pool-stats?season=${SEASON}&view=${statsView}&trend=${trendWindow}`
+      )
       const data = res.ok ? await res.json() : null
-      console.log('[DEBUG] pool-stats response view:', data?.view, 'first player pts:', data?.players?.[0]?.stats?.fantasy_pts)
       setPoolStats(Array.isArray(data?.players) ? data.players : [])
     } catch (e) {
       console.error('RFA pool-stats load error', e)
