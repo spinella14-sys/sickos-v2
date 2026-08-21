@@ -141,7 +141,7 @@
 /* ── Column headers ─────────────────────────────────────────────────────── */
 .db-col-headers {
   display: grid;
-  grid-template-columns: 28px 40px 36px 1fr 60px 50px 96px 50px 65px 60px 66px;
+  grid-template-columns: 28px 40px 36px 1fr 130px 60px 50px 96px 50px 65px 60px 66px;
   padding: 5px 16px; flex-shrink: 0;
   font-size: 9px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase;
   color: rgba(255,255,255,0.28);
@@ -155,7 +155,7 @@
 
 .db-row {
   display: grid;
-  grid-template-columns: 28px 40px 36px 1fr 60px 50px 96px 50px 65px 60px 66px;
+  grid-template-columns: 28px 40px 36px 1fr 130px 60px 50px 96px 50px 65px 60px 66px;
   align-items: center; padding: 6px 16px;
   border-bottom: 1px solid rgba(255,255,255,0.04);
   cursor: grab; transition: background 0.08s; user-select: none;
@@ -178,8 +178,10 @@
 }
 
 .db-player { display: flex; flex-direction: column; gap: 0; min-width: 0; }
-.db-name { font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.9); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.db-name { font-size: 16px; font-weight: 700; color: rgba(255,255,255,0.9); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; align-self: flex-start; }
+/* .db-age no longer used (moved to its own column, see .db-age-school below) -- left defined harmlessly in case anything else references it */
 .db-age  { font-size: 9px; color: rgba(255,255,255,0.38); }
+.db-age-school { font-size: 12px; color: rgba(255,255,255,0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .db-pick { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.7); }
 .db-own  { font-size: 12px; font-weight: 600; }

@@ -310,6 +310,7 @@ export default function DraftBoardPage() {
             <span>RK</span>
             <span/>
             <span>PLAYER</span>
+            <span>AGE / SCHOOL</span>
             <span>POS</span>
             <span>NFL</span>
             <span>PICK</span>
@@ -356,11 +357,12 @@ export default function DraftBoardPage() {
                     <PlayerLink playerId={rookie.sleeper_id} className="db-name">
                       {rookie.full_name}
                     </PlayerLink>
-                    {(rookie.age || rookie.college) && (
-                      <div className="db-age">
-                        {[rookie.age ? `${rookie.age}y` : null, rookie.college].filter(Boolean).join(' · ')}
-                      </div>
-                    )}
+                  </div>
+
+                  <div className="db-age-school">
+                    {(rookie.age || rookie.college)
+                      ? [rookie.age ? `${rookie.age}y` : null, rookie.college].filter(Boolean).join(' · ')
+                      : <span style={{color:'rgba(255,255,255,0.2)'}}>—</span>}
                   </div>
 
                   <div>
