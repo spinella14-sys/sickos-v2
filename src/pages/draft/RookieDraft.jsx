@@ -36,6 +36,8 @@ export default function RookieDraft({ currentTeam, isCommissioner }) {
   const [viewingTeam,  setViewingTeam]  = useState('')
   const [syncing,      setSyncing]      = useState(false)
   const [ownership,    setOwnership]    = useState({})
+  const [trendWindow, setTrendWindow] = useState('last_week') // 'last_week' | '3week' | 'season'
+  const [poolStats, setPoolStats] = useState([])
 
   // ── Big board + autodraft ─────────────────────────────────────────────────
   const [bigBoard,       setBigBoard]       = useState([])   // [{ sleeper_id, rank }]
@@ -133,6 +135,21 @@ export default function RookieDraft({ currentTeam, isCommissioner }) {
   }, [])
 
   useEffect(() => { fetchAll() }, [fetchAll])
+
+  // ── Load pool-stats (bye week, ADP, ownership trend, custom-scored 2026
+  // projections) -- separate from fetchAll above, since switching the
+  // trend-window toggle shouldn't re-fetch draft state/picks/board data.
+  const loadPoolStats = useCallback(async () => {
+    try {
+      const res = await fetch(`${API}/draft/pool-stats?trend=${trendWindow}`)
+      const data = res.ok ? await res.json() : null
+      setPoolStats(Array.isArray(data?.players) ? data.players : [])
+    } catch (e) {
+      console.error('Rookie pool-stats load error', e)
+    }
+  }, [trendWindow])
+
+  useEffect(() => { loadPoolStats() }, [loadPoolStats])
   useEffect(() => { fetchBoard() }, [fetchBoard])
   useEffect(() => { if (isCommissioner) silentSync() }, [isCommissioner, silentSync])
 
@@ -309,6 +326,24 @@ export default function RookieDraft({ currentTeam, isCommissioner }) {
       })()
     : rookies
 
+  // Merge pool-stats (bye week, ADP, ownership, custom-scored 2026 stats)
+  // onto sortedRookies by sleeper_id -- additive only, never touches
+  // rookie_pool's own fields (nfl_draft_pick, drafted_by, etc.) that pick
+  // logic depends on.
+  const statsBySleeperId = {}
+  ;(poolStats || []).forEach(p => { statsBySleeperId[p.sleeper_id] = p })
+  const enrichedRookies = sortedRookies.map(r => {
+    const s = statsBySleeperId[r.sleeper_id]
+    return s ? {
+      ...r,
+      bye_week: s.bye_week,
+      adp_dynasty_2qb: s.adp_dynasty_2qb,
+      owned_pct: s.owned_pct,
+      owned_trend: s.owned_trend,
+      stats: s.stats,
+    } : r
+  })
+
   if (loading) return (
     <div className="draft-loading"><div className="draft-loading-spinner"/><span>Loading draft…</span></div>
   )
@@ -472,14 +507,15 @@ export default function RookieDraft({ currentTeam, isCommissioner }) {
           getTeamLogo={getTeamLogo}
         />
         <PlayerBoard
-          rookies={sortedRookies}
+          rookies={enrichedRookies}
           allPicks={allPicks}
           currentPick={draftIsActive ? currentPick : null}
           isMyPick={isMyPick}
           submitting={submitting}
           onPick={handlePick}
           currentTeam={effectiveTeam}
-          ownership={ownership}
+          trendWindow={trendWindow}
+          setTrendWindow={setTrendWindow}
           myTeamData={myTeamData}
         />
         <TeamPanel
