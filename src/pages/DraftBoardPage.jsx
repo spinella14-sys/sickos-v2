@@ -386,13 +386,13 @@ export default function DraftBoardPage() {
                       : <span style={{color:'rgba(255,255,255,0.3)',fontSize:10}}>UDFA</span>}
                   </div>
 
-                  <div style={{fontSize:11,color:'rgba(255,255,255,0.55)'}}>{rookie.bye_week ?? '—'}</div>
+                  <div style={{fontSize:13,color:'rgba(255,255,255,0.55)'}}>{rookie.bye_week ?? '—'}</div>
 
-                  <div style={{fontSize:11,color:'rgba(255,255,255,0.55)'}}>
+                  <div style={{fontSize:13,color:'rgba(255,255,255,0.55)'}}>
                     {rookie.stats?.fantasy_pts != null ? rookie.stats.fantasy_pts.toFixed(1) : '—'}
                   </div>
 
-                  <div style={{fontSize:11,color:'rgba(255,255,255,0.55)'}}>
+                  <div style={{fontSize:13,color:'rgba(255,255,255,0.55)'}}>
                     {rookie.adp_dynasty_2qb != null ? rookie.adp_dynasty_2qb.toFixed(1) : '—'}
                   </div>
 
