@@ -51,13 +51,31 @@ export default function DraftBoardPage() {
       fetch(`${API}/draft/bigboard/${myTeam}`).then(r => r.ok ? r.json() : []).catch(() => []),
       fetch(`${API}/draft/picks`).then(r => r.ok ? r.json() : []).catch(() => []),
       fetch(`${API}/draft/state`).then(r => r.ok ? r.json() : null).catch(() => null),
-    ]).then(([rookies, boardData, picksData, stateRes]) => {
+      fetch(`${API}/draft/pool-stats`).then(r => r.ok ? r.json() : null).catch(() => null),
+    ]).then(([rookies, boardData, picksData, stateRes, poolStatsRes]) => {
       setDraftDone(stateRes?.state?.status === 'completed')
       setAllPicks(Array.isArray(picksData) ? picksData : [])
 
+      // Merge bye week, ADP, % owned + trend, and custom-scored 2026
+      // projections onto every rookie -- same pool-stats join used across
+      // RFA/UFA/Rookie tonight, additive only.
+      const statsBySleeperId = {}
+      ;(poolStatsRes?.players || []).forEach(p => { statsBySleeperId[p.sleeper_id] = p })
+      function withStats(r) {
+        const s = statsBySleeperId[r.sleeper_id]
+        return s ? {
+          ...r,
+          bye_week: s.bye_week,
+          adp_dynasty_2qb: s.adp_dynasty_2qb,
+          owned_pct: s.owned_pct,
+          owned_trend: s.owned_trend,
+          stats: s.stats,
+        } : r
+      }
+
       if (boardData.length > 0) {
         const poolMap = {}
-        rookies.forEach(r => { poolMap[r.sleeper_id] = r })
+        rookies.forEach(r => { poolMap[r.sleeper_id] = withStats(r) })
         const ranked = boardData
           .filter(b => poolMap[b.sleeper_id])
           .map(b => ({ ...poolMap[b.sleeper_id], rank: b.rank }))
@@ -65,11 +83,15 @@ export default function DraftBoardPage() {
         const boardIds = new Set(ranked.map(b => b.sleeper_id))
         const unranked = rookies
           .filter(r => !boardIds.has(r.sleeper_id))
-          .map((r, i) => ({ ...r, rank: ranked.length + i + 1 }))
+          .map((r, i) => ({ ...withStats(r), rank: ranked.length + i + 1 }))
         setBoard([...ranked, ...unranked])
       } else {
-        const sorted = [...rookies].sort((a, b) =>
-          (a.nfl_draft_pick ?? 9999) - (b.nfl_draft_pick ?? 9999)
+        // Default, never-customized board is sorted by ADP ascending --
+        // once a manager drags to reorder and saves, their custom rank
+        // takes over permanently (the branch above).
+        const withAdp = rookies.map(withStats)
+        const sorted = [...withAdp].sort((a, b) =>
+          (a.adp_dynasty_2qb ?? 9999) - (b.adp_dynasty_2qb ?? 9999)
         )
         setBoard(sorted.map((r, i) => ({ ...r, rank: i + 1 })))
       }
@@ -243,32 +265,8 @@ export default function DraftBoardPage() {
         </div>
       </div>
 
-      {/* Sort starting point */}
+      {/* Drag hint -- board defaults to ADP order until a manager drags to reorder */}
       <div className="db-sort-bar">
-        <div className="db-sort-label">
-          <span className="db-sort-title">SET STARTING ORDER</span>
-          <span className="db-sort-sub">Pick a starting point, then drag the ⠿ handle on any row to fine-tune</span>
-        </div>
-        <div className="db-sort-btns">
-          <button className="db-sort-btn" onClick={resetToNflOrder}>
-            <span className="db-sort-btn-icon">🏈</span>
-            <span className="db-sort-btn-text">
-              <span className="db-sort-btn-label">NFL Draft Order</span>
-              <span className="db-sort-btn-desc">
-                {board.filter(p => p.nfl_draft_pick).length} with picks · {board.filter(p => !p.nfl_draft_pick).length} UDFA after
-              </span>
-            </span>
-          </button>
-          <button className="db-sort-btn" onClick={resetToOwnership}>
-            <span className="db-sort-btn-icon">📊</span>
-            <span className="db-sort-btn-text">
-              <span className="db-sort-btn-label">% Owned</span>
-              <span className="db-sort-btn-desc">
-                {!ownershipReady ? 'Loading…' : ownedCount > 0 ? `${ownedCount} players with data` : 'Run sync to populate'}
-              </span>
-            </span>
-          </button>
-        </div>
         <span className="db-drag-hint">⠿ Drag handle to reorder · Type # in Move column to jump</span>
       </div>
 
@@ -315,6 +313,9 @@ export default function DraftBoardPage() {
             <span>POS</span>
             <span>NFL</span>
             <span>PICK</span>
+            <span>BYE</span>
+            <span>PROJ PTS</span>
+            <span>ADP</span>
             <span>%OWN</span>
             <span>MOVE</span>
           </div>
@@ -383,11 +384,21 @@ export default function DraftBoardPage() {
                       : <span style={{color:'rgba(255,255,255,0.3)',fontSize:10}}>UDFA</span>}
                   </div>
 
+                  <div style={{fontSize:11,color:'rgba(255,255,255,0.55)'}}>{rookie.bye_week ?? '—'}</div>
+
+                  <div style={{fontSize:11,color:'rgba(255,255,255,0.55)'}}>
+                    {rookie.stats?.fantasy_pts != null ? rookie.stats.fantasy_pts.toFixed(1) : '—'}
+                  </div>
+
+                  <div style={{fontSize:11,color:'rgba(255,255,255,0.55)'}}>
+                    {rookie.adp_dynasty_2qb != null ? rookie.adp_dynasty_2qb.toFixed(1) : '—'}
+                  </div>
+
                   <div className="db-own">
-                    {pctOwned != null && parseFloat(pctOwned) > 0
-                      ? <span style={{ color: parseFloat(pctOwned) >= 50 ? '#e8822a' : 'rgba(255,255,255,0.55)',
-                          fontWeight: parseFloat(pctOwned) >= 50 ? 700 : 400 }}>
-                          {parseFloat(pctOwned).toFixed(0)}%
+                    {rookie.owned_pct != null && rookie.owned_pct > 0
+                      ? <span style={{ color: rookie.owned_pct >= 50 ? '#e8822a' : 'rgba(255,255,255,0.55)',
+                          fontWeight: rookie.owned_pct >= 50 ? 700 : 400 }}>
+                          {rookie.owned_pct.toFixed(0)}%
                         </span>
                       : <span style={{color:'rgba(255,255,255,0.2)'}}>—</span>}
                   </div>
