@@ -366,8 +366,8 @@ export default function DraftBoardPage() {
                   </div>
 
                   <div>
-                    <span style={{ fontFamily:'var(--font-ui)', fontSize:11, fontWeight:800,
-                      padding:'2px 6px', background:`${POS_COLOR[rookie.position]}22`, color:POS_COLOR[rookie.position] }}>
+                    <span style={{ fontFamily:'var(--font-ui)', fontSize:14, fontWeight:800,
+                      padding:'3px 8px', background:`${POS_COLOR[rookie.position]}22`, color:POS_COLOR[rookie.position] }}>
                       {rookie.position}
                     </span>
                   </div>
@@ -375,7 +375,7 @@ export default function DraftBoardPage() {
                   <div>
                     {rookie.nfl_team
                       ? <img src={`https://sleepercdn.com/images/team_logos/nfl/${rookie.nfl_team?.toLowerCase()}.jpg`}
-                          alt={rookie.nfl_team} style={{ width:22, height:22, objectFit:'contain' }}
+                          alt={rookie.nfl_team} style={{ width:29, height:29, objectFit:'contain' }}
                           onError={e => { e.target.replaceWith(Object.assign(document.createElement('span'), { textContent: rookie.nfl_team, style:'font-size:10px;color:rgba(255,255,255,0.5)' })) }}/>
                       : <span style={{fontSize:10,color:'rgba(255,255,255,0.3)'}}>—</span>}
                   </div>
@@ -386,13 +386,13 @@ export default function DraftBoardPage() {
                       : <span style={{color:'rgba(255,255,255,0.3)',fontSize:10}}>UDFA</span>}
                   </div>
 
-                  <div style={{fontSize:13,color:'rgba(255,255,255,0.55)'}}>{rookie.bye_week ?? '—'}</div>
+                  <div style={{fontSize:17,color:'rgba(255,255,255,0.55)'}}>{rookie.bye_week ?? '—'}</div>
 
-                  <div style={{fontSize:13,color:'rgba(255,255,255,0.55)'}}>
+                  <div style={{fontSize:17,color:'rgba(255,255,255,0.55)'}}>
                     {rookie.stats?.fantasy_pts != null ? rookie.stats.fantasy_pts.toFixed(1) : '—'}
                   </div>
 
-                  <div style={{fontSize:13,color:'rgba(255,255,255,0.55)'}}>
+                  <div style={{fontSize:17,color:'rgba(255,255,255,0.55)'}}>
                     {rookie.adp_dynasty_2qb != null ? rookie.adp_dynasty_2qb.toFixed(1) : '—'}
                   </div>
 
