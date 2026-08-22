@@ -110,6 +110,21 @@ export default function FreeAgentsPage() {
     fetchStats().catch(() => {})
   }, [])
 
+  // New pool-stats fetch (ADP / %Owned+trend / custom-scored PROJ) --
+  // separate from statsMap above, purely additive, general-purpose
+  // endpoint shared across Free Agents/PlayerPage/PlayerCard/Roster.
+  const [poolStatsMap, setPoolStatsMap] = useState({})
+  useEffect(() => {
+    fetch(`${API_BASE}/players/pool-stats`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        const map = {}
+        ;(d?.players || []).forEach(p => { map[p.sleeper_id] = p })
+        setPoolStatsMap(map)
+      })
+      .catch(() => {})
+  }, [])
+
 
 
   useEffect(() => {
@@ -190,6 +205,17 @@ export default function FreeAgentsPage() {
         av = statsMap[a.sleeper_id]?.fantasy_pts ?? -1
         bv = statsMap[b.sleeper_id]?.fantasy_pts ?? -1
 
+      } else if (sortKey === 'proj_pts') {
+        av = poolStatsMap[a.sleeper_id]?.proj_pts ?? -1
+        bv = poolStatsMap[b.sleeper_id]?.proj_pts ?? -1
+      } else if (sortKey === 'adp') {
+        // Lower ADP = better, same inverted-comparison pattern as pos_rank below.
+        av = poolStatsMap[a.sleeper_id]?.adp_dynasty_2qb ?? 9999
+        bv = poolStatsMap[b.sleeper_id]?.adp_dynasty_2qb ?? 9999
+        return sortDir === 'asc' ? bv - av : av - bv
+      } else if (sortKey === 'owned_pct') {
+        av = poolStatsMap[a.sleeper_id]?.owned_pct ?? -1
+        bv = poolStatsMap[b.sleeper_id]?.owned_pct ?? -1
       } else if (sortKey === 'pos_rank') {
         av = statsMap[a.sleeper_id]?.pos_rank ?? 9999
         bv = statsMap[b.sleeper_id]?.pos_rank ?? 9999
@@ -281,6 +307,9 @@ export default function FreeAgentsPage() {
                     <th className="fa-th"><SortHeader colKey="fantasy_pts" label="PTS" title="Season Fantasy Points" /></th>
                     <th className="fa-th"><SortHeader colKey="pts_pg" label="PTS/G" title="Fantasy Points Per Game" /></th>
                     <th className="fa-th"><SortHeader colKey="pos_rank" label="POS RK" title="Position Rank by PTS/G" /></th>
+                    <th className="fa-th"><SortHeader colKey="proj_pts" label="PROJ" title="2026 Projected Fantasy Points" /></th>
+                    <th className="fa-th"><SortHeader colKey="adp" label="ADP" title="Dynasty 2QB Average Draft Position" /></th>
+                    <th className="fa-th"><SortHeader colKey="owned_pct" label="%OWNED" title="Percent Owned + Trend" /></th>
 
                     <th className="fa-th">BYE</th>
                     <th className="fa-th">OPP</th>
@@ -294,6 +323,7 @@ export default function FreeAgentsPage() {
                     const isRostered = rosteredIds.has(p.sleeper_id)
                     const onWl       = watchlist.has(p.sleeper_id)
                     const st         = statsMap[p.sleeper_id]
+                    const ps         = poolStatsMap[p.sleeper_id]
                     return (
                       <tr key={p.sleeper_id} className={`fa-row${isRostered?' fa-row--rostered':''}`}>
                         <td className="fa-td fa-td-player">
@@ -328,6 +358,17 @@ export default function FreeAgentsPage() {
                         <td className="fa-td fa-td-center fa-stat">{st?.fantasy_pts > 0 ? st.fantasy_pts.toFixed(1) : '—'}</td>
                         <td className="fa-td fa-td-center fa-stat">{st?.pts_pg > 0 ? st.pts_pg.toFixed(1) : '—'}</td>
                         <td className="fa-td fa-td-center fa-stat">{st?.pos_rank || '—'}</td>
+                        <td className="fa-td fa-td-center fa-stat">{ps?.proj_pts > 0 ? ps.proj_pts.toFixed(1) : '—'}</td>
+                        <td className="fa-td fa-td-center fa-stat">{ps?.adp_dynasty_2qb != null ? ps.adp_dynasty_2qb.toFixed(1) : '—'}</td>
+                        <td className="fa-td fa-td-center fa-stat">
+                          {ps?.owned_pct != null
+                            ? <>
+                                {ps.owned_pct.toFixed(0)}%
+                                {ps.owned_trend > 0 && <span style={{color:'var(--green,#3dba6e)'}}> ▲{ps.owned_trend.toFixed(1)}</span>}
+                                {ps.owned_trend < 0 && <span style={{color:'var(--red,#d94f4f)'}}> ▼{Math.abs(ps.owned_trend).toFixed(1)}</span>}
+                              </>
+                            : '—'}
+                        </td>
                         <td className="fa-td fa-td-center fa-stat">{p.bye_week || '—'}</td>
                         <td className="fa-td fa-td-center fa-stat fa-opp">
                           <DefenseRankBadge

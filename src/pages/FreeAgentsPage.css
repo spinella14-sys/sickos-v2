@@ -77,7 +77,7 @@
 
 /* ─── Table ──────────────────────────────────────────────────────────────── */
 .fa-table-wrap { overflow-x: auto; border: 1px solid var(--border); }
-.fa-table { width: 100%; border-collapse: collapse; font-family: var(--font-ui); font-size: 13px; min-width: 900px; }
+.fa-table { width: 100%; border-collapse: collapse; font-family: var(--font-ui); font-size: 13px; min-width: 1150px; }
 
 .fa-thead-row { background: var(--bg0); position: sticky; top: 0; z-index: 5; }
 
