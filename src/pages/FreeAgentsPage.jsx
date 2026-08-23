@@ -308,7 +308,7 @@ export default function FreeAgentsPage() {
                     <th className="fa-th"><SortHeader colKey="pts_pg" label="PTS/G" title="Fantasy Points Per Game" /></th>
                     <th className="fa-th"><SortHeader colKey="pos_rank" label="POS RK" title="Position Rank by PTS/G" /></th>
                     <th className="fa-th"><SortHeader colKey="proj_pts" label="PROJ" title="2026 Projected Fantasy Points" /></th>
-                    <th className="fa-th"><SortHeader colKey="adp" label="ADP" title="Dynasty 2QB Average Draft Position" /></th>
+                    <th className="fa-th"><SortHeader colKey="adp" label="ADP" title="Average Draft Position in standard redraft leagues" /></th>
                     <th className="fa-th"><SortHeader colKey="owned_pct" label="%OWNED" title="Percent Owned + Trend" /></th>
 
                     <th className="fa-th">BYE</th>
