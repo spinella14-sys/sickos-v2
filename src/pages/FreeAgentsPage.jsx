@@ -363,7 +363,7 @@ export default function FreeAgentsPage() {
                         <td className="fa-td fa-td-center fa-stat">
                           {ps?.owned_pct != null
                             ? <>
-                                {ps.owned_pct.toFixed(0)}%
+                                {ps.owned_pct.toFixed(1)}%
                                 {ps.owned_trend > 0 && <span style={{color:'var(--green,#3dba6e)'}}> ▲{ps.owned_trend.toFixed(1)}</span>}
                                 {ps.owned_trend < 0 && <span style={{color:'var(--red,#d94f4f)'}}> ▼{Math.abs(ps.owned_trend).toFixed(1)}</span>}
                               </>
