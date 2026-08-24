@@ -43,7 +43,6 @@ export default function UFABidForm({ player, wave, tier, currentTeam, myCapData,
   const [structure,     setStructure]   = useState(existingBid?.structure    || 'ascending');
   const [gtdYears,      setGtdYears]    = useState(existingBid?.guaranteed_years || 1);
   const [signingBonus,  setSB]          = useState(existingBid?.signing_bonus || 0);
-  const [withdrawIf,    setWithdraw]    = useState(existingBid?.withdraw_if_higher_wins || false);
   const [condOnCap,     setCondOnCap]   = useState(existingBid?.conditional_on_cap || false);
   const [priority,      setPriority]    = useState(existingBid?.priority_rank || myBids.length + 1);
   const [submitting,    setSubmitting]  = useState(false);
@@ -79,7 +78,6 @@ export default function UFABidForm({ player, wave, tier, currentTeam, myCapData,
       y1_salary:         y1Num,
       guaranteed_years:  gtdYears,
       signing_bonus:     parseFloat(signingBonus || 0),
-      withdraw_if_higher_wins: withdrawIf,
       conditional_on_cap:      condOnCap,
       priority_rank:     priority,
     });
@@ -233,10 +231,6 @@ export default function UFABidForm({ player, wave, tier, currentTeam, myCapData,
         {/* Options */}
         <div className="rfa-bid-form__section">
           <label className="rfa-bid-form__label">Options</label>
-          <label className="rfa-bid-form__toggle-row">
-            <input type="checkbox" checked={withdrawIf} onChange={e => setWithdraw(e.target.checked)}/>
-            Withdraw if a higher-priority bid wins
-          </label>
           <label className="rfa-bid-form__toggle-row">
             <input type="checkbox" checked={condOnCap} onChange={e => setCondOnCap(e.target.checked)}/>
             Only process if cap space remains after higher-priority bids
