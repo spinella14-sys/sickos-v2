@@ -2,11 +2,11 @@ import { useState } from 'react';
 
 const STATUS_LABEL = {
   won: 'WON', lost: 'Lost the bid', lost_cap_invalid: 'Lost — insufficient cap/SB',
-  withdrawn: 'Withdrawn', voided_tie: 'Voided — tied bid', active: 'Still pending',
+  withdrawn: 'Withdrawn', tied_pending_review: 'Tied — pending review', active: 'Still pending',
 };
 const STATUS_COLOR = {
   won: 'var(--draft-green, #3dba6e)', lost: '#8B949E', lost_cap_invalid: 'var(--draft-red, #e84545)',
-  withdrawn: '#8B949E', voided_tie: 'var(--draft-amber, #e8a933)', active: 'var(--draft-amber, #e8a933)',
+  withdrawn: '#8B949E', tied_pending_review: 'var(--draft-amber, #e8a933)', active: 'var(--draft-amber, #e8a933)',
 };
 
 function ContractLine({ years, y1Salary, y2Salary, y3Salary, signingBonus }) {
@@ -20,14 +20,14 @@ function ContractLine({ years, y1Salary, y2Salary, y3Salary, signingBonus }) {
   );
 }
 
-// Shown once when a new RFA wave opens (localStorage-gated per team, per
-// wave, in RFADraft.jsx): this team's own bids from the wave that just
-// closed (with real outcome + full contract terms on any win), this
-// team's currently-standing bids, and every league-wide win from that
-// closed wave — all with full contract terms (years, salary per year,
-// signing bonus), per Adam's explicit spec.
-export default function RFAWaveSummaryModal({
-  closedWave, currentWave, myBids, myPending, leagueWins, onClose,
+// Shown once when a new UFA wave opens (localStorage-gated per team, per
+// wave, in UFADraft.jsx): this team's own bids from the wave that just
+// closed (with real outcome + full contract terms on any win), and every
+// league-wide win from that closed wave — all with full contract terms.
+// No "pending" section, unlike RFA's version -- UFA has no match-window
+// mechanism, every bid resolves in the exact same wave it's submitted in.
+export default function UFAWaveSummaryModal({
+  closedWave, currentWave, myBids, leagueWins, onClose,
 }) {
   const [visible, setVisible] = useState(true);
   if (!visible) return null;
@@ -70,28 +70,6 @@ export default function RFAWaveSummaryModal({
                 {b.status === 'won' && (
                   <ContractLine years={b.years} y1Salary={b.y1_salary} y2Salary={b.y2_salary} y3Salary={b.y3_salary} signingBonus={b.signing_bonus} />
                 )}
-              </div>
-            ))}
-          </div>
-        )}
-
-        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5, color: '#8B949E' }}>
-          Your Standing Bids
-        </div>
-        {(myPending || []).length === 0 ? (
-          <div style={{ fontSize: 13, color: '#8B949E', marginBottom: 16 }}>No standing bids right now.</div>
-        ) : (
-          <div style={{ marginBottom: 16 }}>
-            {myPending.map((b, i) => (
-              <div key={i} style={{
-                fontSize: 13, padding: '8px 10px', marginBottom: 6, borderRadius: 6,
-                background: b.is_leading_challenger ? 'rgba(232,169,51,0.08)' : 'rgba(255,255,255,0.04)',
-              }}>
-                <strong>{b.player_name}</strong>
-                <span style={{ color: 'var(--draft-amber, #e8a933)', fontWeight: 700, marginLeft: 8 }}>
-                  {b.is_leading_challenger ? 'Leading — awaiting match decision' : 'Pending'}
-                </span>
-                <ContractLine years={b.years} y1Salary={b.y1_salary} signingBonus={b.signing_bonus} />
               </div>
             ))}
           </div>

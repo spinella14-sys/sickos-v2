@@ -61,10 +61,16 @@ export default function RFADraft({ currentTeam, isCommissioner }) {
         const lastSeen = parseInt(localStorage.getItem(seenKey) || '0')
         if (currentWave > lastSeen) {
           const closedWave = currentWave - 1
-          fetch(`${API}/rfa/results-log?season=${SEASON}&wave=${closedWave}`)
-            .then(r => r.ok ? r.json() : [])
-            .then(results => {
-              setWaveSummary({ closedWave, currentWave, results })
+          fetch(`${API}/rfa/wave-summary?team=${currentTeam}&closedWave=${closedWave}`)
+            .then(r => r.ok ? r.json() : null)
+            .then(summary => {
+              if (!summary) return
+              setWaveSummary({
+                closedWave, currentWave,
+                myBids: summary.myBids || [],
+                myPending: summary.myPending || [],
+                leagueWins: summary.leagueWins || [],
+              })
               localStorage.setItem(seenKey, String(currentWave))
             })
             .catch(() => {})
@@ -253,9 +259,9 @@ export default function RFADraft({ currentTeam, isCommissioner }) {
         <RFAWaveSummaryModal
           closedWave={waveSummary.closedWave}
           currentWave={waveSummary.currentWave}
-          lastWaveResults={waveSummary.results}
-          matchWindows={matchWindows}
-          myBids={myBids}
+          myBids={waveSummary.myBids}
+          myPending={waveSummary.myPending}
+          leagueWins={waveSummary.leagueWins}
           onClose={() => setWaveSummary(null)}
         />
       )}

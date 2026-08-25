@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import UFAHero        from '../../components/ufa/UFAHero'
 import UFAPlayerBoard from '../../components/ufa/UFAPlayerBoard'
 import UFAMyBids      from '../../components/ufa/UFAMyBids'
+import UFAWaveSummaryModal from '../../components/ufa/UFAWaveSummaryModal'
 import DraftTradeModal from '../../components/draft/DraftTradeModal'
 import TeamPanel from '../../components/draft/TeamPanel'
 import { TEAMS, LOGOS } from '../../data/league'
@@ -23,6 +24,7 @@ export default function UFADraft({ currentTeam, isCommissioner }) {
   const [selectedPlayer, setSelectedPlayer] = useState(null)
   const [loading,        setLoading]        = useState(true)
   const [showTradeModal, setShowTradeModal] = useState(false)
+  const [waveSummary, setWaveSummary] = useState(null)
   const [viewingTeam, setViewingTeam] = useState(currentTeam)
   const [statsView, setStatsView] = useState('2026') // '2026' | '2025' -- 2026 projections is the default
   const [trendWindow, setTrendWindow] = useState('last_week') // 'last_week' | '3week' | 'season'
@@ -45,6 +47,30 @@ export default function UFADraft({ currentTeam, isCommissioner }) {
       setMyCapData(teamRes)
       // FIX: field is wave_closes_at, not wave_end_time
       setWaveCloseTime(stateRes?.wave_closes_at || null)
+
+      // Show the wave-summary popup once per new wave — tracked in
+      // localStorage per-team so it doesn't repeat on every page load.
+      // Mirrors RFA's exact same pattern.
+      const currentWave = stateRes?.current_wave
+      if (currentWave && currentWave > 1) {
+        const seenKey = `ufa_last_seen_wave_${currentTeam}`
+        const lastSeen = parseInt(localStorage.getItem(seenKey) || '0')
+        if (currentWave > lastSeen) {
+          const closedWave = currentWave - 1
+          fetch(`${API}/ufa/wave-summary?team=${currentTeam}&closedWave=${closedWave}`)
+            .then(r => r.ok ? r.json() : null)
+            .then(summary => {
+              if (!summary) return
+              setWaveSummary({
+                closedWave, currentWave,
+                myBids: summary.myBids || [],
+                leagueWins: summary.leagueWins || [],
+              })
+              localStorage.setItem(seenKey, String(currentWave))
+            })
+            .catch(() => {})
+        }
+      }
     } catch (e) {
       console.error('UFA load error', e)
     } finally {
@@ -196,6 +222,16 @@ export default function UFADraft({ currentTeam, isCommissioner }) {
           showDraftPicks={false}
         />
       </div>
+
+      {waveSummary && (
+        <UFAWaveSummaryModal
+          closedWave={waveSummary.closedWave}
+          currentWave={waveSummary.currentWave}
+          myBids={waveSummary.myBids}
+          leagueWins={waveSummary.leagueWins}
+          onClose={() => setWaveSummary(null)}
+        />
+      )}
     </div>
   )
 }
