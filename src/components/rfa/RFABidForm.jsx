@@ -1,24 +1,19 @@
 import { useState } from 'react';
 
-const CAP_YEAR = 120;
 const MAX_SALARY = 21.82;
 const QB_MAX = 26.67;
 const HARD_CAP = 138;
-// The ONLY minimum in RFA is the Wave 1 tender floor. Waves 2+ have no fixed
-// dollar minimum at all — a bid just needs to beat the incumbent's current
-// best bid. (Wave-by-wave minimums / "must touch max" are a UFA-only
-// concept and do not apply here.)
-const RFA_TENDER_FLOOR = { 1: 12.00, 2: 8.00 }; // Round 1 = 10% of LTL, Round 2 = LTL/15
+const STRUCTURES = ['escalating', 'flat', 'descending'];
+const STRUCTURE_LABELS = { escalating: 'Escalating', flat: 'Flat', descending: 'Descending' };
 
-function getWaveMin(wave, draftRound) {
-  if (wave !== 1) return null;
-  return RFA_TENDER_FLOOR[draftRound];
-}
-
-function calcSalaries(y1) {
-  const y2 = parseFloat((y1 * 1.1).toFixed(2));
-  const y3 = parseFloat((y2 * 1.1).toFixed(2));
-  return [y1, y2, y3];
+function calcSalaries(y1, structure, years) {
+  const result = [y1];
+  for (let i = 1; i < years; i++) {
+    if (structure === 'flat') result.push(y1);
+    else if (structure === 'descending') result.push(parseFloat((y1 * Math.pow(0.9, i)).toFixed(2)));
+    else result.push(parseFloat((result[i - 1] * 1.1).toFixed(2))); // escalating
+  }
+  return result;
 }
 
 export default function RFABidForm({
@@ -27,13 +22,14 @@ export default function RFABidForm({
   const isIncumbent = player.incumbent_team === currentTeam;
   const isQB = player.position === 'QB';
   const maxSal = isQB ? QB_MAX : MAX_SALARY;
-  const waveMin = getWaveMin(wave, player.draft_round);
+  const isWave1 = wave === 1;
+  const waveMin = isWave1 ? player.tender_floor : null;
   const existingBid = myBids.find(b => b.player_id === player.id);
 
-  const [y1, setY1] = useState(existingBid?.y1_salary || waveMin || RFA_TENDER_FLOOR[player.draft_round]);
-  // Wave 1 tenders are always fully guaranteed (3 years, no exceptions) —
-  // only Wave 2+ challengers get to choose 2 or 3 guaranteed years.
-  const [guaranteedYears, setGuaranteedYears] = useState(wave === 1 ? 3 : (existingBid?.guaranteed_years || 2));
+  const [y1, setY1] = useState(existingBid?.y1_salary || waveMin || 0);
+  const [years, setYears] = useState(isWave1 ? 3 : (existingBid?.years || 3));
+  const [structure, setStructure] = useState(isWave1 ? 'escalating' : (existingBid?.structure || 'escalating'));
+  const [nonGuaranteedFinal, setNonGuaranteedFinal] = useState(isWave1 ? false : (existingBid?.non_guaranteed_final || false));
   const [signingBonus, setSigningBonus] = useState(existingBid?.signing_bonus || 0);
   const [conditionalOnCap, setConditionalOnCap] = useState(existingBid?.conditional_on_cap || false);
   const [priorityRank, setPriorityRank] = useState(existingBid?.priority_rank || myBids.length + 1);
@@ -41,14 +37,15 @@ export default function RFABidForm({
   const [error, setError] = useState('');
 
   const y1Num = parseFloat(y1) || 0;
-  const [, y2, y3] = calcSalaries(y1Num);
-  const salaries = [y1Num, y2, y3];
+  const effectiveYears = isWave1 ? 3 : years;
+  const effectiveStructure = isWave1 ? 'escalating' : structure;
+  const salaries = calcSalaries(y1Num, effectiveStructure, effectiveYears);
+  const guaranteedCount = (isWave1 || !nonGuaranteedFinal) ? effectiveYears : effectiveYears - 1;
 
   let guaranteedSalary = 0;
-  for (let i = 0; i < guaranteedYears; i++) guaranteedSalary += salaries[i];
+  for (let i = 0; i < guaranteedCount; i++) guaranteedSalary += salaries[i];
   const totalGuaranteed = parseFloat((guaranteedSalary + parseFloat(signingBonus || 0)).toFixed(2));
 
-  // Cap space and hard cap validation
   const capSpace = myTeamData?.cap_space || 0;
   const capUsed = myTeamData?.cap_used || 0;
   const wouldExceedHardCap = (capUsed + y1Num) > HARD_CAP;
@@ -56,7 +53,7 @@ export default function RFABidForm({
 
   const validate = () => {
     if (!y1Num || y1Num <= 0) return 'Please enter a Y1 salary';
-    if (waveMin && y1Num < waveMin) return `Y1 salary must be at least $${waveMin} in Wave ${wave}`;
+    if (waveMin && y1Num < waveMin) return `Y1 salary must be at least $${waveMin.toFixed(2)} in Wave ${wave}`;
     if (y1Num > maxSal) return `Y1 salary cannot exceed the max ($${maxSal})`;
     if (wouldExceedHardCap) return `This offer would exceed the hard cap ($${HARD_CAP}). Hard cap can never be crossed.`;
     if (insufficientCap) return `Insufficient cap space. You have $${capSpace.toFixed(2)} available, offer requires $${y1Num.toFixed(2)}.`;
@@ -68,7 +65,6 @@ export default function RFABidForm({
 
   const handleMax = () => {
     setY1(parseFloat(maxSal.toFixed(2)));
-    setGuaranteedYears(3);
   };
 
   const handleSubmit = async () => {
@@ -78,7 +74,9 @@ export default function RFABidForm({
     const result = await onSubmit({
       player_id: player.id,
       y1_salary: y1Num,
-      guaranteed_years: guaranteedYears,
+      years: effectiveYears,
+      structure: effectiveStructure,
+      non_guaranteed_final: isWave1 ? false : nonGuaranteedFinal,
       signing_bonus: parseFloat(signingBonus || 0),
       conditional_on_cap: conditionalOnCap,
       priority_rank: priorityRank,
@@ -100,11 +98,10 @@ export default function RFABidForm({
   return (
     <div className="rfa-bid-form-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="rfa-bid-form">
-        {/* Header */}
         <div className="rfa-bid-form__header">
           <div>
             <div className="rfa-bid-form__title">
-              {wave === 1 ? 'Retention Tag' : isIncumbent ? 'Your Offer' : 'Submit Bid'}
+              {isWave1 ? 'Retention Tag' : isIncumbent ? 'Your Offer' : 'Submit Bid'}
             </div>
             <div className="rfa-bid-form__player">
               {player.full_name} · {player.position} · R{player.draft_round} RFA
@@ -113,17 +110,14 @@ export default function RFABidForm({
           <button className="rfa-bid-form__close" onClick={onClose}>×</button>
         </div>
 
-        {/* Contract structure info */}
         <div style={{ background: '#1C2330', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 6, padding: '10px 12px', fontSize: 12, color: '#8B949E', lineHeight: 1.6 }}>
-          All RFA offers are <strong style={{ color: '#E6EDF3' }}>3-year ascending contracts</strong>.
-          Y2 = Y1 × 1.10, Y3 = Y2 × 1.10.
-          {wave === 2 && <> Must touch max (${maxSal}) at some point.</>}
-          {wave === 3 && <> Min Y1: $16.33.</>}
-          {wave === 4 && <> Min Y1: $13.33.</>}
-          {wave === 5 && <> Min Y1: $8.00.</>}
+          {isWave1 ? (
+            <>All Wave 1 tenders are <strong style={{ color: '#E6EDF3' }}>3-year escalating contracts, fully guaranteed</strong>. Y2 = Y1 × 1.10, Y3 = Y2 × 1.10.</>
+          ) : (
+            <>Choose <strong style={{ color: '#E6EDF3' }}>3 or 4 years</strong>, any structure, and optionally leave the final year non-guaranteed to try to beat the incumbent's tender. There is no fixed dollar minimum — your offer just needs to exceed the tender floor in total guaranteed money.</>
+          )}
         </div>
 
-        {/* Cap space summary */}
         <div style={{
           background: wouldExceedHardCap ? 'rgba(232,69,69,0.1)' : insufficientCap ? 'rgba(232,69,69,0.06)' : 'rgba(39,174,96,0.08)',
           border: `1px solid ${wouldExceedHardCap || insufficientCap ? '#E84545' : '#27AE60'}`,
@@ -160,11 +154,18 @@ export default function RFABidForm({
           )}
         </div>
 
-        {/* Y1 Salary + MAX button */}
+        {player.tender_floor != null && (
+          <div style={{ fontSize: 12, color: '#F5A623', fontWeight: 600 }}>
+            {isWave1
+              ? `RFA Round ${player.draft_round} tender floor: $${player.tender_floor.toFixed(2)} minimum.`
+              : `Estimated minimum to beat this player's tender floor: $${player.tender_floor.toFixed(2)} total guaranteed. This is the best available estimate before Wave 1 happens live — the real tender may be higher.`}
+          </div>
+        )}
+
         <div className="rfa-bid-form__section">
           <label className="rfa-bid-form__label">
             Year 1 Salary
-            {waveMin && <span style={{ color: '#F5A623', marginLeft: 6 }}>(min ${waveMin})</span>}
+            {waveMin && <span style={{ color: '#F5A623', marginLeft: 6 }}>(min ${waveMin.toFixed(2)})</span>}
           </label>
           <div style={{ display: 'flex', gap: 8 }}>
             <input
@@ -172,7 +173,7 @@ export default function RFABidForm({
               style={{ ...inputStyle, flex: 1, borderColor: validationError?.includes('Y1') || validationError?.includes('cap') ? '#E84545' : 'rgba(255,255,255,0.07)' }}
               value={y1}
               onChange={e => setY1(e.target.value)}
-              min={waveMin || RFA_TENDER_FLOOR[player.draft_round]}
+              min={waveMin || 0}
               max={maxSal}
               step={0.01}
             />
@@ -194,13 +195,48 @@ export default function RFABidForm({
           </span>
         </div>
 
-        {/* Contract preview */}
+        <div className="rfa-bid-form__section">
+          <label className="rfa-bid-form__label">Years</label>
+          {isWave1 ? (
+            <div className="rfa-bid-form__hint">Always 3 years for a Wave 1 tender</div>
+          ) : (
+            <div className="rfa-bid-form__gtd-toggle">
+              {[3, 4].map(yr => (
+                <button
+                  key={yr}
+                  className={`rfa-bid-form__gtd-btn ${years === yr ? 'rfa-bid-form__gtd-btn--active' : ''}`}
+                  onClick={() => setYears(yr)}
+                >
+                  {yr} Years
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {!isWave1 && (
+          <div className="rfa-bid-form__section">
+            <label className="rfa-bid-form__label">Structure</label>
+            <div className="rfa-bid-form__gtd-toggle">
+              {STRUCTURES.map(s => (
+                <button
+                  key={s}
+                  className={`rfa-bid-form__gtd-btn ${structure === s ? 'rfa-bid-form__gtd-btn--active' : ''}`}
+                  onClick={() => setStructure(s)}
+                >
+                  {STRUCTURE_LABELS[s]}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="rfa-bid-form__section">
           <label className="rfa-bid-form__label">Contract Preview</label>
           <div className="rfa-bid-form__contract-preview">
             {salaries.map((sal, i) => (
-              <div key={i} className={`rfa-bid-form__contract-row ${i >= guaranteedYears ? 'non-gtd' : ''}`}>
-                <span>Year {i + 1} {i >= guaranteedYears ? '(non-gtd)' : '(gtd)'}</span>
+              <div key={i} className={`rfa-bid-form__contract-row ${i >= guaranteedCount ? 'non-gtd' : ''}`}>
+                <span>Year {i + 1} {i >= guaranteedCount ? '(non-gtd)' : '(gtd)'}</span>
                 <span>${sal.toFixed(2)}</span>
               </div>
             ))}
@@ -211,32 +247,21 @@ export default function RFABidForm({
           </div>
         </div>
 
-        {/* Guaranteed years — Wave 1 tenders are always fully guaranteed;
-            only Wave 2+ challengers get to choose */}
-        {wave === 1 ? (
+        {isWave1 ? (
           <div className="rfa-bid-form__section">
             <label className="rfa-bid-form__label">Guaranteed Years</label>
             <div className="rfa-bid-form__hint">All 3 years fully guaranteed (required for a tender)</div>
           </div>
         ) : (
-        <div className="rfa-bid-form__section">
-          <label className="rfa-bid-form__label">Guaranteed Years</label>
-          <div className="rfa-bid-form__gtd-toggle">
-            {[2, 3].map(yr => (
-              <button
-                key={yr}
-                className={`rfa-bid-form__gtd-btn ${guaranteedYears === yr ? 'rfa-bid-form__gtd-btn--active' : ''}`}
-                onClick={() => setGuaranteedYears(yr)}
-              >
-                {yr} Year{yr > 1 ? 's' : ''} Guaranteed
-              </button>
-            ))}
+          <div className="rfa-bid-form__section">
+            <label className="rfa-bid-form__toggle-row">
+              <input type="checkbox" checked={nonGuaranteedFinal} onChange={e => setNonGuaranteedFinal(e.target.checked)} />
+              Final year non-guaranteed
+            </label>
+            <span className="rfa-bid-form__hint">A non-guaranteed final year doesn't count toward total guaranteed money.</span>
           </div>
-          <span className="rfa-bid-form__hint">Only the final year can be non-guaranteed</span>
-        </div>
         )}
 
-        {/* Signing bonus */}
         <div className="rfa-bid-form__section">
           <label className="rfa-bid-form__label">
             Signing Bonus
@@ -258,7 +283,6 @@ export default function RFABidForm({
           </span>
         </div>
 
-        {/* Priority rank */}
         <div className="rfa-bid-form__section">
           <label className="rfa-bid-form__label">Priority Rank</label>
           <input
@@ -273,7 +297,6 @@ export default function RFABidForm({
           <span className="rfa-bid-form__hint">Lower = higher priority. Bids processed in this order.</span>
         </div>
 
-        {/* Toggles */}
         <div className="rfa-bid-form__section">
           <label className="rfa-bid-form__label">Options</label>
           <label className="rfa-bid-form__toggle-row">
@@ -292,7 +315,7 @@ export default function RFABidForm({
           onClick={handleSubmit}
           disabled={submitting || !!validationError}
         >
-          {submitting ? 'Submitting...' : existingBid ? 'Update Bid' : wave === 1 ? 'Submit Retention Tag' : 'Submit Bid'}
+          {submitting ? 'Submitting...' : existingBid ? 'Update Bid' : isWave1 ? 'Submit Retention Tag' : 'Submit Bid'}
         </button>
       </div>
     </div>
