@@ -35,7 +35,6 @@ export default function RFABidForm({
   // only Wave 2+ challengers get to choose 2 or 3 guaranteed years.
   const [guaranteedYears, setGuaranteedYears] = useState(wave === 1 ? 3 : (existingBid?.guaranteed_years || 2));
   const [signingBonus, setSigningBonus] = useState(existingBid?.signing_bonus || 0);
-  const [withdrawIfHigher, setWithdrawIfHigher] = useState(existingBid?.withdraw_if_higher_wins || false);
   const [conditionalOnCap, setConditionalOnCap] = useState(existingBid?.conditional_on_cap || false);
   const [priorityRank, setPriorityRank] = useState(existingBid?.priority_rank || myBids.length + 1);
   const [submitting, setSubmitting] = useState(false);
@@ -81,7 +80,6 @@ export default function RFABidForm({
       y1_salary: y1Num,
       guaranteed_years: guaranteedYears,
       signing_bonus: parseFloat(signingBonus || 0),
-      withdraw_if_higher_wins: withdrawIfHigher,
       conditional_on_cap: conditionalOnCap,
       priority_rank: priorityRank,
     });
@@ -278,10 +276,6 @@ export default function RFABidForm({
         {/* Toggles */}
         <div className="rfa-bid-form__section">
           <label className="rfa-bid-form__label">Options</label>
-          <label className="rfa-bid-form__toggle-row">
-            <input type="checkbox" checked={withdrawIfHigher} onChange={e => setWithdrawIfHigher(e.target.checked)} />
-            Withdraw this bid if a higher-priority bid wins
-          </label>
           <label className="rfa-bid-form__toggle-row">
             <input type="checkbox" checked={conditionalOnCap} onChange={e => setConditionalOnCap(e.target.checked)} />
             Only process if cap space remains after higher-priority bids
