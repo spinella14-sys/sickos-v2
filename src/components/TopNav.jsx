@@ -96,7 +96,8 @@ export default function TopNav() {
               <div className="tnl-home-section">
                 <div className="tnl-home-section-label">Tools</div>
                 <button className="tnl-home-item" onClick={() => navigate('/salary-cap')}>Cap Calculator</button>
-                <button className="tnl-home-item" onClick={() => navigate('/player-stats')}>Player Rankings</button>
+                <button className="tnl-home-item" onClick={() => navigate('/draft/rfa-board')}>RFA Draft Board</button>
+                <button className="tnl-home-item" onClick={() => navigate('/draft/ufa-board')}>UFA Draft Board</button>
                 <button className="tnl-home-item" onClick={() => navigate('/draft/board')}>Draft Board</button>
                 <button className="tnl-home-item" onClick={() => navigate('/calendar')}>League Calendar</button>
               </div>
