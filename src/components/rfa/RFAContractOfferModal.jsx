@@ -3,6 +3,19 @@ import '../../pages/FABidPage.css'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
 const SEASON = new Date().getFullYear()
+const STRUCTURES = ['escalating', 'flat', 'descending']
+const STRUCTURE_LABELS = { escalating: 'Escalating', flat: 'Flat', descending: 'Descending' }
+const RFA_ROUND_LABEL = { 1: 'RFA 1st', 2: 'RFA 2nd' }
+
+function calcSalaries(y1, structure, years) {
+  const result = [y1]
+  for (let i = 1; i < years; i++) {
+    if (structure === 'flat') result.push(y1)
+    else if (structure === 'descending') result.push(parseFloat((y1 * Math.pow(0.9, i)).toFixed(2)))
+    else result.push(parseFloat((result[i - 1] * 1.1).toFixed(2))) // escalating
+  }
+  return result
+}
 
 export default function RFAContractOfferModal({
   player, wave, currentTeam, existingTerms, onSave, onClose,
@@ -12,7 +25,9 @@ export default function RFAContractOfferModal({
   const [sbBalance, setSbBalance] = useState(null)
 
   const [salary, setSalary] = useState(existingTerms?.y1_salary ?? (player?.tender_floor ?? 0))
-  const [guaranteedYears, setGuaranteedYears] = useState(isWave1 ? 3 : (existingTerms?.guaranteed_years ?? 3))
+  const [years, setYears] = useState(isWave1 ? 3 : (existingTerms?.years ?? 3))
+  const [structure, setStructure] = useState(isWave1 ? 'escalating' : (existingTerms?.structure ?? 'escalating'))
+  const [nonGuaranteedFinal, setNonGuaranteedFinal] = useState(isWave1 ? false : (existingTerms?.non_guaranteed_final ?? false))
   const [signingBonus, setSigningBonus] = useState(existingTerms?.signing_bonus ?? 0)
   const [error, setError] = useState('')
 
@@ -23,17 +38,24 @@ export default function RFAContractOfferModal({
       .then(d => setSbBalance(d[currentTeam] ?? null))
   }, [currentTeam])
 
-  const totalGuaranteed = useMemo(() => {
+  const effectiveYears = isWave1 ? 3 : years
+  const effectiveStructure = isWave1 ? 'escalating' : structure
+
+  const salaries = useMemo(() => {
     const y1 = parseFloat(salary) || 0
-    const y2 = parseFloat((y1 * 1.1).toFixed(2))
-    const y3 = parseFloat((y2 * 1.1).toFixed(2))
-    const years = [y1, y2, y3]
-    const guaranteedSalary = years.slice(0, guaranteedYears).reduce((s, v) => s + v, 0)
+    return calcSalaries(y1, effectiveStructure, effectiveYears)
+  }, [salary, effectiveStructure, effectiveYears])
+
+  const guaranteedCount = (isWave1 || !nonGuaranteedFinal) ? effectiveYears : effectiveYears - 1
+
+  const totalGuaranteed = useMemo(() => {
+    const guaranteedSalary = salaries.slice(0, guaranteedCount).reduce((s, v) => s + v, 0)
     return parseFloat((guaranteedSalary + (parseFloat(signingBonus) || 0)).toFixed(2))
-  }, [salary, guaranteedYears, signingBonus])
+  }, [salaries, guaranteedCount, signingBonus])
 
   const floor = player?.tender_floor ?? null
   const belowFloor = !isWave1 && floor != null && totalGuaranteed <= floor
+  const roundLabel = player?.draft_round ? (RFA_ROUND_LABEL[player.draft_round] || `RFA Round ${player.draft_round}`) : null
 
   function handleSave() {
     if (belowFloor) {
@@ -47,18 +69,22 @@ export default function RFAContractOfferModal({
     onSave({
       sleeper_id: player.sleeper_id,
       y1_salary: parseFloat(salary),
-      guaranteed_years: guaranteedYears,
+      years: effectiveYears,
+      structure: effectiveStructure,
+      non_guaranteed_final: isWave1 ? false : nonGuaranteedFinal,
+      guaranteed_years: guaranteedCount,
       signing_bonus: parseFloat(signingBonus) || 0,
-      years: 3,
-      structure: 'ascending',
     })
   }
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
-    }}>
+    <div
+      onClick={e => e.target === e.currentTarget && onClose()}
+      style={{
+        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
+      }}
+    >
       <div className="fab-root" style={{ maxWidth: 560, width: '92%', maxHeight: '85vh', overflowY: 'auto', borderRadius: 12 }}>
         <div className="fab-header">
           <h1 className="fab-title">{isWave1 ? 'Set Tender' : 'Set Challenge Offer'}</h1>
@@ -70,6 +96,7 @@ export default function RFAContractOfferModal({
             <div className="fab-player-meta">
               {player.position && <span className="fab-pos">{player.position}</span>}
               {player.nfl_team && <span className="fab-nfl">{player.nfl_team}</span>}
+              {roundLabel && <span className="fab-pos">{roundLabel}</span>}
             </div>
           </div>
         </div>
@@ -96,16 +123,18 @@ export default function RFAContractOfferModal({
         )}
 
         <div className="fab-form">
-          {!isWave1 && floor != null && (
+          {floor != null && (
             <div style={{ fontSize: 12, color: 'var(--draft-amber, #e8a933)', marginBottom: 12, fontWeight: 600 }}>
-              Estimated minimum to beat this player's tender floor: ${floor.toFixed(2)} total guaranteed.
-              This is the best available estimate before Wave 1 happens live — the real tender may be higher.
+              {isWave1
+                ? `${roundLabel || 'RFA'} tender floor: $${floor.toFixed(2)} minimum.`
+                : <>Estimated minimum to beat this player's tender floor: ${floor.toFixed(2)} total guaranteed.
+                   This is the best available estimate before Wave 1 happens live — the real tender may be higher.</>}
             </div>
           )}
 
           <div className="fab-field">
             <label className="fab-label">
-              Salary (Year 1) {!isWave1 && floor != null && <span className="fab-max-hint">Floor: ${floor.toFixed(2)}</span>}
+              Salary (Year 1) {floor != null && <span className="fab-max-hint">Floor: ${floor.toFixed(2)}</span>}
             </label>
             <div className="fab-salary-row">
               <span className="fab-dollar">$</span>
@@ -117,25 +146,71 @@ export default function RFAContractOfferModal({
           </div>
 
           <div className="fab-field">
-            <label className="fab-label">Guaranteed Years</label>
+            <label className="fab-label">Years</label>
             {isWave1 ? (
               <div className="fab-years-row">
                 <span className="fab-year-btn fab-year-btn--active" style={{ cursor: 'default', opacity: 0.85 }}>
-                  3yr (Fully Guaranteed — locked for Wave 1 tenders)
+                  3yr — locked for Wave 1 tenders
                 </span>
               </div>
             ) : (
               <div className="fab-years-row">
-                {[1, 2, 3].map(y => (
+                {[3, 4].map(y => (
                   <button
                     key={y} type="button"
-                    className={`fab-year-btn ${guaranteedYears === y ? 'fab-year-btn--active' : ''}`}
-                    onClick={() => setGuaranteedYears(y)}
+                    className={`fab-year-btn ${years === y ? 'fab-year-btn--active' : ''}`}
+                    onClick={() => setYears(y)}
                   >{y}yr</button>
                 ))}
               </div>
             )}
           </div>
+
+          {!isWave1 && (
+            <div className="fab-field">
+              <label className="fab-label">Structure</label>
+              <div className="fab-years-row">
+                {STRUCTURES.map(s => (
+                  <button
+                    key={s} type="button"
+                    className={`fab-year-btn ${structure === s ? 'fab-year-btn--active' : ''}`}
+                    onClick={() => setStructure(s)}
+                  >{STRUCTURE_LABELS[s]}</button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="fab-field">
+            <label className="fab-label">Contract Preview</label>
+            <div style={{ fontSize: 12, color: 'var(--draft-text-muted, #8B949E)', lineHeight: 1.8 }}>
+              {salaries.map((sal, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Year {i + 1} {i >= guaranteedCount ? '(non-gtd)' : '(gtd)'}</span>
+                  <span>${sal.toFixed(2)}</span>
+                </div>
+              ))}
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--draft-border)', marginTop: 4, paddingTop: 4, fontWeight: 700, color: 'inherit' }}>
+                <span>Total Guaranteed</span>
+                <span>${totalGuaranteed.toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+
+          {isWave1 ? (
+            <div className="fab-field">
+              <label className="fab-label">Guaranteed Years</label>
+              <div className="fab-max-hint">All 3 years fully guaranteed (required for a tender)</div>
+            </div>
+          ) : (
+            <div className="fab-field fab-field--inline">
+              <label className="fab-label">
+                <input type="checkbox" className="fab-checkbox" checked={nonGuaranteedFinal}
+                  onChange={e => setNonGuaranteedFinal(e.target.checked)} />
+                {' '}Final year non-guaranteed
+              </label>
+            </div>
+          )}
 
           <div className="fab-field">
             <label className="fab-label">
