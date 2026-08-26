@@ -91,6 +91,40 @@ export default function RFADraft({ currentTeam, isCommissioner }) {
     return () => clearInterval(iv)
   }, [load])
 
+  // Presence heartbeat -- keeps this manager marked "in the draft room" for
+  // the admin's absence-based ready detection.
+  useEffect(() => {
+    const ping = () => fetch(`${API}/rfa/heartbeat`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ team_abbrev: currentTeam }),
+    }).catch(() => {})
+    ping()
+    const iv = setInterval(ping, 15000)
+    return () => clearInterval(iv)
+  }, [currentTeam])
+
+  const [waveReadyClicked, setWaveReadyClicked] = useState(false)
+  async function handleWaveReady() {
+    try {
+      const res = await fetch(`${API}/rfa/wave-ready`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ team_abbrev: currentTeam }),
+      })
+      if (res.ok) setWaveReadyClicked(true)
+    } catch (e) { console.error('wave-ready error', e) }
+  }
+  useEffect(() => { setWaveReadyClicked(false) }, [rfaState?.current_wave])
+
+  const [readyStatus, setReadyStatus] = useState(null)
+  useEffect(() => {
+    if (!isCommissioner) return
+    const fetchStatus = () => fetch(`${API}/rfa/wave-ready-status`)
+      .then(r => r.ok ? r.json() : null).then(setReadyStatus).catch(() => {})
+    fetchStatus()
+    const iv = setInterval(fetchStatus, 15000)
+    return () => clearInterval(iv)
+  }, [isCommissioner, rfaState?.current_wave])
+
   // ── Load pool-stats (bye week, ADP, ownership trend, swappable season
   // stats) -- separate from the main load() above, since switching the
   // stats view/trend toggle shouldn't re-fetch bids/state/team data.
@@ -209,6 +243,26 @@ export default function RFADraft({ currentTeam, isCommissioner }) {
         onOpenTrade={() => setShowTradeModal(true)}
       />
       <DraftTradeModal isOpen={showTradeModal} onClose={() => setShowTradeModal(false)} />
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 20px', borderBottom: '1px solid var(--draft-border)', flexWrap: 'wrap' }}>
+        <button
+          onClick={handleWaveReady}
+          disabled={waveReadyClicked}
+          style={{
+            background: waveReadyClicked ? 'rgba(39,174,96,0.15)' : 'var(--draft-surface, #1c1f26)',
+            color: waveReadyClicked ? 'var(--draft-green, #27AE60)' : 'var(--draft-text, #E6EDF3)',
+            border: `1px solid ${waveReadyClicked ? 'var(--draft-green, #27AE60)' : 'var(--draft-border, #333)'}`,
+            borderRadius: 6, fontSize: 12, fontWeight: 700, padding: '6px 12px', cursor: waveReadyClicked ? 'default' : 'pointer',
+          }}
+        >
+          {waveReadyClicked ? '✓ Marked Done This Wave' : 'All Done With This Wave'}
+        </button>
+        {isCommissioner && readyStatus && (
+          <span style={{ fontSize: 12, color: 'var(--draft-text-muted)', fontWeight: 600 }}>
+            {readyStatus.ready_count}/{readyStatus.total} teams ready to close wave {readyStatus.wave}
+          </span>
+        )}
+      </div>
 
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         <RFAMyBids
