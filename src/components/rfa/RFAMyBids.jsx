@@ -174,14 +174,6 @@ export default function RFAMyBids({
                 <label className="rfa-bid-card__toggle">
                   <input
                     type="checkbox"
-                    checked={bid.withdraw_if_higher_wins}
-                    readOnly
-                  />
-                  Withdraw if higher priority wins
-                </label>
-                <label className="rfa-bid-card__toggle">
-                  <input
-                    type="checkbox"
                     checked={bid.conditional_on_cap}
                     readOnly
                   />
