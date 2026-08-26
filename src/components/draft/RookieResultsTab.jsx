@@ -15,11 +15,20 @@ export default function RookieResultsTab() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch(`${API}/draft/picks-full-preview?season=${SEASON}`)
-      .then(r => r.ok ? r.json() : [])
-      .then(data => setPicks(Array.isArray(data) ? data : []))
-      .catch(() => setPicks([]))
-      .finally(() => setLoading(false))
+    const fetchPicks = (isFirstLoad) => {
+      fetch(`${API}/draft/picks-full-preview?season=${SEASON}`)
+        .then(r => r.ok ? r.json() : [])
+        .then(data => setPicks(Array.isArray(data) ? data : []))
+        .catch(() => setPicks([]))
+        .finally(() => { if (isFirstLoad) setLoading(false) })
+    }
+    fetchPicks(true)
+    // Live polling -- matches RookieDraft.jsx's own 15s poll cadence, so
+    // trades (which update current_owner_abbrev) and new picks reflect
+    // automatically without a manual refresh. Subsequent polls skip the
+    // loading spinner so live updates don't flicker the whole table.
+    const interval = setInterval(() => fetchPicks(false), 15000)
+    return () => clearInterval(interval)
   }, [])
 
   if (loading) {
