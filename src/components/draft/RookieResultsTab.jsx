@@ -31,7 +31,7 @@ export default function RookieResultsTab() {
   }
 
   return (
-    <div className="cs-table-wrap" style={{ padding: 16 }}>
+    <div className="cs-table-wrap" style={{ padding: 16, background: 'var(--bg0, #f0ede8)' }}>
       <table className="cs-table">
         <thead>
           <tr className="cs-thead-row">
@@ -59,7 +59,7 @@ export default function RookieResultsTab() {
                     />
                   )}
                   <div>
-                    <div style={{ fontSize: 11, color: 'var(--draft-text-muted, #8B949E)' }}>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted, #7a8494)' }}>
                       {getTeamName(pick.team_abbrev)}
                     </div>
                     <div style={{ fontSize: 14, fontWeight: 600 }}>
@@ -70,7 +70,7 @@ export default function RookieResultsTab() {
                           </PlayerLink>
                         ) : pick.player_name
                       ) : (
-                        <span style={{ color: 'var(--draft-text-muted, #8B949E)', fontStyle: 'italic' }}>TBD</span>
+                        <span style={{ color: 'var(--text-muted, #7a8494)', fontStyle: 'italic' }}>TBD</span>
                       )}
                     </div>
                   </div>
