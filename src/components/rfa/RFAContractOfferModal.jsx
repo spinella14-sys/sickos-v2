@@ -91,7 +91,7 @@ export default function RFAContractOfferModal({
   const fieldStyle = { marginBottom: 16 }
   const inputStyle = {
     width: '100%', boxSizing: 'border-box', background: INPUT_BG, border: `1px solid ${BORDER}`,
-    color: '#000000', borderRadius: 6, padding: '10px 12px', fontSize: 16, outline: 'none',
+    color: TEXT, borderRadius: 6, padding: '10px 12px', fontSize: 16, outline: 'none',
   }
   const pillBtn = (active) => ({
     background: active ? AMBER : INPUT_BG, color: active ? '#000' : TEXT,
@@ -116,7 +116,7 @@ export default function RFAContractOfferModal({
         </h1>
 
         <div style={{ background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 8, padding: 14, marginBottom: 16 }}>
-          <div style={{ color: '#000000', fontSize: 18, fontWeight: 700 }}>{player.full_name}</div>
+          <div style={{ color: TEXT, fontSize: 18, fontWeight: 700 }}>{player.full_name}</div>
           <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
             {player.position && <span style={{ color: AMBER, fontSize: 12, fontWeight: 700 }}>{player.position}</span>}
             {player.nfl_team && <span style={{ color: TEXT_MUTED, fontSize: 12 }}>{player.nfl_team}</span>}
@@ -127,20 +127,20 @@ export default function RFAContractOfferModal({
         {teamData && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 16 }}>
             <div style={{ background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 8, padding: 10 }}>
-              <div style={{ color: '#000000', fontSize: 11 }}>Cap Used</div>
-              <div style={{ color: '#000000', fontSize: 15, fontWeight: 700 }}>${parseFloat(teamData.cap_used || 0).toFixed(2)}</div>
+              <div style={{ color: TEXT_DIM, fontSize: 11 }}>Cap Used</div>
+              <div style={{ color: TEXT, fontSize: 15, fontWeight: 700 }}>${parseFloat(teamData.cap_used || 0).toFixed(2)}</div>
             </div>
             <div style={{ background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 8, padding: 10 }}>
               <div style={{ color: TEXT_DIM, fontSize: 11 }}>Cap Space</div>
               <div style={{ color: GREEN, fontSize: 15, fontWeight: 700 }}>${parseFloat(teamData.cap_space || 0).toFixed(2)}</div>
             </div>
             <div style={{ background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 8, padding: 10 }}>
-              <div style={{ color: '#000000', fontSize: 11 }}>SB Budget</div>
-              <div style={{ color: '#000000', fontSize: 15, fontWeight: 700 }}>{sbBalance !== null ? `$${sbBalance.toFixed(2)}` : '—'}</div>
+              <div style={{ color: TEXT_DIM, fontSize: 11 }}>SB Budget</div>
+              <div style={{ color: TEXT, fontSize: 15, fontWeight: 700 }}>{sbBalance !== null ? `$${sbBalance.toFixed(2)}` : '—'}</div>
             </div>
             <div style={{ background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 8, padding: 10 }}>
-              <div style={{ color: '#000000', fontSize: 11 }}>Hard Cap</div>
-              <div style={{ color: '#000000', fontSize: 15, fontWeight: 700 }}>${parseFloat(teamData.hard_cap || 138).toFixed(2)}</div>
+              <div style={{ color: TEXT_DIM, fontSize: 11 }}>Hard Cap</div>
+              <div style={{ color: TEXT, fontSize: 15, fontWeight: 700 }}>${parseFloat(teamData.hard_cap || 138).toFixed(2)}</div>
             </div>
           </div>
         )}
