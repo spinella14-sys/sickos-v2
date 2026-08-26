@@ -29,6 +29,11 @@ export default function RFADraftBoardPage({ currentTeam }) {
   // only -- not applicable to Waves 2+ targets.
   const [walkaways, setWalkaways] = useState({})
 
+  // Autodraft opt-in: the ONLY thing that gates whether the backend will
+  // ever auto-submit a bid on this manager's behalf.
+  const [autodraftOptedIn, setAutodraftOptedIn] = useState(false)
+  const [optinSaving, setOptinSaving] = useState(false)
+
   const load = useCallback(async () => {
     setLoading(true)
     try {
@@ -62,6 +67,9 @@ export default function RFADraftBoardPage({ currentTeam }) {
       const walkawayMap = {}
       ;(walkawaysRes || []).forEach(w => { walkawayMap[w.sleeper_id] = w.max_total_guaranteed })
       setWalkaways(walkawayMap)
+
+      const optinData = await fetch(`${API}/rfa/autodraft/opt-in?team=${currentTeam}`).then(r => r.ok ? r.json() : { opted_in: false })
+      setAutodraftOptedIn(!!optinData.opted_in)
     } catch (e) {
       console.error('RFA Draft Board load error', e)
     } finally {
@@ -133,6 +141,23 @@ export default function RFADraftBoardPage({ currentTeam }) {
     })
   }
 
+  async function handleAutodraftToggle() {
+    setOptinSaving(true)
+    try {
+      const newVal = !autodraftOptedIn
+      const res = await fetch(`${API}/rfa/autodraft/opt-in`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ team_abbrev: currentTeam, opted_in: newVal }),
+      })
+      if (res.ok) setAutodraftOptedIn(newVal)
+    } catch (e) {
+      console.error('Autodraft opt-in toggle error', e)
+    } finally {
+      setOptinSaving(false)
+    }
+  }
+
   async function handleSaveAll() {
     setSaving(true)
     setSaveMessage('')
@@ -180,9 +205,23 @@ export default function RFADraftBoardPage({ currentTeam }) {
       <div className="rfa-pool__header">
         <div className="rfa-pool__title-row">
           <span className="rfa-pool__title">RFA Draft Board</span>
-          <button onClick={handleSaveAll} disabled={saving} className="draft-board-save-btn">
-            {saving ? 'Saving…' : saveMessage || 'Save Board'}
-          </button>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <button
+              onClick={handleAutodraftToggle}
+              disabled={optinSaving}
+              style={{
+                background: autodraftOptedIn ? 'rgba(39,174,96,0.15)' : 'var(--draft-surface, #1c1f26)',
+                color: autodraftOptedIn ? 'var(--draft-green, #27AE60)' : 'var(--draft-text-muted, #8B949E)',
+                border: `1px solid ${autodraftOptedIn ? 'var(--draft-green, #27AE60)' : 'var(--draft-border, #333)'}`,
+                borderRadius: 6, fontSize: 12, fontWeight: 700, padding: '8px 14px', cursor: 'pointer',
+              }}
+            >
+              {optinSaving ? 'Saving…' : autodraftOptedIn ? '✓ AUTODRAFT ON' : 'AUTODRAFT FOR ME'}
+            </button>
+            <button onClick={handleSaveAll} disabled={saving} className="draft-board-save-btn">
+              {saving ? 'Saving…' : saveMessage || 'Save Board'}
+            </button>
+          </div>
         </div>
         <p style={{ fontSize: 12, color: 'var(--draft-text-muted)', margin: '4px 0 0' }}>
           Set your tenders and pre-rank challenge targets for each wave. If you can't make the
