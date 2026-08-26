@@ -7,12 +7,19 @@ const STRUCTURES = ['escalating', 'flat', 'descending']
 const STRUCTURE_LABELS = { escalating: 'Escalating', flat: 'Flat', descending: 'Descending' }
 const RFA_ROUND_LABEL = { 1: 'RFA 1st', 2: 'RFA 2nd' }
 
+const TEXT = '#F0F3F7'
+const TEXT_MUTED = '#A8B3C2'
+const TEXT_DIM = '#8B949E'
+const AMBER = '#F5A623'
+const RED = '#E84545'
+const GREEN = '#3DBA6E'
+
 function calcSalaries(y1, structure, years) {
   const result = [y1]
   for (let i = 1; i < years; i++) {
     if (structure === 'flat') result.push(y1)
     else if (structure === 'descending') result.push(parseFloat((y1 * Math.pow(0.9, i)).toFixed(2)))
-    else result.push(parseFloat((result[i - 1] * 1.1).toFixed(2))) // escalating
+    else result.push(parseFloat((result[i - 1] * 1.1).toFixed(2)))
   }
   return result
 }
@@ -77,6 +84,8 @@ export default function RFAContractOfferModal({
     })
   }
 
+  const labelStyle = { color: TEXT_MUTED, fontSize: 13, fontWeight: 700, display: 'block', marginBottom: 6 }
+
   return (
     <div
       onClick={e => e.target === e.currentTarget && onClose()}
@@ -85,18 +94,18 @@ export default function RFAContractOfferModal({
         display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
       }}
     >
-      <div className="fab-root" style={{ maxWidth: 560, width: '92%', maxHeight: '85vh', overflowY: 'auto', borderRadius: 12 }}>
+      <div className="fab-root" style={{ maxWidth: 560, width: '92%', maxHeight: '85vh', overflowY: 'auto', borderRadius: 12, color: TEXT }}>
         <div className="fab-header">
-          <h1 className="fab-title">{isWave1 ? 'Set Tender' : 'Set Challenge Offer'}</h1>
+          <h1 style={{ color: TEXT, fontSize: 22, fontWeight: 800, margin: 0 }}>{isWave1 ? 'Set Tender' : 'Set Challenge Offer'}</h1>
         </div>
 
         <div className="fab-player-card">
           <div className="fab-player-info">
-            <div className="fab-player-name">{player.full_name}</div>
-            <div className="fab-player-meta">
-              {player.position && <span className="fab-pos">{player.position}</span>}
-              {player.nfl_team && <span className="fab-nfl">{player.nfl_team}</span>}
-              {roundLabel && <span className="fab-pos">{roundLabel}</span>}
+            <div style={{ color: TEXT, fontSize: 18, fontWeight: 700 }}>{player.full_name}</div>
+            <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+              {player.position && <span style={{ color: AMBER, fontSize: 12, fontWeight: 700 }}>{player.position}</span>}
+              {player.nfl_team && <span style={{ color: TEXT_MUTED, fontSize: 12 }}>{player.nfl_team}</span>}
+              {roundLabel && <span style={{ color: TEXT_MUTED, fontSize: 12 }}>{roundLabel}</span>}
             </div>
           </div>
         </div>
@@ -104,61 +113,62 @@ export default function RFAContractOfferModal({
         {teamData && (
           <div className="fab-cap-row">
             <div className="fab-cap-item">
-              <span className="fab-cap-label">Cap Used</span>
-              <span className="fab-cap-val">${parseFloat(teamData.cap_used || 0).toFixed(2)}</span>
+              <span style={{ color: TEXT_DIM, fontSize: 11 }}>Cap Used</span>
+              <span style={{ color: TEXT, fontSize: 15, fontWeight: 700, display: 'block' }}>${parseFloat(teamData.cap_used || 0).toFixed(2)}</span>
             </div>
             <div className="fab-cap-item">
-              <span className="fab-cap-label">Cap Space</span>
-              <span className="fab-cap-val fab-cap-val--green">${parseFloat(teamData.cap_space || 0).toFixed(2)}</span>
+              <span style={{ color: TEXT_DIM, fontSize: 11 }}>Cap Space</span>
+              <span style={{ color: GREEN, fontSize: 15, fontWeight: 700, display: 'block' }}>${parseFloat(teamData.cap_space || 0).toFixed(2)}</span>
             </div>
             <div className="fab-cap-item">
-              <span className="fab-cap-label">SB Budget</span>
-              <span className="fab-cap-val">{sbBalance !== null ? `$${sbBalance.toFixed(2)}` : '—'}</span>
+              <span style={{ color: TEXT_DIM, fontSize: 11 }}>SB Budget</span>
+              <span style={{ color: TEXT, fontSize: 15, fontWeight: 700, display: 'block' }}>{sbBalance !== null ? `$${sbBalance.toFixed(2)}` : '—'}</span>
             </div>
             <div className="fab-cap-item">
-              <span className="fab-cap-label">Hard Cap</span>
-              <span className="fab-cap-val">${parseFloat(teamData.hard_cap || 138).toFixed(2)}</span>
+              <span style={{ color: TEXT_DIM, fontSize: 11 }}>Hard Cap</span>
+              <span style={{ color: TEXT, fontSize: 15, fontWeight: 700, display: 'block' }}>${parseFloat(teamData.hard_cap || 138).toFixed(2)}</span>
             </div>
           </div>
         )}
 
         <div className="fab-form">
           {floor != null && (
-            <div style={{ fontSize: 12, color: 'var(--draft-amber, #e8a933)', marginBottom: 12, fontWeight: 600 }}>
+            <div style={{
+              fontSize: 13, color: AMBER, fontWeight: 700, marginBottom: 14, padding: '10px 12px',
+              background: 'rgba(245,166,35,0.12)', border: '1px solid rgba(245,166,35,0.4)', borderRadius: 6,
+            }}>
               {isWave1
-                ? `${roundLabel || 'RFA'} tender floor: $${floor.toFixed(2)} minimum.`
+                ? `${roundLabel || 'RFA'} tender floor: offer must start at $${floor.toFixed(2)} minimum.`
                 : <>Estimated minimum to beat this player's tender floor: ${floor.toFixed(2)} total guaranteed.
-                   This is the best available estimate before Wave 1 happens live — the real tender may be higher.</>}
+                   <span style={{ color: TEXT_MUTED, fontWeight: 400 }}> This is the best available estimate before Wave 1 happens live — the real tender may be higher.</span></>}
             </div>
           )}
 
           <div className="fab-field">
-            <label className="fab-label">
-              Salary (Year 1) {floor != null && <span className="fab-max-hint">Floor: ${floor.toFixed(2)}</span>}
+            <label style={labelStyle}>
+              Salary (Year 1) {floor != null && <span style={{ color: AMBER, fontWeight: 700 }}> · Floor: ${floor.toFixed(2)}</span>}
             </label>
             <div className="fab-salary-row">
-              <span className="fab-dollar">$</span>
+              <span style={{ color: TEXT }}>$</span>
               <input
                 type="number" className="fab-input fab-salary-input"
+                style={{ color: TEXT }}
                 value={salary} onChange={e => { setSalary(e.target.value); setError('') }}
               />
             </div>
           </div>
 
           <div className="fab-field">
-            <label className="fab-label">Years</label>
+            <label style={labelStyle}>Years</label>
             {isWave1 ? (
-              <div className="fab-years-row">
-                <span className="fab-year-btn fab-year-btn--active" style={{ cursor: 'default', opacity: 0.85 }}>
-                  3yr — locked for Wave 1 tenders
-                </span>
-              </div>
+              <div style={{ color: TEXT_MUTED, fontSize: 13 }}>3yr — locked for Wave 1 tenders</div>
             ) : (
               <div className="fab-years-row">
                 {[3, 4].map(y => (
                   <button
                     key={y} type="button"
                     className={`fab-year-btn ${years === y ? 'fab-year-btn--active' : ''}`}
+                    style={{ color: years === y ? '#000' : TEXT }}
                     onClick={() => setYears(y)}
                   >{y}yr</button>
                 ))}
@@ -168,12 +178,13 @@ export default function RFAContractOfferModal({
 
           {!isWave1 && (
             <div className="fab-field">
-              <label className="fab-label">Structure</label>
+              <label style={labelStyle}>Structure</label>
               <div className="fab-years-row">
                 {STRUCTURES.map(s => (
                   <button
                     key={s} type="button"
                     className={`fab-year-btn ${structure === s ? 'fab-year-btn--active' : ''}`}
+                    style={{ color: structure === s ? '#000' : TEXT }}
                     onClick={() => setStructure(s)}
                   >{STRUCTURE_LABELS[s]}</button>
                 ))}
@@ -182,61 +193,62 @@ export default function RFAContractOfferModal({
           )}
 
           <div className="fab-field">
-            <label className="fab-label">Contract Preview</label>
-            <div style={{ fontSize: 12, color: 'var(--draft-text-muted, #8B949E)', lineHeight: 1.8 }}>
+            <label style={labelStyle}>Contract Preview</label>
+            <div style={{ fontSize: 13, lineHeight: 2 }}>
               {salaries.map((sal, i) => (
                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Year {i + 1} {i >= guaranteedCount ? '(non-gtd)' : '(gtd)'}</span>
-                  <span>${sal.toFixed(2)}</span>
+                  <span style={{ color: TEXT_MUTED }}>Year {i + 1} {i >= guaranteedCount ? '(non-gtd)' : '(gtd)'}</span>
+                  <span style={{ color: TEXT, fontWeight: 600 }}>${sal.toFixed(2)}</span>
                 </div>
               ))}
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--draft-border)', marginTop: 4, paddingTop: 4, fontWeight: 700, color: 'inherit' }}>
-                <span>Total Guaranteed</span>
-                <span>${totalGuaranteed.toFixed(2)}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.15)', marginTop: 6, paddingTop: 6 }}>
+                <span style={{ color: TEXT, fontWeight: 700 }}>Total Guaranteed</span>
+                <span style={{ color: AMBER, fontWeight: 700 }}>${totalGuaranteed.toFixed(2)}</span>
               </div>
             </div>
           </div>
 
           {isWave1 ? (
             <div className="fab-field">
-              <label className="fab-label">Guaranteed Years</label>
-              <div className="fab-max-hint">All 3 years fully guaranteed (required for a tender)</div>
+              <label style={labelStyle}>Guaranteed Years</label>
+              <div style={{ color: TEXT_MUTED, fontSize: 13 }}>All 3 years fully guaranteed (required for a tender)</div>
             </div>
           ) : (
             <div className="fab-field fab-field--inline">
-              <label className="fab-label">
+              <label style={{ color: TEXT, fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
                 <input type="checkbox" className="fab-checkbox" checked={nonGuaranteedFinal}
                   onChange={e => setNonGuaranteedFinal(e.target.checked)} />
-                {' '}Final year non-guaranteed
+                Final year non-guaranteed
               </label>
             </div>
           )}
 
           <div className="fab-field">
-            <label className="fab-label">
-              Signing Bonus (optional) {sbBalance !== null && <span className="fab-sb-hint"> — ${sbBalance.toFixed(2)} available</span>}
+            <label style={labelStyle}>
+              Signing Bonus (optional) {sbBalance !== null && <span style={{ color: TEXT_DIM, fontWeight: 400 }}> — ${sbBalance.toFixed(2)} available</span>}
             </label>
             <div className="fab-salary-row">
-              <span className="fab-dollar">$</span>
+              <span style={{ color: TEXT }}>$</span>
               <input
                 type="number" className="fab-input"
+                style={{ color: TEXT }}
                 value={signingBonus} onChange={e => { setSigningBonus(e.target.value); setError('') }}
               />
             </div>
           </div>
 
           {error && (
-            <div style={{ fontSize: 12, color: 'var(--draft-red, #e84545)', marginBottom: 12, fontWeight: 600 }}>{error}</div>
+            <div style={{ fontSize: 13, color: RED, marginBottom: 12, fontWeight: 700 }}>{error}</div>
           )}
 
           <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
             <button onClick={onClose} style={{
-              flex: 1, padding: '10px 0', borderRadius: 8, border: '1px solid var(--draft-border)',
-              background: 'none', color: 'inherit', fontWeight: 700, cursor: 'pointer',
+              flex: 1, padding: '10px 0', borderRadius: 8, border: '1px solid rgba(255,255,255,0.25)',
+              background: 'none', color: TEXT, fontWeight: 700, cursor: 'pointer',
             }}>Cancel</button>
             <button onClick={handleSave} style={{
               flex: 2, padding: '10px 0', borderRadius: 8, border: 'none',
-              background: 'var(--draft-amber)', color: '#000', fontWeight: 700, cursor: 'pointer',
+              background: AMBER, color: '#000', fontWeight: 700, cursor: 'pointer',
             }}>Save Offer</button>
           </div>
         </div>
