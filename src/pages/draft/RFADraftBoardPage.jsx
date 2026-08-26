@@ -24,12 +24,18 @@ export default function RFADraftBoardPage({ currentTeam }) {
   const [browserWave, setBrowserWave] = useState(null)   // which wave's pool-browser popup is open
   const [browserSlot, setBrowserSlot] = useState(null)
 
+  // walkaways[sleeper_id] = max total guaranteed the manager would accept a
+  // challenger matching at, for one of THEIR OWN tendered players. Wave 1
+  // only -- not applicable to Waves 2+ targets.
+  const [walkaways, setWalkaways] = useState({})
+
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const [poolRes, rankingsRes] = await Promise.all([
+      const [poolRes, rankingsRes, walkawaysRes] = await Promise.all([
         fetch(`${API}/rfa/pool-stats?season=${SEASON}`).then(r => r.ok ? r.json() : null),
         fetch(`${API}/rfa/autodraft/rankings?team=${currentTeam}`).then(r => r.ok ? r.json() : []),
+        fetch(`${API}/rfa/autodraft/walkaways?team=${currentTeam}`).then(r => r.ok ? r.json() : []),
       ])
       const allPlayers = poolRes?.players || []
       setMyPlayers(allPlayers.filter(p => p.incumbent_team === currentTeam))
@@ -52,6 +58,10 @@ export default function RFADraftBoardPage({ currentTeam }) {
         }
       })
       setRankings(next)
+
+      const walkawayMap = {}
+      ;(walkawaysRes || []).forEach(w => { walkawayMap[w.sleeper_id] = w.max_total_guaranteed })
+      setWalkaways(walkawayMap)
     } catch (e) {
       console.error('RFA Draft Board load error', e)
     } finally {
@@ -136,13 +146,24 @@ export default function RFADraftBoardPage({ currentTeam }) {
           if (slot) payload.push({ sleeper_id: slot.sleeper_id, wave: w, rank: i + 1, ...slot })
         })
       })
-      const res = await fetch(`${API}/rfa/autodraft/rankings`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ team_abbrev: currentTeam, rankings: payload }),
-      })
-      setSaveMessage(res.ok ? 'Saved' : 'Save failed')
-      if (res.ok) setTimeout(() => setSaveMessage(''), 2500)
+      const walkawayPayload = Object.entries(walkaways)
+        .filter(([, v]) => v != null && v > 0)
+        .map(([sleeperId, max_total_guaranteed]) => ({ sleeper_id: sleeperId, max_total_guaranteed }))
+
+      const [res, walkawayRes] = await Promise.all([
+        fetch(`${API}/rfa/autodraft/rankings`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ team_abbrev: currentTeam, rankings: payload }),
+        }),
+        fetch(`${API}/rfa/autodraft/walkaways`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ team_abbrev: currentTeam, walkaways: walkawayPayload }),
+        }),
+      ])
+      setSaveMessage(res.ok && walkawayRes.ok ? 'Saved' : 'Save failed')
+      if (res.ok && walkawayRes.ok) setTimeout(() => setSaveMessage(''), 2500)
     } catch (e) {
       setSaveMessage('Save failed')
     } finally {
@@ -194,12 +215,30 @@ export default function RFADraftBoardPage({ currentTeam }) {
                 ) : (
                   <div style={{ fontSize: 12, color: 'var(--draft-text-muted)' }}>Not tendered</div>
                 )}
-                <div style={{ display: 'flex', gap: 6 }}>
+                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                   <button className="rfa-draft-board__btn-add" onClick={() => openWave1Modal(player)}>
                     {tendered ? 'EDIT' : 'SET TENDER'}
                   </button>
                   {tendered && (
                     <button className="rfa-draft-board__btn-remove" onClick={() => removeTender(player.sleeper_id)}>REMOVE</button>
+                  )}
+                  {tendered && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginLeft: 8 }}>
+                      <span style={{ fontSize: 11, color: 'var(--draft-text-muted)' }}>Walkaway $</span>
+                      <input
+                        type="number"
+                        placeholder="none"
+                        value={walkaways[player.sleeper_id] ?? ''}
+                        onChange={e => {
+                          const val = e.target.value
+                          setWalkaways(prev => ({ ...prev, [player.sleeper_id]: val === '' ? undefined : parseFloat(val) }))
+                        }}
+                        style={{
+                          width: 70, background: 'var(--draft-surface-2)', border: '1px solid var(--draft-border)',
+                          color: 'inherit', borderRadius: 4, padding: '4px 6px', fontSize: 12,
+                        }}
+                      />
+                    </div>
                   )}
                 </div>
               </div>
