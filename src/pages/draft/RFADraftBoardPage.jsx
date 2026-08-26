@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import RFAContractOfferModal from '../../components/rfa/RFAContractOfferModal'
+import RFAPoolBrowserModal from '../../components/rfa/RFAPoolBrowserModal'
 import PlayerLink from '../../components/PlayerCard/PlayerLink'
 import './RFADraftBoardPage.css'
 
@@ -20,9 +21,8 @@ export default function RFADraftBoardPage({ currentTeam }) {
   const [rankings, setRankings] = useState({ 1: {}, 2: [null, null, null], 3: [null, null, null], 4: [null, null, null], 5: [null, null, null] })
 
   const [modalTarget, setModalTarget] = useState(null) // { player, wave, slotIndex, existingTerms } | null
-  const [searchWave, setSearchWave] = useState(null)   // which wave's slot-picker is open
-  const [searchSlot, setSearchSlot] = useState(null)
-  const [search, setSearch] = useState('')
+  const [browserWave, setBrowserWave] = useState(null)   // which wave's pool-browser popup is open
+  const [browserSlot, setBrowserSlot] = useState(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -40,6 +40,7 @@ export default function RFADraftBoardPage({ currentTeam }) {
         const terms = {
           y1_salary: r.y1_salary, guaranteed_years: r.guaranteed_years,
           signing_bonus: r.signing_bonus, years: r.years, structure: r.structure,
+          non_guaranteed_final: r.non_guaranteed_final,
         }
         if (r.wave === 1) {
           next[1][r.sleeper_id] = terms
@@ -121,15 +122,6 @@ export default function RFADraftBoardPage({ currentTeam }) {
       return next
     })
   }
-
-  const searchResults = useMemo(() => {
-    if (searchWave == null || !search.trim()) return []
-    const q = search.toLowerCase()
-    return poolPlayers
-      .filter(p => !usedSleeperIds.has(p.sleeper_id))
-      .filter(p => p.full_name?.toLowerCase().includes(q))
-      .slice(0, 10)
-  }, [searchWave, search, poolPlayers, usedSleeperIds])
 
   async function handleSaveAll() {
     setSaving(true)
@@ -223,7 +215,6 @@ export default function RFADraftBoardPage({ currentTeam }) {
           <div className="rfa-draft-board__slots-grid">
             {rankings[wave].map((slot, slotIndex) => {
               const player = slot ? playerById[slot.sleeper_id] : null
-              const isSearching = searchWave === wave && searchSlot === slotIndex
               return (
                 <div key={slotIndex} className="rfa-draft-board__slot-card">
                   <div className="rfa-draft-board__slot-rank">#{slotIndex + 1}</div>
@@ -244,27 +235,9 @@ export default function RFADraftBoardPage({ currentTeam }) {
                         <button className="rfa-draft-board__btn-remove" onClick={() => removeSlot(wave, slotIndex)}>REMOVE</button>
                       </div>
                     </>
-                  ) : isSearching ? (
-                    <div>
-                      <input
-                        autoFocus type="text" placeholder="Search players..." value={search}
-                        onChange={e => setSearch(e.target.value)}
-                        className="rfa-draft-board__search-input"
-                      />
-                      <div className="rfa-draft-board__search-results">
-                        {searchResults.map(p => (
-                          <div key={p.sleeper_id} className="rfa-draft-board__search-result"
-                            onClick={() => openSlotModal(wave, slotIndex, p)}>
-                            {p.full_name} <span style={{ color: 'var(--draft-text-muted)' }}>{p.position} · {p.incumbent_team}</span>
-                          </div>
-                        ))}
-                      </div>
-                      <button style={{ marginTop: 6, fontSize: 11, background: 'none', border: 'none', color: 'var(--draft-text-muted)', cursor: 'pointer' }}
-                        onClick={() => { setSearchWave(null); setSearchSlot(null); setSearch('') }}>Cancel</button>
-                    </div>
                   ) : (
                     <button className="rfa-draft-board__btn-add-slot"
-                      onClick={() => { setSearchWave(wave); setSearchSlot(slotIndex); setSearch('') }}>
+                      onClick={() => { setBrowserWave(wave); setBrowserSlot(slotIndex) }}>
                       + Add Player
                     </button>
                   )}
@@ -274,6 +247,14 @@ export default function RFADraftBoardPage({ currentTeam }) {
           </div>
         </section>
       ))}
+
+      {browserWave != null && (
+        <RFAPoolBrowserModal
+          players={poolPlayers.filter(p => !usedSleeperIds.has(p.sleeper_id))}
+          onSelect={p => { openSlotModal(browserWave, browserSlot, p) }}
+          onClose={() => { setBrowserWave(null); setBrowserSlot(null) }}
+        />
+      )}
 
       {modalTarget && (
         <RFAContractOfferModal
