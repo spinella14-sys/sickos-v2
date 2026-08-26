@@ -5,6 +5,8 @@ const SEASON = new Date().getFullYear()
 const STRUCTURES = ['escalating', 'flat', 'descending']
 const STRUCTURE_LABELS = { escalating: 'Escalating', flat: 'Flat', descending: 'Descending' }
 const RFA_ROUND_LABEL = { 1: 'RFA 1st', 2: 'RFA 2nd' }
+const MAX_SALARY = 21.82
+const QB_MAX = 26.67
 
 const BG = '#14171C'
 const CARD_BG = '#1C2028'
@@ -89,6 +91,8 @@ export default function RFAContractOfferModal({
 
   const labelStyle = { color: TEXT_MUTED, fontSize: 13, fontWeight: 700, display: 'block', marginBottom: 6 }
   const fieldStyle = { marginBottom: 16 }
+  const maxSal = player?.position === 'QB' ? QB_MAX : MAX_SALARY
+  function handleMax() { setSalary(parseFloat(maxSal.toFixed(2))) }
   const inputStyle = {
     width: '100%', boxSizing: 'border-box', background: INPUT_BG, border: `1px solid ${BORDER}`,
     color: TEXT, borderRadius: 6, padding: '10px 12px', fontSize: 16, outline: 'none',
@@ -164,10 +168,19 @@ export default function RFAContractOfferModal({
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ color: TEXT, fontSize: 16 }}>$</span>
             <input
-              type="number" style={inputStyle}
+              type="number" style={{ ...inputStyle, flex: 1 }}
               value={salary} onChange={e => { setSalary(e.target.value); setError('') }}
             />
+            <button
+              type="button" onClick={handleMax}
+              style={{
+                background: 'rgba(245,166,35,0.15)', color: AMBER, border: `1px solid ${AMBER}`,
+                fontSize: 13, fontWeight: 800, letterSpacing: '0.05em', padding: '10px 14px',
+                borderRadius: 6, cursor: 'pointer', whiteSpace: 'nowrap',
+              }}
+            >MAX</button>
           </div>
+          <span style={{ fontSize: 11, color: TEXT_DIM }}>Max salary: ${maxSal.toFixed(2)} ({player?.position === 'QB' ? 'QB' : 'non-QB'})</span>
         </div>
 
         <div style={fieldStyle}>
