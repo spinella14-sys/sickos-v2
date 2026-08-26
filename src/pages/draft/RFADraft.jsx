@@ -147,8 +147,17 @@ export default function RFADraft({ currentTeam, isCommissioner }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ season: SEASON, team_abbrev: currentTeam, ...payload }),
     })
-    if (r.ok) { setSelectedPlayer(null); await load() }
-    return r
+    if (r.ok) {
+      setSelectedPlayer(null)
+      await load()
+      return { success: true }
+    }
+    // RFABidForm's handleSubmit expects { success, error } to display a
+    // real error message -- previously this returned the raw Response
+    // object (.ok, not .success), so a failed submission silently showed
+    // no explanation at all. Parse the real backend error message here.
+    const data = await r.json().catch(() => ({}))
+    return { success: false, error: data.error || 'Failed to submit bid' }
   }
 
   async function handleRerank(rankings) {
