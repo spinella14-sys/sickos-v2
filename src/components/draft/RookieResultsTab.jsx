@@ -36,7 +36,8 @@ export default function RookieResultsTab() {
         <thead>
           <tr className="cs-thead-row">
             <th className="th-slot">PICK</th>
-            <th className="th-player">TEAM / PLAYER</th>
+            <th className="th-player">TEAM</th>
+            <th className="th-player">PLAYER</th>
             {Array.from({ length: MAX_YEARS }).map((_, i) => (
               <th key={i} className="th-year">{SEASON + i}</th>
             ))}
@@ -45,10 +46,10 @@ export default function RookieResultsTab() {
         <tbody>
           {picks.map(pick => (
             <tr key={pick.pick_number}>
-              <td className="cs-year-cell" style={{ textAlign: 'left', fontWeight: 700 }}>
+              <td className="cs-year-cell" style={{ textAlign: 'left', fontWeight: 700, color: 'var(--text-primary, #0f1114)' }}>
                 #{pick.pick_number}
               </td>
-              <td style={{ minWidth: 180 }}>
+              <td style={{ minWidth: 150 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   {getTeamLogo(pick.team_abbrev) && (
                     <img
@@ -58,23 +59,23 @@ export default function RookieResultsTab() {
                       onError={e => { e.target.style.display = 'none' }}
                     />
                   )}
-                  <div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted, #7a8494)' }}>
-                      {getTeamName(pick.team_abbrev)}
-                    </div>
-                    <div style={{ fontSize: 14, fontWeight: 600 }}>
-                      {pick.is_used ? (
-                        pick.sleeper_id ? (
-                          <PlayerLink playerId={pick.sleeper_id} style={{ color: 'inherit' }}>
-                            {pick.player_name}
-                          </PlayerLink>
-                        ) : pick.player_name
-                      ) : (
-                        <span style={{ color: 'var(--text-muted, #7a8494)', fontStyle: 'italic' }}>TBD</span>
-                      )}
-                    </div>
-                  </div>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #0f1114)' }}>
+                    {getTeamName(pick.team_abbrev)}
+                  </span>
                 </div>
+              </td>
+              <td style={{ minWidth: 150 }}>
+                <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary, #0f1114)' }}>
+                  {pick.is_used ? (
+                    pick.sleeper_id ? (
+                      <PlayerLink playerId={pick.sleeper_id} style={{ color: 'inherit' }}>
+                        {pick.player_name}
+                      </PlayerLink>
+                    ) : pick.player_name
+                  ) : (
+                    <span style={{ color: 'var(--text-muted, #7a8494)', fontStyle: 'italic' }}>TBD</span>
+                  )}
+                </span>
               </td>
               {Array.from({ length: MAX_YEARS }).map((_, i) => {
                 const cy = pick.contract_years[i]
