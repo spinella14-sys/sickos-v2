@@ -1,25 +1,21 @@
 import { useState, useEffect } from 'react'
 import { TEAMS, LOGOS } from '../../data/league'
 import PlayerLink from '../PlayerCard/PlayerLink'
+import '../../pages/CapSheetPage.css'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
 const SEASON = new Date().getFullYear()
-const ROWS = 6
-const COLS = 8
+const MAX_YEARS = 4
 
 const getTeamName = (abbrev) => TEAMS.find(t => t.abbrev === abbrev)?.name || abbrev
 const getTeamLogo = (abbrev) => LOGOS[abbrev] || null
 
-// 6x8 snaking grid (confirmed with Adam): row 0 = picks 1-8 left-to-right,
-// row 1 = picks 9-16 right-to-left, etc. Row/col already computed
-// server-side by GET /api/draft/results-log from pick_number -- this
-// component just places each pick into its cell.
 export default function RookieResultsTab() {
   const [picks, setPicks] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch(`${API}/draft/results-log?season=${SEASON}`)
+    fetch(`${API}/draft/picks-full-preview?season=${SEASON}`)
       .then(r => r.ok ? r.json() : [])
       .then(data => setPicks(Array.isArray(data) ? data : []))
       .catch(() => setPicks([]))
@@ -27,80 +23,77 @@ export default function RookieResultsTab() {
   }, [])
 
   if (loading) {
-    return (
-      <div className="player-board__empty">Loading Results…</div>
-    )
+    return <div className="player-board__empty">Loading Results…</div>
   }
 
   if (picks.length === 0) {
-    return (
-      <div className="player-board__empty">
-        No picks made yet. Results will appear here as the draft progresses.
-      </div>
-    )
+    return <div className="player-board__empty">No picks found for this season.</div>
   }
 
-  const grid = {}
-  picks.forEach(p => { grid[`${p.row}-${p.col}`] = p })
-
   return (
-    <div style={{ padding: 16, overflow: 'auto' }}>
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: `repeat(${COLS}, minmax(120px, 1fr))`,
-        gap: 8,
-      }}>
-        {Array.from({ length: ROWS }).map((_, row) => (
-          Array.from({ length: COLS }).map((_, col) => {
-            const pick = grid[`${row}-${col}`]
-            return (
-              <div
-                key={`${row}-${col}`}
-                style={{
-                  border: '1px solid var(--draft-border)',
-                  borderRadius: 6,
-                  padding: 8,
-                  minHeight: 76,
-                  background: pick ? 'var(--draft-surface)' : 'var(--draft-surface-2)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 4,
-                }}
-              >
-                <div style={{ fontSize: 10, color: 'var(--draft-text-muted)', fontWeight: 700 }}>
-                  PICK {pick?.pick_number ?? '—'}
-                </div>
-                {pick ? (
-                  <>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      {getTeamLogo(pick.team_abbrev) && (
-                        <img
-                          src={getTeamLogo(pick.team_abbrev)}
-                          alt={pick.team_abbrev}
-                          style={{ width: 16, height: 16, borderRadius: 3, flexShrink: 0 }}
-                          onError={e => { e.target.style.display = 'none' }}
-                        />
+    <div className="cs-table-wrap" style={{ padding: 16 }}>
+      <table className="cs-table">
+        <thead>
+          <tr className="cs-thead-row">
+            <th className="th-slot">PICK</th>
+            <th className="th-player">TEAM / PLAYER</th>
+            {Array.from({ length: MAX_YEARS }).map((_, i) => (
+              <th key={i} className="th-year">{SEASON + i}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {picks.map(pick => (
+            <tr key={pick.pick_number}>
+              <td className="cs-year-cell" style={{ textAlign: 'left', fontWeight: 700 }}>
+                #{pick.pick_number}
+              </td>
+              <td style={{ minWidth: 180 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {getTeamLogo(pick.team_abbrev) && (
+                    <img
+                      src={getTeamLogo(pick.team_abbrev)}
+                      alt={pick.team_abbrev}
+                      style={{ width: 20, height: 20, borderRadius: 4, flexShrink: 0 }}
+                      onError={e => { e.target.style.display = 'none' }}
+                    />
+                  )}
+                  <div>
+                    <div style={{ fontSize: 11, color: 'var(--draft-text-muted, #8B949E)' }}>
+                      {getTeamName(pick.team_abbrev)}
+                    </div>
+                    <div style={{ fontSize: 14, fontWeight: 600 }}>
+                      {pick.is_used ? (
+                        pick.sleeper_id ? (
+                          <PlayerLink playerId={pick.sleeper_id} style={{ color: 'inherit' }}>
+                            {pick.player_name}
+                          </PlayerLink>
+                        ) : pick.player_name
+                      ) : (
+                        <span style={{ color: 'var(--draft-text-muted, #8B949E)', fontStyle: 'italic' }}>TBD</span>
                       )}
-                      <span style={{ fontSize: 11, color: 'var(--draft-text-muted)' }}>
-                        {getTeamName(pick.team_abbrev)}
-                      </span>
                     </div>
-                    <div style={{ fontSize: 13, fontWeight: 600 }}>
-                      {pick.sleeper_id ? (
-                        <PlayerLink playerId={pick.sleeper_id} style={{ color: 'inherit' }}>
-                          {pick.player_name}
-                        </PlayerLink>
-                      ) : pick.player_name}
-                    </div>
-                  </>
-                ) : (
-                  <div style={{ fontSize: 12, color: 'var(--draft-text-muted)' }}>—</div>
-                )}
-              </div>
-            )
-          })
-        ))}
-      </div>
+                  </div>
+                </div>
+              </td>
+              {Array.from({ length: MAX_YEARS }).map((_, i) => {
+                const cy = pick.contract_years[i]
+                if (!cy) {
+                  return <td key={i} className="cs-year-cell cs-year-empty">—</td>
+                }
+                const isNG = cy.is_guaranteed === false
+                return (
+                  <td key={i} className={`cs-year-cell cs-year-has-val ${isNG ? 'cs-ng-cell' : ''}`}>
+                    <span className="cs-sal" style={isNG ? { color: 'var(--purple)' } : {}}>
+                      ${cy.salary.toFixed(2)}
+                    </span>
+                  </td>
+                )
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }
