@@ -86,6 +86,7 @@ export default function SettingsPage() {
     { key: 'trade_offer',       label: 'Trade offers',            desc: 'When another team sends you a trade proposal.', available: true },
     { key: 'bid_results',       label: 'Bid results',              desc: 'When a free agent bid you placed is won or lost.', available: true },
     { key: 'roster_compliance', label: 'Roster compliance alerts', desc: 'Cap violations, IR-lock issues, and roster minimum warnings.', available: true },
+    { key: 'direct_message',    label: 'Direct messages',          desc: 'When another manager sends you a direct message.', available: true },
     { key: 'payment_reminder',  label: 'Payment reminders',        desc: 'Coming soon.', available: false },
     { key: 'calendar',          label: 'Calendar notifications',   desc: 'Coming soon.', available: false },
   ]
