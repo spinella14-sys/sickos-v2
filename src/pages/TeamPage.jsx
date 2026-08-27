@@ -204,7 +204,7 @@ function MoveDropdown({ contract, lineupAssign, onMove, currentSlotOverride, act
     opts.push({ value:'ps', label:'→ Practice Squad', disabled: pos === 'QB' && psQBs >= 1 })
   }
 
-  if (['Out','IR','PUP'].includes(p.injury_status) && !isOnIR) {
+  if (['Out','IR','PUP','DNR'].includes(p.injury_status) && !isOnIR) {
     opts.push({ value:'ir', label:'🏥 Move to IR' })
   } else if (isOnIR) {
     opts.push({ value:'bench', label:'← Activate from IR', disabled: pos === 'QB' && activeQBs >= 2 })
@@ -845,7 +845,7 @@ export default function TeamPage() {
       const stagedPSCount = Object.values(slotOverrides).filter(v => v === 'ps').length
       const psAtCapacity = ((psRoster || []).length + stagedPSCount) >= 4
       if (!(pos === 'QB' && psQBs >= 1) && !psAtCapacity) targets.add('ps')
-      if (['Out','IR','PUP'].includes(contract.players?.injury_status)) targets.add('ir')
+      if (['Out','IR','PUP','DNR'].includes(contract.players?.injury_status)) targets.add('ir')
     }
     return targets
   }
@@ -856,7 +856,7 @@ export default function TeamPage() {
   function isValidSwapTarget(dragged, targetContract, targetKey) {
     const pos = dragged.players?.position
     if (targetKey === 'ir') {
-      return ['Out','IR','PUP'].includes(dragged.players?.injury_status)
+      return ['Out','IR','PUP','DNR'].includes(dragged.players?.injury_status)
     }
     if (targetKey === 'ps') {
       if (pos !== 'QB') return true
@@ -1390,7 +1390,7 @@ export default function TeamPage() {
                     const p   = r.players || {}
                     const sid = p.sleeper_id || r.sleeper_id
                     const slot = r.roster_slots?.[0]?.slot_type || 'active'
-                    const irOk = ['Out','IR','PUP'].includes(p.injury_status)
+                    const irOk = ['Out','IR','PUP','DNR'].includes(p.injury_status)
                     return (
                       <tr key={i} className="rtr">
                         <td className="rtr-slot"><span className="rtr-slot-label" style={{borderLeftColor:POS_COLOR[p.position]||'var(--border)'}}>{p.position}</span></td>
