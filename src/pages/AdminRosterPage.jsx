@@ -313,6 +313,87 @@ function SignPanel({ onLog, onRosterRefresh }) {
   )
 }
 
+// ── Mark Retired Panel ────────────────────────────────────────────────────────
+// Flips all remaining years of a player's active contract to non-guaranteed
+// and logs a real 'retirement' transaction to the feed. Does NOT release the
+// contract itself. Mirrors ReleasePanel's team/roster-select pattern.
+function RetirePanel({ onLog, onRosterRefresh }) {
+  const [team,     setTeam]     = useState('')
+  const [roster,   setRoster]   = useState([])
+  const [selected, setSelected] = useState(null)
+  const [loading,  setLoading]  = useState(false)
+
+  useEffect(() => {
+    if (!team) return
+    fetch(`${API_BASE}/teams/${team}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => setRoster(d?.roster || []))
+  }, [team])
+
+  async function handleMarkRetired() {
+    if (!selected) return
+    setLoading(true)
+    const r = await fetch(`${API_BASE}/contracts/${selected.id}/mark-retired`, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'x-admin-password': ADMIN_PW },
+    })
+    const data = await r.json()
+    setLoading(false)
+    if (r.ok) {
+      onLog(`✓ ${selected.players?.full_name} marked retired -- remaining years now non-guaranteed`, 'success')
+      setSelected(null)
+      onRosterRefresh(team)
+    } else {
+      onLog(`✗ ${data.error}`, 'error')
+    }
+  }
+
+  return (
+    <div className="ar-panel">
+      <div className="ar-panel-title">🏈 Mark Retired</div>
+
+      <div className="ar-field">
+        <label className="ar-label">Team</label>
+        <select className="ar-select" value={team} onChange={e=>{setTeam(e.target.value);setSelected(null)}}>
+          <option value="">Select team…</option>
+          {TEAMS.map(t => <option key={t.abbrev} value={t.abbrev}>{t.name}</option>)}
+        </select>
+      </div>
+
+      {roster.length > 0 && (
+        <div className="ar-field">
+          <label className="ar-label">Player</label>
+          <div className="ar-roster-list">
+            {roster.map(r => {
+              const p = r.players || {}
+              return (
+                <button key={r.id} className={`ar-roster-row ${selected?.id===r.id?'ar-roster-row--sel':''}`}
+                  onClick={()=>setSelected(r)}>
+                  <img src={headshotUrl(p.sleeper_id||r.sleeper_id)} alt="" className="ar-search-shot" onError={e=>e.target.style.opacity=0}/>
+                  <span className="ar-search-name">{p.full_name}</span>
+                  <span className="ar-search-pos" style={{color:POS_COLOR[p.position]}}>{p.position}</span>
+                  <span className="ar-search-nfl">${parseFloat(r.salary||0).toFixed(2)} · {r.years}yr</span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {selected && (
+        <div className="ar-release-confirm">
+          <div className="ar-release-player">
+            Marking retired: <strong>{selected.players?.full_name}</strong> · ${parseFloat(selected.salary||0).toFixed(2)} / {selected.years}yr
+          </div>
+          <button className="ar-btn ar-btn--danger" onClick={handleMarkRetired} disabled={loading}>
+            {loading ? 'Marking Retired…' : 'Confirm Mark Retired'}
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Release Player Panel ──────────────────────────────────────────────────────
 function ReleasePanel({ onLog, onRosterRefresh }) {
   const [team,     setTeam]     = useState('')
@@ -924,6 +1005,7 @@ export default function AdminRosterPage() {
   const PANELS = [
     { id:'sign',      label:'Sign Player' },
     { id:'release',   label:'Release Player' },
+    { id:'retire',    label:'Mark Retired' },
     { id:'slot',      label:'Change Slot' },
     { id:'deadcap',   label:'Dead Cap' },
     { id:'sbbudget',  label:'SB Budget' },
@@ -973,6 +1055,7 @@ export default function AdminRosterPage() {
 
               {activePanel==='sign'     && <SignPanel    onLog={addLog} onRosterRefresh={onRosterRefresh}/>}
               {activePanel==='release'  && <ReleasePanel onLog={addLog} onRosterRefresh={onRosterRefresh}/>}
+              {activePanel==='retire'   && <RetirePanel  onLog={addLog} onRosterRefresh={onRosterRefresh}/>}
               {activePanel==='slot'     && <SlotPanel    onLog={addLog} onRosterRefresh={onRosterRefresh}/>}
               {activePanel==='deadcap'  && <DeadCapPanel onLog={addLog} onRosterRefresh={onRosterRefresh}/>}
               {activePanel==='sbbudget' && <SBBudgetPanel onLog={addLog}/>}
