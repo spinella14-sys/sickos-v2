@@ -28,6 +28,9 @@ export default function RFADraftBoardPage({ currentTeam }) {
   // challenger matching at, for one of THEIR OWN tendered players. Wave 1
   // only -- not applicable to Waves 2+ targets.
   const [walkaways, setWalkaways] = useState({})
+  // matchAny[sleeper_id] = true means "match any offer, ignore the dollar
+  // ceiling" -- mutually exclusive with walkaways[sleeper_id].
+  const [matchAny, setMatchAny] = useState({})
 
   // Autodraft opt-in: the ONLY thing that gates whether the backend will
   // ever auto-submit a bid on this manager's behalf.
@@ -65,8 +68,13 @@ export default function RFADraftBoardPage({ currentTeam }) {
       setRankings(next)
 
       const walkawayMap = {}
-      ;(walkawaysRes || []).forEach(w => { walkawayMap[w.sleeper_id] = w.max_total_guaranteed })
+      const matchAnyMap = {}
+      ;(walkawaysRes || []).forEach(w => {
+        walkawayMap[w.sleeper_id] = w.max_total_guaranteed
+        matchAnyMap[w.sleeper_id] = !!w.match_any
+      })
       setWalkaways(walkawayMap)
+      setMatchAny(matchAnyMap)
 
       const optinData = await fetch(`${API}/rfa/autodraft/opt-in?team=${currentTeam}`).then(r => r.ok ? r.json() : { opted_in: false })
       setAutodraftOptedIn(!!optinData.opted_in)
@@ -171,9 +179,15 @@ export default function RFADraftBoardPage({ currentTeam }) {
           if (slot) payload.push({ sleeper_id: slot.sleeper_id, wave: w, rank: i + 1, ...slot })
         })
       })
-      const walkawayPayload = Object.entries(walkaways)
-        .filter(([, v]) => v != null && v > 0)
-        .map(([sleeperId, max_total_guaranteed]) => ({ sleeper_id: sleeperId, max_total_guaranteed }))
+      const walkawayPayload = Object.entries({ ...walkaways, ...matchAny })
+        .map(([sleeperId]) => sleeperId)
+        .filter((sleeperId, i, arr) => arr.indexOf(sleeperId) === i)
+        .map(sleeperId => ({
+          sleeper_id: sleeperId,
+          match_any: !!matchAny[sleeperId],
+          max_total_guaranteed: matchAny[sleeperId] ? null : (walkaways[sleeperId] ?? null),
+        }))
+        .filter(w => w.match_any || (w.max_total_guaranteed != null && w.max_total_guaranteed > 0))
 
       const [res, walkawayRes] = await Promise.all([
         fetch(`${API}/rfa/autodraft/rankings`, {
@@ -263,18 +277,37 @@ export default function RFADraftBoardPage({ currentTeam }) {
                   )}
                   {tendered && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginLeft: 8 }}>
-                      <span style={{ fontSize: 11, color: 'var(--draft-text-muted)' }}>Walkaway $</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const next = !matchAny[player.sleeper_id]
+                          setMatchAny(prev => ({ ...prev, [player.sleeper_id]: next }))
+                          if (next) setWalkaways(prev => ({ ...prev, [player.sleeper_id]: undefined }))
+                        }}
+                        style={{
+                          fontSize: 11, fontWeight: 700, padding: '4px 8px', borderRadius: 4, cursor: 'pointer',
+                          background: matchAny[player.sleeper_id] ? 'var(--draft-amber, #F5A623)' : 'var(--draft-surface-2)',
+                          color: matchAny[player.sleeper_id] ? '#000' : 'var(--draft-text-muted)',
+                          border: `1px solid ${matchAny[player.sleeper_id] ? 'var(--draft-amber, #F5A623)' : 'var(--draft-border)'}`,
+                        }}
+                      >
+                        Match Any
+                      </button>
+                      <span style={{ fontSize: 11, color: 'var(--draft-text-muted)' }}>or $</span>
                       <input
                         type="number"
                         placeholder="none"
+                        disabled={!!matchAny[player.sleeper_id]}
                         value={walkaways[player.sleeper_id] ?? ''}
                         onChange={e => {
                           const val = e.target.value
                           setWalkaways(prev => ({ ...prev, [player.sleeper_id]: val === '' ? undefined : parseFloat(val) }))
+                          if (val !== '') setMatchAny(prev => ({ ...prev, [player.sleeper_id]: false }))
                         }}
                         style={{
                           width: 70, background: 'var(--draft-surface-2)', border: '1px solid var(--draft-border)',
                           color: 'inherit', borderRadius: 4, padding: '4px 6px', fontSize: 12,
+                          opacity: matchAny[player.sleeper_id] ? 0.5 : 1,
                         }}
                       />
                     </div>
