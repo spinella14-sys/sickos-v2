@@ -306,7 +306,7 @@ export default function RFADraftBoardPage({ currentTeam }) {
                         }}
                         style={{
                           width: 70, background: 'var(--draft-surface-2)', border: '1px solid var(--draft-border)',
-                          color: 'inherit', borderRadius: 4, padding: '4px 6px', fontSize: 12,
+                          color: '#FFFFFF', borderRadius: 4, padding: '4px 6px', fontSize: 12,
                           opacity: matchAny[player.sleeper_id] ? 0.5 : 1,
                         }}
                       />
@@ -332,12 +332,12 @@ export default function RFADraftBoardPage({ currentTeam }) {
                   {slot && player ? (
                     <>
                       <div className="rfa-draft-board__slot-player">
-                        <PlayerLink playerId={player.sleeper_id} style={{ fontWeight: 700, color: 'inherit', textDecoration: 'none' }}>
+                        <PlayerLink playerId={player.sleeper_id} style={{ fontWeight: 700, color: '#FFFFFF', textDecoration: 'none' }}>
                           {player.full_name}
                         </PlayerLink>
                         <span style={{ fontSize: 11, color: 'var(--draft-text-muted)', marginLeft: 6 }}>{player.position}</span>
                       </div>
-                      <div className="rfa-draft-board__slot-terms">
+                      <div className="rfa-draft-board__slot-terms" style={{ color: '#FFFFFF' }}>
                         {slot.guaranteed_years}yr gtd · Y1 ${slot.y1_salary?.toFixed(2)}
                         {slot.signing_bonus > 0 && ` · SB $${slot.signing_bonus.toFixed(2)}`}
                       </div>
