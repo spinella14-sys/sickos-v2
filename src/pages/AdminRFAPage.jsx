@@ -6,19 +6,19 @@ import RFABidForm from '../components/rfa/RFABidForm.jsx';
 const API = (import.meta.env.VITE_API_URL || 'http://localhost:3001/api').replace(/\/api$/, '');
 
 const WAVE_NAMES = {
-  1: 'Wave 1 — Retention Tags',
-  2: 'Wave 2 — Max Offers',
-  3: 'Wave 3 — $3 Above R1 Min',
-  4: 'Wave 4 — R1 Minimum',
-  5: 'Wave 5 — R2 Minimum',
+  1: 'Wave 1',
+  2: 'Wave 2',
+  3: 'Wave 3',
+  4: 'Wave 4',
+  5: 'Wave 5',
 };
 
 const WAVE_DESCRIPTIONS = {
-  1: 'Incumbents tag their own RFAs. Minimum = RFA floor for draft round.',
-  2: 'All teams bid. Offer must touch the max at some point.',
-  3: 'All teams bid. Y1 must exceed $16.33.',
-  4: 'All teams bid. Y1 must exceed $13.33.',
-  5: 'All teams bid. Y1 must exceed $8.00.',
+  1: '',
+  2: '',
+  3: '',
+  4: '',
+  5: '',
 };
 
 const RFA_MIN_OFFERS = { 1: '$13.33', 2: '$8.00' };
