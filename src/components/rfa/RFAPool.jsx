@@ -4,6 +4,7 @@ import RFABidForm from './RFABidForm';
 import RFATradeBlockTab from './RFATradeBlockTab';
 import RFACapOverviewTab from './RFACapOverviewTab';
 import RFAResultsTab from './RFAResultsTab';
+import RFADraftChat from './RFADraftChat';
 
 // Stat columns swap based on the position filter -- QB's passing-heavy
 // line and RB/WR/TE's rushing/receiving line don't share column meaning,
@@ -239,6 +240,7 @@ export default function RFAPool({
             { key: 'tradeblock', label: 'Trade Block' },
             { key: 'cap', label: 'Cap Overview' },
             { key: 'results', label: 'Results' },
+            { key: 'chat', label: 'Chat' },
           ].map(tab => (
             <button
               key={tab.key}
@@ -328,6 +330,7 @@ export default function RFAPool({
       {activeTab === 'tradeblock' && <RFATradeBlockTab />}
       {activeTab === 'cap' && <RFACapOverviewTab myTeam={currentTeam} />}
       {activeTab === 'results' && <RFAResultsTab getTeamName={getTeamName} getTeamLogo={getTeamLogo} />}
+      {activeTab === 'chat' && <RFADraftChat draftType="rfa" season={2026} currentTeam={currentTeam} getTeamName={getTeamName} getTeamLogo={getTeamLogo} />}
 
       {activeTab === 'board' && (
         <>
