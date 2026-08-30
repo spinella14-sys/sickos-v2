@@ -23,9 +23,13 @@ export default function RFABidForm({
   const isQB = player.position === 'QB';
   const maxSal = isQB ? QB_MAX : MAX_SALARY;
   const isWave1 = wave === 1;
-  // Wave 1 auto-loads the real tender floor; Wave 2+ auto-loads the current
-  // leading offer instead of starting at $0 with no guidance.
-  const waveMin = isWave1 ? player.tender_floor : (player.current_leading_offer ?? null);
+  // Wave 1 auto-loads the real tender floor into the Year 1 salary field --
+  // a genuine per-year salary, so a valid direct default.
+  // current_leading_offer (Wave 2+) is total guaranteed across ALL years,
+  // NOT a single-year salary -- must never feed this field directly (real
+  // bug found live: a ~$99 total guaranteed number appeared as a $99
+  // Year 1 salary). Shown as informational text instead, below.
+  const waveMin = isWave1 ? player.tender_floor : null;
   const existingBid = myBids.find(b => b.player_id === player.id);
 
   const [y1, setY1] = useState(existingBid?.y1_salary || waveMin || 0);
@@ -161,6 +165,12 @@ export default function RFABidForm({
             {isWave1
               ? `RFA Round ${player.draft_round} tender floor: $${player.tender_floor.toFixed(2)} minimum.`
               : `Estimated minimum to beat this player's tender floor: $${player.tender_floor.toFixed(2)} total guaranteed. This is the best available estimate before Wave 1 happens live — the real tender may be higher.`}
+          </div>
+        )}
+
+        {!isWave1 && player.current_leading_offer != null && (
+          <div style={{ fontSize: 12, color: '#F5A623', fontWeight: 600, marginTop: 4 }}>
+            Current leading offer: ${player.current_leading_offer.toFixed(2)} total guaranteed. Your offer needs to exceed this in total guaranteed money to become the new leading challenger.
           </div>
         )}
 
