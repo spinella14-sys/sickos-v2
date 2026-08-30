@@ -27,7 +27,7 @@ function ContractLine({ years, y1Salary, y2Salary, y3Salary, signingBonus }) {
 // closed wave — all with full contract terms (years, salary per year,
 // signing bonus), per Adam's explicit spec.
 export default function RFAWaveSummaryModal({
-  closedWave, currentWave, myBids, myPending, leagueWins, onClose,
+  closedWave, currentWave, myBids, myPending, mustRespond, leagueWins, onClose,
 }) {
   const [visible, setVisible] = useState(true);
   if (!visible) return null;
@@ -50,6 +50,36 @@ export default function RFAWaveSummaryModal({
         <div style={{ fontSize: 13, color: '#8B949E', marginBottom: 16 }}>
           Wave {currentWave} is now open
         </div>
+
+        {(mustRespond || []).length > 0 && (
+          <div style={{ marginBottom: 20, padding: 12, borderRadius: 8, border: '1px solid var(--draft-red, #e84545)', background: 'rgba(232,69,69,0.08)' }}>
+            <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 8, color: 'var(--draft-red, #e84545)' }}>
+              WARNING You must respond this wave
+            </div>
+            {mustRespond.map((m, i) => (
+              <div key={i} style={{
+                fontSize: 13, padding: '8px 10px', marginBottom: i === mustRespond.length - 1 ? 0 : 6, borderRadius: 6,
+                background: 'rgba(255,255,255,0.05)',
+              }}>
+                <strong>{m.player_name}</strong> — {m.challenger_team} offered
+                <ContractLine years={m.years} y1Salary={m.y1_salary} y2Salary={m.y2_salary} y3Salary={m.y3_salary} signingBonus={m.signing_bonus} />
+                {m.is_tie && (
+                  <div style={{ color: 'var(--draft-amber, #e8a933)', fontSize: 12, fontWeight: 700, marginTop: 2 }}>
+                    Tied your own tender — this defaults to YOU if you don't act
+                  </div>
+                )}
+                {m.walkaway_comparison && (
+                  <div style={{ color: '#8B949E', fontSize: 12, marginTop: 2 }}>
+                    This offer is {m.walkaway_comparison}
+                  </div>
+                )}
+                <div style={{ fontSize: 12, fontWeight: 700, marginTop: 4 }}>
+                  Match it this wave or lose the player.
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5, color: '#8B949E' }}>
           Your Bids From Last Wave

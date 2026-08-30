@@ -69,6 +69,7 @@ export default function RFADraft({ currentTeam, isCommissioner }) {
                 closedWave, currentWave,
                 myBids: summary.myBids || [],
                 myPending: summary.myPending || [],
+                mustRespond: summary.mustRespond || [],
                 leagueWins: summary.leagueWins || [],
               })
               localStorage.setItem(seenKey, String(currentWave))
@@ -324,6 +325,7 @@ export default function RFADraft({ currentTeam, isCommissioner }) {
           currentWave={waveSummary.currentWave}
           myBids={waveSummary.myBids}
           myPending={waveSummary.myPending}
+          mustRespond={waveSummary.mustRespond}
           leagueWins={waveSummary.leagueWins}
           onClose={() => setWaveSummary(null)}
         />
