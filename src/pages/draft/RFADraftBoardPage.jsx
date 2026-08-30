@@ -230,7 +230,7 @@ export default function RFADraftBoardPage({ currentTeam }) {
                 borderRadius: 6, fontSize: 12, fontWeight: 700, padding: '8px 14px', cursor: 'pointer',
               }}
             >
-              {optinSaving ? 'Saving…' : autodraftOptedIn ? '✓ AUTODRAFT ON' : 'AUTODRAFT FOR ME'}
+              {optinSaving ? 'Saving…' : autodraftOptedIn ? '✓ ON AUTOPICK' : 'I WILL BE ON AUTOPICK'}
             </button>
             <button onClick={handleSaveAll} disabled={saving} className="draft-board-save-btn">
               {saving ? 'Saving…' : saveMessage || 'Save Board'}
