@@ -265,13 +265,15 @@ export default function RFAMyBids({
                   display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8,
                 }}
               >
-                <span>{isOpen ? '▾' : '▸'} Wave {w}{w === wave ? ' (current)' : ''}</span>
-                <span className="rfa-my-bids__wave-count">{waveBids.length}</span>
+                <span style={{ color: 'var(--draft-amber, #F5A623)', fontWeight: 700 }}>
+                  {isOpen ? '▾' : '▸'} Wave {w}{w === wave ? ' (current)' : ''}
+                </span>
+                <span className="rfa-my-bids__wave-count" style={{ color: '#FFFFFF' }}>{waveBids.length}</span>
               </button>
               {isOpen && (
                 <div className="rfa-my-bids__wave-body">
                   {waveBids.length === 0 ? (
-                    <div style={{ fontSize: 12, color: 'var(--draft-text-muted)', padding: '6px 2px' }}>
+                    <div style={{ fontSize: 12, color: '#FFFFFF', padding: '6px 2px' }}>
                       Nothing here yet.
                     </div>
                   ) : isTenderWave ? (
