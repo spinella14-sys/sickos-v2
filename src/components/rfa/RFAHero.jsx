@@ -9,11 +9,11 @@ const WAVE_NAMES = {
 };
 
 const WAVE_DESCRIPTIONS = {
-  1: 'Tag your own RFAs to retain their rights',
-  2: 'Offers must touch the max at some point',
-  3: 'Y1 salary must exceed $16.33',
-  4: 'Y1 salary must exceed $13.33',
-  5: 'Y1 salary must exceed $8.00',
+  1: '',
+  2: '',
+  3: '',
+  4: '',
+  5: '',
 };
 
 function formatTime(seconds) {
