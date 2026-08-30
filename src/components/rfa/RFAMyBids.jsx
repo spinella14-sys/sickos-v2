@@ -105,6 +105,14 @@ export default function RFAMyBids({
                 }}
               >▼</button>
             </div>
+          ) : player?.match_window_open ? (
+            <span style={{
+              fontSize: 9, fontWeight: 800, color: 'var(--draft-red, #e84545)',
+              background: 'rgba(232,69,69,0.12)', padding: '2px 6px', borderRadius: 3,
+              alignSelf: 'flex-start',
+            }}>
+              MATCH WINDOW
+            </span>
           ) : (
             <span style={{
               fontSize: 9, fontWeight: 800, color: 'var(--draft-amber)',
