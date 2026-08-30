@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export default function RFAMyBids({
   myBids, matchWindows, wave, isWaveOpen,
@@ -27,6 +27,23 @@ export default function RFAMyBids({
     waveNumbers.forEach(w => { init[w] = w === wave; });
     return init;
   });
+  // The initializer above only runs once, at first mount -- a wave that
+  // appears LATER (e.g. via polling) never gets marked expanded, even if
+  // it's the current wave. This effect catches any brand-new wave number
+  // and defaults it to open if it's the current wave, without disturbing
+  // waves the manager already toggled.
+  const knownWavesRef = useRef(new Set());
+  useEffect(() => {
+    const newlySeen = waveNumbers.filter(w => !knownWavesRef.current.has(w));
+    if (newlySeen.length) {
+      setExpandedWaves(prev => {
+        const next = { ...prev };
+        newlySeen.forEach(w => { if (!(w in next)) next[w] = w === wave; });
+        return next;
+      });
+      newlySeen.forEach(w => knownWavesRef.current.add(w));
+    }
+  }, [waveNumbers.join(','), wave]);
   const toggleWave = (w) => setExpandedWaves(prev => ({ ...prev, [w]: !prev[w] }));
 
   const handleMoveUp = (waveBids, index) => {
