@@ -5,45 +5,41 @@ export default function RFAMyBids({
   currentTeam, getTeamName, getTeamLogo, myTeamData,
   onRerank, onWithdraw, onMatch,
 }) {
-  // Wave 1 tenders don't compete via priority_rank at all -- standing
-  // offers on your own players, shown separately with no reorder controls.
+  // RFA runs exactly 5 waves: Wave 1 is tenders (standing offers on your
+  // own players, never compete via priority_rank), Waves 2-5 are real
+  // challenge bids. All five always show as sections, even with nothing
+  // in them yet, so a manager can see the full shape of the draft and
+  // know where to look/act.
+  const ALL_WAVES = [1, 2, 3, 4, 5];
+
   const tenders = myBids.filter(b => b.is_incumbent);
-  // Everything else is a real challenge bid, grouped by the wave it was
-  // submitted in -- each wave's own 1..N priority order is independent of
-  // every other wave's, matching how the backend already scopes it.
   const challenges = myBids.filter(b => !b.is_incumbent);
-  const waveNumbers = [...new Set(challenges.map(b => b.wave))].sort((a, b) => a - b);
   const challengesByWave = {};
-  waveNumbers.forEach(w => {
+  [2, 3, 4, 5].forEach(w => {
     challengesByWave[w] = challenges
       .filter(b => b.wave === w)
       .sort((a, b) => (a.priority_rank ?? Infinity) - (b.priority_rank ?? Infinity));
   });
 
   // Which wave sections are expanded -- current wave starts open, others
-  // start collapsed so old, already-resolved waves don't clutter the view.
+  // start collapsed. Initialized for all 5 waves up front since they're
+  // always shown now, regardless of whether bids exist yet.
   const [expandedWaves, setExpandedWaves] = useState(() => {
     const init = {};
-    waveNumbers.forEach(w => { init[w] = w === wave; });
+    ALL_WAVES.forEach(w => { init[w] = w === wave; });
     return init;
   });
-  // The initializer above only runs once, at first mount -- a wave that
-  // appears LATER (e.g. via polling) never gets marked expanded, even if
-  // it's the current wave. This effect catches any brand-new wave number
-  // and defaults it to open if it's the current wave, without disturbing
-  // waves the manager already toggled.
-  const knownWavesRef = useRef(new Set());
+  // If the current wave prop changes after mount (e.g. a new wave opens
+  // while the sidebar is already mounted), make sure that new current
+  // wave defaults to expanded too, without disturbing anything the
+  // manager has already manually toggled.
+  const lastAutoExpandedWaveRef = useRef(wave);
   useEffect(() => {
-    const newlySeen = waveNumbers.filter(w => !knownWavesRef.current.has(w));
-    if (newlySeen.length) {
-      setExpandedWaves(prev => {
-        const next = { ...prev };
-        newlySeen.forEach(w => { if (!(w in next)) next[w] = w === wave; });
-        return next;
-      });
-      newlySeen.forEach(w => knownWavesRef.current.add(w));
+    if (wave !== lastAutoExpandedWaveRef.current) {
+      setExpandedWaves(prev => ({ ...prev, [wave]: true }));
+      lastAutoExpandedWaveRef.current = wave;
     }
-  }, [waveNumbers.join(','), wave]);
+  }, [wave]);
   const toggleWave = (w) => setExpandedWaves(prev => ({ ...prev, [w]: !prev[w] }));
 
   const handleMoveUp = (waveBids, index) => {
@@ -77,6 +73,10 @@ export default function RFAMyBids({
   function renderBidCard(bid, { index, waveBids } = {}) {
     const player = bid.rfa_pool;
     const showReorder = index != null && waveBids;
+    // Withdraw only makes sense for a bid that's still actually competing
+    // -- a resolved bid (signed/won/matched/lost/etc) is a done deal, not
+    // something to withdraw.
+    const canWithdraw = isWaveOpen && bid.status === 'active';
     return (
       <div key={bid.id} className="rfa-bid-card">
         <div className="rfa-bid-card__top">
@@ -149,7 +149,7 @@ export default function RFAMyBids({
           </label>
         </div>
 
-        {isWaveOpen && (
+        {canWithdraw && (
           <div className="rfa-bid-card__actions">
             <button
               className="rfa-bid-card__withdraw"
@@ -166,6 +166,8 @@ export default function RFAMyBids({
       </div>
     );
   }
+
+  const hasAnyBids = myBids.length > 0;
 
   return (
     <aside className="rfa-my-bids">
@@ -237,7 +239,7 @@ export default function RFAMyBids({
           );
         })}
 
-        {myBids.length === 0 && matchWindows.length === 0 && (
+        {!hasAnyBids && matchWindows.length === 0 && (
           <div className="rfa-my-bids__empty">
             {isWaveOpen
               ? wave === 1
@@ -247,37 +249,36 @@ export default function RFAMyBids({
           </div>
         )}
 
-        {/* Tenders — standing offers on your own players, persist through
-            the whole draft, never compete via priority_rank */}
-        {tenders.length > 0 && (
-          <div className="rfa-my-bids__wave-section">
-            <div className="rfa-my-bids__wave-header" style={{ cursor: 'default' }}>
-              <span>Your Tenders</span>
-              <span className="rfa-my-bids__wave-count">{tenders.length}</span>
-            </div>
-            <div className="rfa-my-bids__wave-body">
-              {tenders.map(bid => renderBidCard(bid))}
-            </div>
-          </div>
-        )}
-
-        {/* One collapsible section per wave that has real challenge bids */}
-        {waveNumbers.map(w => {
-          const waveBids = challengesByWave[w];
+        {/* One section per wave, 1 through 5, always shown -- plain "Wave N"
+            labels only, no thematic subtitles (those don't apply to RFA). */}
+        {ALL_WAVES.map(w => {
+          const isTenderWave = w === 1;
+          const waveBids = isTenderWave ? tenders : challengesByWave[w];
           const isOpen = !!expandedWaves[w];
           return (
             <div key={w} className="rfa-my-bids__wave-section">
               <button
                 className="rfa-my-bids__wave-header"
                 onClick={() => toggleWave(w)}
-                style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
+                style={{
+                  width: '100%', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left',
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8,
+                }}
               >
                 <span>{isOpen ? '▾' : '▸'} Wave {w}{w === wave ? ' (current)' : ''}</span>
                 <span className="rfa-my-bids__wave-count">{waveBids.length}</span>
               </button>
               {isOpen && (
                 <div className="rfa-my-bids__wave-body">
-                  {waveBids.map((bid, index) => renderBidCard(bid, { index, waveBids }))}
+                  {waveBids.length === 0 ? (
+                    <div style={{ fontSize: 12, color: 'var(--draft-text-muted)', padding: '6px 2px' }}>
+                      Nothing here yet.
+                    </div>
+                  ) : isTenderWave ? (
+                    waveBids.map(bid => renderBidCard(bid))
+                  ) : (
+                    waveBids.map((bid, index) => renderBidCard(bid, { index, waveBids }))
+                  )}
                 </div>
               )}
             </div>
