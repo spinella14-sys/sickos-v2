@@ -23,7 +23,9 @@ export default function RFABidForm({
   const isQB = player.position === 'QB';
   const maxSal = isQB ? QB_MAX : MAX_SALARY;
   const isWave1 = wave === 1;
-  const waveMin = isWave1 ? player.tender_floor : null;
+  // Wave 1 auto-loads the real tender floor; Wave 2+ auto-loads the current
+  // leading offer instead of starting at $0 with no guidance.
+  const waveMin = isWave1 ? player.tender_floor : (player.current_leading_offer ?? null);
   const existingBid = myBids.find(b => b.player_id === player.id);
 
   const [y1, setY1] = useState(existingBid?.y1_salary || waveMin || 0);
