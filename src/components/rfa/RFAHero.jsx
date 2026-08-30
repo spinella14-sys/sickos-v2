@@ -1,11 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 
 const WAVE_NAMES = {
-  1: 'Wave 1 — Retention Tags',
-  2: 'Wave 2 — Max Offers',
-  3: 'Wave 3 — $3 Above R1 Min',
-  4: 'Wave 4 — R1 Minimum',
-  5: 'Wave 5 — R2 Minimum',
+  1: 'Wave 1',
+  2: 'Wave 2',
+  3: 'Wave 3',
+  4: 'Wave 4',
+  5: 'Wave 5',
 };
 
 const WAVE_DESCRIPTIONS = {
