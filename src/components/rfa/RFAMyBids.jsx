@@ -1,19 +1,45 @@
+import { useState } from 'react';
+
 export default function RFAMyBids({
   myBids, matchWindows, wave, isWaveOpen,
   currentTeam, getTeamName, getTeamLogo, myTeamData,
   onRerank, onWithdraw, onMatch,
 }) {
-  const handleMoveUp = (index) => {
+  // Wave 1 tenders don't compete via priority_rank at all -- standing
+  // offers on your own players, shown separately with no reorder controls.
+  const tenders = myBids.filter(b => b.is_incumbent);
+  // Everything else is a real challenge bid, grouped by the wave it was
+  // submitted in -- each wave's own 1..N priority order is independent of
+  // every other wave's, matching how the backend already scopes it.
+  const challenges = myBids.filter(b => !b.is_incumbent);
+  const waveNumbers = [...new Set(challenges.map(b => b.wave))].sort((a, b) => a - b);
+  const challengesByWave = {};
+  waveNumbers.forEach(w => {
+    challengesByWave[w] = challenges
+      .filter(b => b.wave === w)
+      .sort((a, b) => (a.priority_rank ?? Infinity) - (b.priority_rank ?? Infinity));
+  });
+
+  // Which wave sections are expanded -- current wave starts open, others
+  // start collapsed so old, already-resolved waves don't clutter the view.
+  const [expandedWaves, setExpandedWaves] = useState(() => {
+    const init = {};
+    waveNumbers.forEach(w => { init[w] = w === wave; });
+    return init;
+  });
+  const toggleWave = (w) => setExpandedWaves(prev => ({ ...prev, [w]: !prev[w] }));
+
+  const handleMoveUp = (waveBids, index) => {
     if (index === 0) return;
-    const reordered = [...myBids];
+    const reordered = [...waveBids];
     [reordered[index - 1], reordered[index]] = [reordered[index], reordered[index - 1]];
     const rankings = reordered.map((b, i) => ({ bid_id: b.id, priority_rank: i + 1 }));
     onRerank(rankings);
   };
 
-  const handleMoveDown = (index) => {
-    if (index === myBids.length - 1) return;
-    const reordered = [...myBids];
+  const handleMoveDown = (waveBids, index) => {
+    if (index === waveBids.length - 1) return;
+    const reordered = [...waveBids];
     [reordered[index], reordered[index + 1]] = [reordered[index + 1], reordered[index]];
     const rankings = reordered.map((b, i) => ({ bid_id: b.id, priority_rank: i + 1 }));
     onRerank(rankings);
@@ -28,6 +54,93 @@ export default function RFAMyBids({
     if (!confirmed) return;
     await onMatch(playerId, decision);
   };
+
+  // Shared card renderer -- used for both tenders (no reorder/rank shown)
+  // and challenge bids within a wave section (reorder scoped to that wave).
+  function renderBidCard(bid, { index, waveBids } = {}) {
+    const player = bid.rfa_pool;
+    const showReorder = index != null && waveBids;
+    return (
+      <div key={bid.id} className="rfa-bid-card">
+        <div className="rfa-bid-card__top">
+          {showReorder ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+              <button
+                onClick={() => handleMoveUp(waveBids, index)}
+                disabled={index === 0}
+                style={{
+                  background: 'none', border: 'none', color: index === 0
+                    ? 'var(--draft-border)' : 'var(--draft-text-muted)',
+                  cursor: index === 0 ? 'default' : 'pointer',
+                  fontSize: 10, padding: 0, lineHeight: 1,
+                }}
+              >▲</button>
+              <span className="rfa-bid-card__rank">#{index + 1}</span>
+              <button
+                onClick={() => handleMoveDown(waveBids, index)}
+                disabled={index === waveBids.length - 1}
+                style={{
+                  background: 'none', border: 'none',
+                  color: index === waveBids.length - 1
+                    ? 'var(--draft-border)' : 'var(--draft-text-muted)',
+                  cursor: index === waveBids.length - 1 ? 'default' : 'pointer',
+                  fontSize: 10, padding: 0, lineHeight: 1,
+                }}
+              >▼</button>
+            </div>
+          ) : (
+            <span style={{
+              fontSize: 9, fontWeight: 800, color: 'var(--draft-amber)',
+              background: 'rgba(212,168,67,0.12)', padding: '2px 6px', borderRadius: 3,
+              alignSelf: 'flex-start',
+            }}>
+              TENDER
+            </span>
+          )}
+
+          <div className="rfa-bid-card__player">
+            <span className="rfa-bid-card__name">
+              {player?.full_name || 'Unknown Player'}
+            </span>
+            <span className="rfa-bid-card__meta">
+              {player?.position} · R{player?.draft_round} RFA
+            </span>
+          </div>
+        </div>
+
+        <div className="rfa-bid-card__contract">
+          3yr / <span>${bid.y1_salary}</span> · <span>${bid.y2_salary}</span> · <span>${bid.y3_salary}</span>
+          <br />
+          {bid.guaranteed_years} yrs gtd
+          {bid.signing_bonus > 0 && ` + $${bid.signing_bonus} SB`}
+          <br />
+          Total gtd: <span>${bid.total_guaranteed}</span>
+        </div>
+
+        <div className="rfa-bid-card__toggles">
+          <label className="rfa-bid-card__toggle">
+            <input type="checkbox" checked={bid.conditional_on_cap} readOnly />
+            Conditional on cap space
+          </label>
+        </div>
+
+        {isWaveOpen && (
+          <div className="rfa-bid-card__actions">
+            <button
+              className="rfa-bid-card__withdraw"
+              onClick={() => {
+                if (window.confirm('Withdraw this bid?')) {
+                  onWithdraw(bid.id);
+                }
+              }}
+            >
+              WITHDRAW
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <aside className="rfa-my-bids">
@@ -99,7 +212,6 @@ export default function RFAMyBids({
           );
         })}
 
-        {/* My bids */}
         {myBids.length === 0 && matchWindows.length === 0 && (
           <div className="rfa-my-bids__empty">
             {isWaveOpen
@@ -110,90 +222,37 @@ export default function RFAMyBids({
           </div>
         )}
 
-        {myBids.map((bid, index) => {
-          const player = bid.rfa_pool;
+        {/* Tenders — standing offers on your own players, persist through
+            the whole draft, never compete via priority_rank */}
+        {tenders.length > 0 && (
+          <div className="rfa-my-bids__wave-section">
+            <div className="rfa-my-bids__wave-header" style={{ cursor: 'default' }}>
+              <span>Your Tenders</span>
+              <span className="rfa-my-bids__wave-count">{tenders.length}</span>
+            </div>
+            <div className="rfa-my-bids__wave-body">
+              {tenders.map(bid => renderBidCard(bid))}
+            </div>
+          </div>
+        )}
+
+        {/* One collapsible section per wave that has real challenge bids */}
+        {waveNumbers.map(w => {
+          const waveBids = challengesByWave[w];
+          const isOpen = !!expandedWaves[w];
           return (
-            <div key={bid.id} className="rfa-bid-card">
-              <div className="rfa-bid-card__top">
-                {/* Priority rank + reorder */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                  <button
-                    onClick={() => handleMoveUp(index)}
-                    disabled={index === 0}
-                    style={{
-                      background: 'none', border: 'none', color: index === 0
-                        ? 'var(--draft-border)' : 'var(--draft-text-muted)',
-                      cursor: index === 0 ? 'default' : 'pointer',
-                      fontSize: 10, padding: 0, lineHeight: 1,
-                    }}
-                  >▲</button>
-                  <span className="rfa-bid-card__rank">#{index + 1}</span>
-                  <button
-                    onClick={() => handleMoveDown(index)}
-                    disabled={index === myBids.length - 1}
-                    style={{
-                      background: 'none', border: 'none',
-                      color: index === myBids.length - 1
-                        ? 'var(--draft-border)' : 'var(--draft-text-muted)',
-                      cursor: index === myBids.length - 1 ? 'default' : 'pointer',
-                      fontSize: 10, padding: 0, lineHeight: 1,
-                    }}
-                  >▼</button>
-                </div>
-
-                <div className="rfa-bid-card__player">
-                  <span className="rfa-bid-card__name">
-                    {player?.full_name || 'Unknown Player'}
-                  </span>
-                  <span className="rfa-bid-card__meta">
-                    {player?.position} · R{player?.draft_round} RFA
-                    {bid.is_incumbent && (
-                      <span style={{
-                        marginLeft: 6, fontSize: 9, background: 'var(--draft-amber)',
-                        color: '#000', padding: '1px 5px', borderRadius: 3, fontWeight: 800,
-                      }}>
-                        INCUMBENT
-                      </span>
-                    )}
-                  </span>
-                </div>
-              </div>
-
-              {/* Contract details */}
-              <div className="rfa-bid-card__contract">
-                3yr / <span>${bid.y1_salary}</span> · <span>${bid.y2_salary}</span> · <span>${bid.y3_salary}</span>
-                <br />
-                {bid.guaranteed_years} yrs gtd
-                {bid.signing_bonus > 0 && ` + $${bid.signing_bonus} SB`}
-                <br />
-                Total gtd: <span>${bid.total_guaranteed}</span>
-              </div>
-
-              {/* Toggles */}
-              <div className="rfa-bid-card__toggles">
-                <label className="rfa-bid-card__toggle">
-                  <input
-                    type="checkbox"
-                    checked={bid.conditional_on_cap}
-                    readOnly
-                  />
-                  Conditional on cap space
-                </label>
-              </div>
-
-              {/* Actions */}
-              {isWaveOpen && (
-                <div className="rfa-bid-card__actions">
-                  <button
-                    className="rfa-bid-card__withdraw"
-                    onClick={() => {
-                      if (window.confirm('Withdraw this bid?')) {
-                        onWithdraw(bid.id);
-                      }
-                    }}
-                  >
-                    WITHDRAW
-                  </button>
+            <div key={w} className="rfa-my-bids__wave-section">
+              <button
+                className="rfa-my-bids__wave-header"
+                onClick={() => toggleWave(w)}
+                style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
+              >
+                <span>{isOpen ? '▾' : '▸'} Wave {w}{w === wave ? ' (current)' : ''}</span>
+                <span className="rfa-my-bids__wave-count">{waveBids.length}</span>
+              </button>
+              {isOpen && (
+                <div className="rfa-my-bids__wave-body">
+                  {waveBids.map((bid, index) => renderBidCard(bid, { index, waveBids }))}
                 </div>
               )}
             </div>
