@@ -91,19 +91,36 @@ export default function RFADraftChat({ draftType, season, currentTeam, getTeamNa
         )}
         {messages.map(m => {
           const isMe = m.sender_team === currentTeam;
+          const logo = getTeamLogo ? getTeamLogo(m.sender_team) : null;
+          const avatar = logo ? (
+            <img src={logo} alt={m.sender_team} style={{ width: 24, height: 24, borderRadius: 4, objectFit: 'cover', flexShrink: 0 }} />
+          ) : (
+            <div style={{
+              width: 24, height: 24, borderRadius: 4, flexShrink: 0, background: 'rgba(255,255,255,0.1)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: '#FFFFFF',
+            }}>
+              {m.sender_team?.slice(0, 2)}
+            </div>
+          );
           return (
-            <div key={m.id} style={{ display: 'flex', flexDirection: 'column', alignItems: isMe ? 'flex-end' : 'flex-start' }}>
-              <div style={{ fontSize: 10, color: 'var(--draft-text-muted)', marginBottom: 2 }}>
-                {getTeamName ? getTeamName(m.sender_team) : m.sender_team}
-              </div>
-              <div style={{
-                maxWidth: '75%', padding: '6px 10px', borderRadius: 10, fontSize: 13,
-                color: '#FFFFFF',
-                background: isMe ? 'var(--draft-amber, #F5A623)' : 'rgba(255,255,255,0.08)',
-                ...(isMe ? { color: '#000000' } : {}),
-                wordBreak: 'break-word',
-              }}>
-                {m.body}
+            <div key={m.id} style={{
+              display: 'flex', flexDirection: isMe ? 'row-reverse' : 'row',
+              alignItems: 'flex-end', gap: 6,
+            }}>
+              {avatar}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: isMe ? 'flex-end' : 'flex-start', maxWidth: '75%' }}>
+                <div style={{ fontSize: 10, color: 'var(--draft-text-muted)', marginBottom: 2 }}>
+                  {getTeamName ? getTeamName(m.sender_team) : m.sender_team}
+                </div>
+                <div style={{
+                  padding: '6px 10px', borderRadius: 10, fontSize: 13,
+                  color: '#FFFFFF',
+                  background: isMe ? 'var(--draft-amber, #F5A623)' : 'rgba(255,255,255,0.08)',
+                  ...(isMe ? { color: '#000000' } : {}),
+                  wordBreak: 'break-word',
+                }}>
+                  {m.body}
+                </div>
               </div>
             </div>
           );
