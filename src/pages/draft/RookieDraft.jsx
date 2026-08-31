@@ -309,8 +309,11 @@ export default function RookieDraft({ currentTeam, isCommissioner }) {
   }, [isCommissioner, actingAs, currentPick, team, fetchAll])
 
   // ── Derived ───────────────────────────────────────────────────────────────
-  const draftIsOver = draftState?.status === 'completed'
-  const draftIsPre  = !draftIsActive && !draftIsOver
+  const draftIsOver   = draftState?.status === 'completed'
+  const draftIsPaused = draftState?.status === 'paused'
+  // A paused draft is NOT pre-draft -- previously this incorrectly included
+  // 'paused', making OPEN DRAFT wrongly reappear for a paused draft.
+  const draftIsPre  = !draftIsActive && !draftIsOver && !draftIsPaused
 
   // Sort rookies by big board order when available, fallback to NFL draft pick
   const sortedRookies = bigBoard.length > 0
@@ -381,7 +384,17 @@ export default function RookieDraft({ currentTeam, isCommissioner }) {
                 onClick={() => { const p = window.prompt('Reset which pick # to pending?'); if (p) adminAction('admin/reset-pick', { overall_pick: parseInt(p) }, 'reset pick') }}>
                 ↩ RESET PICK
               </button>
+              <button className="draft-btn" style={{ padding:'5px 12px', fontSize:11 }}
+                onClick={() => adminAction('admin/pause', {}, 'pause draft')}>
+                ⏸ PAUSE
+              </button>
             </>
+          )}
+          {draftIsPaused && (
+            <button className="draft-btn" style={{ padding:'5px 12px', fontSize:11 }}
+              onClick={() => adminAction('admin/resume', {}, 'resume draft')}>
+              ▶ RESUME (fresh clock)
+            </button>
           )}
           {syncing && <span style={{ fontSize:10, color:'var(--draft-text-muted)', fontStyle:'italic' }}>Syncing pool…</span>}
         </div>
