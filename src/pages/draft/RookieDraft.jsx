@@ -315,19 +315,25 @@ export default function RookieDraft({ currentTeam, isCommissioner }) {
   // 'paused', making OPEN DRAFT wrongly reappear for a paused draft.
   const draftIsPre  = !draftIsActive && !draftIsOver && !draftIsPaused
 
-  // Sort rookies by big board order when available, fallback to NFL draft pick
+  // Sort rookies by big board order when available, fallback to NFL draft pick.
+  // Also attaches board_rank onto each rookie object -- previously the rank
+  // was only used transiently to order the array and then discarded, so
+  // PlayerBoard.jsx had no way to display or independently sort by "my own
+  // board rank" as a real field.
   const sortedRookies = bigBoard.length > 0
     ? (() => {
         const boardMap = {}
         bigBoard.forEach(b => { boardMap[b.sleeper_id] = b.rank })
-        return [...rookies].sort((a, b) => {
-          const ar = boardMap[a.sleeper_id] ?? 9999
-          const br = boardMap[b.sleeper_id] ?? 9999
-          if (ar !== br) return ar - br
-          return (a.nfl_draft_pick || 999) - (b.nfl_draft_pick || 999)
-        })
+        return [...rookies]
+          .map(r => ({ ...r, board_rank: boardMap[r.sleeper_id] ?? null }))
+          .sort((a, b) => {
+            const ar = boardMap[a.sleeper_id] ?? 9999
+            const br = boardMap[b.sleeper_id] ?? 9999
+            if (ar !== br) return ar - br
+            return (a.nfl_draft_pick || 999) - (b.nfl_draft_pick || 999)
+          })
       })()
-    : rookies
+    : rookies.map(r => ({ ...r, board_rank: null }))
 
   // Merge pool-stats (bye week, ADP, ownership, custom-scored 2026 stats)
   // onto sortedRookies by sleeper_id -- additive only, never touches

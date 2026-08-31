@@ -71,8 +71,15 @@ export default function PlayerBoard({
   const [posFilter,     setPosFilter]     = useState('ALL');
   const [activeTab,     setActiveTab]     = useState('board'); // 'board' | 'tradeblock' | 'cap' | 'results'
   const [perGameMode,   setPerGameMode]   = useState('total'); // 'total' | 'per_game'
-  const [sortKey,       setSortKey]       = useState('adp_dynasty_2qb');
-  const [sortAsc,       setSortAsc]       = useState(true); // ADP ascending default, matching RFA/UFA
+  const [sortKey,       setSortKey]       = useState('board_rank');
+  const [sortAsc,       setSortAsc]       = useState(true); // My Draft Board rank ascending default
+
+  // Clicking a header toggles direction if it's already the active sort,
+  // otherwise switches to that column ascending.
+  function handleHeaderSort(key) {
+    if (sortKey === key) setSortAsc(a => !a);
+    else { setSortKey(key); setSortAsc(true); }
+  }
   const [hoveredPlayer, setHoveredPlayer] = useState(null);
 
   const totalQBCount = useMemo(() => {
@@ -103,6 +110,7 @@ export default function PlayerBoard({
   }, [rookies, posFilter, search, qbLimitReached]);
 
   function getSortValue(r, key) {
+    if (key === 'board_rank') return r.board_rank ?? Infinity;
     if (key === 'adp_dynasty_2qb') return r.adp_dynasty_2qb ?? Infinity;
     if (key === 'owned_pct') return r.owned_pct ?? -Infinity;
     if (key === 'nfl_draft_pick') return r.nfl_draft_pick ?? Infinity;
@@ -248,12 +256,32 @@ export default function PlayerBoard({
           )}
 
           <div className="player-board__col-headers" style={{ gridTemplateColumns: GRID }}>
-            <span>RANK</span>
-            <span>PLAYER</span>
-            <span>POS</span>
+            {[
+              { key: 'board_rank', label: 'RANK' },
+              { key: 'full_name', label: 'PLAYER' },
+              { key: 'position', label: 'POS' },
+            ].map(h => (
+              <span
+                key={h.key}
+                onClick={() => handleHeaderSort(h.key)}
+                style={{ cursor: 'pointer', userSelect: 'none' }}
+              >
+                {h.label}{sortKey === h.key ? (sortAsc ? ' \u25b2' : ' \u25bc') : ''}
+              </span>
+            ))}
             <span>BYE</span>
-            <span>ADP</span>
-            <span>% OWNED</span>
+            <span
+              onClick={() => handleHeaderSort('adp_dynasty_2qb')}
+              style={{ cursor: 'pointer', userSelect: 'none' }}
+            >
+              ADP{sortKey === 'adp_dynasty_2qb' ? (sortAsc ? ' \u25b2' : ' \u25bc') : ''}
+            </span>
+            <span
+              onClick={() => handleHeaderSort('owned_pct')}
+              style={{ cursor: 'pointer', userSelect: 'none' }}
+            >
+              % OWNED{sortKey === 'owned_pct' ? (sortAsc ? ' \u25b2' : ' \u25bc') : ''}
+            </span>
             {activeStatColumns.map(col => (
               <span key={col.key}>{col.label}</span>
             ))}
@@ -278,9 +306,11 @@ export default function PlayerBoard({
                   onMouseEnter={() => setHoveredPlayer(rookie.sleeper_id)}
                   onMouseLeave={() => setHoveredPlayer(null)}
                 >
-                  {/* NFL Draft rank */}
+                  {/* My Draft Board rank, falling back to real NFL draft pick */}
                   <div className="player-row__rank">
-                    {rookie.nfl_draft_pick ? (
+                    {rookie.board_rank != null ? (
+                      <span className="nfl-pick__num">#{rookie.board_rank}</span>
+                    ) : rookie.nfl_draft_pick ? (
                       <span className="nfl-pick">
                         <span className="nfl-pick__round">R{rookie.nfl_draft_round}</span>
                         <span className="nfl-pick__num">#{rookie.nfl_draft_pick}</span>
