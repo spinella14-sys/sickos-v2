@@ -80,6 +80,14 @@ export default function RFAPool({
   const qbLimitReached = totalQBCount >= 3;
 
   const filtered = pool.filter(p => {
+    // A player never tagged in Wave 1 correctly moves to
+    // status='moved_to_ufa' at Wave 1's close (or 'signed' once someone
+    // wins them) -- they're no longer a real, biddable RFA target and
+    // should disappear from this board. IMPORTANT: this must NOT exclude
+    // 'pending' -- that's the real status for a Wave 1 player who hasn't
+    // been tagged YET but still can be, so the board still needs to show
+    // them during Wave 1 itself.
+    if (p.status === 'moved_to_ufa' || p.status === 'signed') return false;
     // Wave 1 is retention-only (player already on your roster) -- QB limit
     // never applies there. Wave 2+ is a genuine new acquisition.
     if (wave > 1 && qbLimitReached && p.position === 'QB') return false;
