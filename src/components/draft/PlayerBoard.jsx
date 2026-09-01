@@ -70,6 +70,8 @@ export default function PlayerBoard({
   currentTeam,
   trendWindow, setTrendWindow,
   myTeamData = null,
+  getTeamName,
+  getTeamLogo,
 }) {
   const [search,        setSearch]        = useState('');
   const [posFilter,     setPosFilter]     = useState('ALL');
