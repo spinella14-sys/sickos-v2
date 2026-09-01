@@ -536,6 +536,8 @@ export default function RookieDraft({ currentTeam, isCommissioner }) {
           trendWindow={trendWindow}
           setTrendWindow={setTrendWindow}
           myTeamData={myTeamData}
+          getTeamName={getTeamName}
+          getTeamLogo={getTeamLogo}
         />
         <TeamPanel
           viewingTeam={viewingTeam || team || TEAMS[0]?.abbrev}
