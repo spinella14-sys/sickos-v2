@@ -1,8 +1,12 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import PlayerLink from '../../components/PlayerCard/PlayerLink';
 import RFATradeBlockTab from '../rfa/RFATradeBlockTab';
 import RFACapOverviewTab from '../rfa/RFACapOverviewTab';
 import RookieResultsTab from './RookieResultsTab';
+import RFADraftChat from '../rfa/RFADraftChat';
+
+const API = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const CHAT_SEASON = 2026;
 
 const POSITIONS = ['ALL', 'QB', 'RB', 'WR', 'TE'];
 
@@ -69,7 +73,33 @@ export default function PlayerBoard({
 }) {
   const [search,        setSearch]        = useState('');
   const [posFilter,     setPosFilter]     = useState('ALL');
-  const [activeTab,     setActiveTab]     = useState('board'); // 'board' | 'tradeblock' | 'cap' | 'results'
+  const [activeTab,     setActiveTab]     = useState('board'); // 'board' | 'tradeblock' | 'cap' | 'results' | 'chat'
+  const [chatUnread, setChatUnread] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    const pollUnread = async () => {
+      try {
+        const res = await fetch(`${API}/draft-chat/unread-count?draft_type=rookie&season=${CHAT_SEASON}&team=${currentTeam}`);
+        if (!res.ok || cancelled) return;
+        const data = await res.json();
+        setChatUnread(data.unread_count || 0);
+      } catch (e) { /* silent -- next poll will retry */ }
+    };
+    pollUnread();
+    const interval = setInterval(pollUnread, 4000);
+    return () => { cancelled = true; clearInterval(interval); };
+  }, [currentTeam]);
+
+  useEffect(() => {
+    if (activeTab !== 'chat') return;
+    setChatUnread(0);
+    fetch(`${API}/draft-chat/mark-read`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ draft_type: 'rookie', season: CHAT_SEASON, team: currentTeam }),
+    }).catch(() => {});
+  }, [activeTab, currentTeam]);
   const [perGameMode,   setPerGameMode]   = useState('total'); // 'total' | 'per_game'
   const [sortKey,       setSortKey]       = useState('board_rank');
   const [sortAsc,       setSortAsc]       = useState(true); // My Draft Board rank ascending default
@@ -162,13 +192,24 @@ export default function PlayerBoard({
             { key: 'tradeblock', label: 'Trade Block' },
             { key: 'cap', label: 'Cap Overview' },
             { key: 'results', label: 'Results' },
+            { key: 'chat', label: 'Chat' },
           ].map(tab => (
             <button
               key={tab.key}
               className={`pos-tab ${activeTab === tab.key ? 'pos-tab--active' : ''}`}
               onClick={() => setActiveTab(tab.key)}
+              style={{ position: 'relative' }}
             >
               {tab.label}
+              {tab.key === 'chat' && chatUnread > 0 && (
+                <span style={{
+                  marginLeft: 6, fontSize: 10, fontWeight: 800, color: '#000',
+                  background: 'var(--draft-red, #e84545)', borderRadius: 10,
+                  padding: '1px 6px', minWidth: 16, display: 'inline-block', textAlign: 'center',
+                }}>
+                  {chatUnread > 99 ? '99+' : chatUnread}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -242,6 +283,7 @@ export default function PlayerBoard({
       {activeTab === 'tradeblock' && <RFATradeBlockTab />}
       {activeTab === 'cap' && <RFACapOverviewTab myTeam={currentTeam} />}
       {activeTab === 'results' && <RookieResultsTab />}
+      {activeTab === 'chat' && <RFADraftChat draftType="rookie" season={CHAT_SEASON} currentTeam={currentTeam} getTeamName={getTeamName} getTeamLogo={getTeamLogo} />}
 
       {activeTab === 'board' && (
         <>
