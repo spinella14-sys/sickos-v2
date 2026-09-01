@@ -244,9 +244,9 @@ export default function PlayerBoard({
 
             <div style={{ display: 'flex', gap: 4 }}>
               {[
-                { key: 'last_week', label: 'Last Wk' },
-                { key: '3week', label: '3-Wk' },
-                { key: 'season', label: 'Season' },
+                { key: '5day', label: '5-Days' },
+                { key: '3week', label: '3 Weeks' },
+                { key: 'season', label: 'Start of Season' },
               ].map(t => (
                 <button
                   key={t.key}
