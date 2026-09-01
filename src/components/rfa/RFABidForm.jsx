@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+const API = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 const MAX_SALARY = 21.82;
 const QB_MAX = 26.67;
 const HARD_CAP = 138;
@@ -92,6 +93,33 @@ export default function RFABidForm({
       setSubmitting(false);
     }
   };
+
+  // Real one-click match: the incumbent doesn't need to manually
+  // reconstruct the challenger's exact terms -- the backend already
+  // knows the standing external offer and applies it directly.
+  const handleMatch = async () => {
+    setSubmitting(true);
+    setError('');
+    try {
+      const res = await fetch(`${API}/rfa/match/${player.sleeper_id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ team_abbrev: currentTeam }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || 'Failed to match offer');
+        setSubmitting(false);
+        return;
+      }
+      onClose();
+    } catch (e) {
+      setError('Failed to match offer');
+      setSubmitting(false);
+    }
+  };
+
+  const canOneClickMatch = isIncumbent && player.match_window_open && !player.match_window_is_tie;
 
   const inputStyle = {
     width: '100%', background: '#1C2330',
@@ -322,12 +350,23 @@ export default function RFABidForm({
           <div className="rfa-bid-form__error">{validationError}</div>
         )}
 
+        {canOneClickMatch && (
+          <button
+            className="rfa-bid-form__submit"
+            style={{ background: 'var(--draft-amber, #F5A623)', color: '#000', marginBottom: 8 }}
+            onClick={handleMatch}
+            disabled={submitting}
+          >
+            {submitting ? 'Matching...' : "Match Challenger's Offer"}
+          </button>
+        )}
+
         <button
           className="rfa-bid-form__submit"
           onClick={handleSubmit}
           disabled={submitting || !!validationError}
         >
-          {submitting ? 'Submitting...' : existingBid ? 'Update Bid' : isWave1 ? 'Submit Retention Tag' : 'Submit Bid'}
+          {submitting ? 'Submitting...' : existingBid ? 'Update Bid' : isWave1 ? 'Submit Retention Tag' : canOneClickMatch ? 'Submit Different Terms Instead' : 'Submit Bid'}
         </button>
       </div>
     </div>
