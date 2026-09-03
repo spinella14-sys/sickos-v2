@@ -137,12 +137,44 @@ function TradeRow({ txn }) {
   )
 }
 
+// ── Draft: collapsed summary row, expands to show every pick in order ──
+function DraftBatchRow({ txn }) {
+  const [open, setOpen] = useState(false)
+  const assets = txn.assets || []
+  const rounds = [...new Set(assets.map(a => a.pick_round).filter(Boolean))].sort((a, b) => a - b)
+  const label  = txn.notes || 'Rookie Draft'
+
+  return (
+    <>
+      <tr className="wire-row wire-trade-summary" onClick={() => setOpen(o => !o)}>
+        <td className="wire-td-date">{fmtDate(txn.transaction_date)}</td>
+        <td className="wire-td-type">
+          <span className="wire-type-badge" style={{ color: TYPE_META.draft_batch.color, borderColor: TYPE_META.draft_batch.color }}>
+            Draft
+          </span>
+        </td>
+        <td className="wire-td-trade-summary" colSpan={9}>
+          <span className="wire-trade-caret">{open ? '▾' : '▸'}</span>
+          {label.toUpperCase()}
+          <span className="wire-draft-count">
+            {' '}— {assets.length} pick{assets.length === 1 ? '' : 's'}
+            {rounds.length ? ` · ${rounds.length} round${rounds.length === 1 ? '' : 's'}` : ''}
+          </span>
+        </td>
+      </tr>
+      {open && assets.map((a, i) => (
+        <AssetRow key={i} txn={txn} asset={a} isSubRow />
+      ))}
+    </>
+  )
+}
+
 function TransactionRows({ txn }) {
-  if (txn.type === 'trade') return <TradeRow txn={txn} />
+  if (txn.type === 'trade')       return <TradeRow txn={txn} />
+  if (txn.type === 'draft_batch') return <DraftBatchRow txn={txn} />
   const assets = txn.assets || []
   if (!assets.length) return null
-  // Signing/release/bid_lost/draft_batch: one asset = one row; multi-asset draft
-  // batches render each asset as its own labeled row (date/type only on first).
+  // Signing/release/bid_lost: one asset = one row.
   return assets.map((a, i) => (
     <AssetRow key={i} txn={txn} asset={a} isSubRow={i > 0} />
   ))
