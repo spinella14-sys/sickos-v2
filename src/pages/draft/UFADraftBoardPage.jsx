@@ -238,8 +238,8 @@ export default function UFADraftBoardPage({ currentTeam }) {
             <div key={w} className="ufab__wave-section">
               <button className="ufab__wave-header" onClick={() => toggleWave(w)}>
                 <span className="ufab__wave-name">
-                  {isOpen ? '\u25be' : '\u25b8'} Wave {w}{w === currentWave ? ' (current)' : ''}
-                  <span className="ufab__wave-tier"> \u00b7 {TIER_SHORT[tier]}</span>
+                  {isOpen ? String.fromCharCode(9662) : String.fromCharCode(9656)} Wave {w}{w === currentWave ? ' (current)' : ''}
+                  <span className="ufab__wave-tier"> &middot; {TIER_SHORT[tier]}</span>
                 </span>
                 <span className="ufab__wave-count">{filled}/{SLOTS_PER_WAVE}</span>
               </button>
@@ -346,9 +346,9 @@ function SlotRow({ tier, slotIndex, slot, player, onEdit, onClear }) {
           ? <strong>MAX</strong>
           : <strong>${Number(slot.y1_salary).toFixed(2)}</strong>}
         <span className="ufab__slot-detail">
-          {slot.years}yr {'\u00b7'} {slot.guaranteed_years} gtd
-          {slot.signing_bonus > 0 && <> {'\u00b7'} ${Number(slot.signing_bonus).toFixed(2)} SB</>}
-          {slot.withdraw_if_higher_wins && <> {'\u00b7'} withdraw if higher wins</>}
+          {slot.years}yr &middot; {slot.guaranteed_years} gtd
+          {slot.signing_bonus > 0 && <> &middot; ${Number(slot.signing_bonus).toFixed(2)} SB</>}
+          {slot.withdraw_if_higher_wins && <> &middot; withdraw if higher wins</>}
         </span>
       </span>
       <span className="ufab__slot-actions">
@@ -378,8 +378,8 @@ function PlayerPickerModal({ wave, pool, usedSleeperIds, onClose, onPick }) {
     <div className="ufab-modal__backdrop" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="ufab-modal">
         <div className="ufab-modal__header">
-          <span>Wave {wave} {'\u00b7'} Choose a player</span>
-          <button onClick={onClose} className="ufab-modal__close">{'\u00d7'}</button>
+          <span>Wave {wave} &middot; Choose a player</span>
+          <button onClick={onClose} className="ufab-modal__close">&times;</button>
         </div>
 
         <div className="ufab-modal__search">

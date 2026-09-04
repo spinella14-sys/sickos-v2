@@ -103,11 +103,14 @@
   width: 130px;
   padding: 7px 9px;
   border-radius: 5px;
-  border: 1px solid var(--border, #2a2a2a);
-  background: var(--input-bg, #16181a);
-  color: inherit;
+  border: 1px solid #2f3336;
+  /* Explicit light-on-dark: color:inherit picked up the light theme's dark
+     text and rendered black on a black input. */
+  background: #0f1113;
+  color: #fff;
   font-size: 14px;
 }
+.ufab__setting-input input::placeholder { color: #7d8388; }
 
 .ufab__setting-hint {
   display: block;
