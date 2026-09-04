@@ -41,7 +41,7 @@ export default function UFABidForm({ player, wave, tier, currentTeam, myCapData,
   const [y1,            setY1]          = useState(existingBid?.y1_salary    || tierMin);
   const [years,         setYears]       = useState(existingBid?.years        || 1);
   const [structure,     setStructure]   = useState(existingBid?.structure    || 'ascending');
-  const [gtdYears,      setGtdYears]    = useState(existingBid?.guaranteed_years || 1);
+  const [gtdYears,      setGtdYears]    = useState(existingBid?.guaranteed_years || Math.max(1, (existingBid?.years || 3) - 1));
   const [signingBonus,  setSB]          = useState(existingBid?.signing_bonus || 0);
   const [condOnCap,     setCondOnCap]   = useState(existingBid?.conditional_on_cap || false);
   const [priority,      setPriority]    = useState(existingBid?.priority_rank || myBids.length + 1);
@@ -61,6 +61,8 @@ export default function UFABidForm({ player, wave, tier, currentTeam, myCapData,
     if (y1Num > maxSal)             return `Y1 salary cannot exceed $${maxSal.toFixed(2)} (${isQB ? 'QB' : 'non-QB'} max)`;
     if (years < 1 || years > 4)     return 'Contract must be 1–4 years';
     if (gtdYears > years)           return 'Guaranteed years cannot exceed contract length';
+    if (gtdYears < Math.max(1, years - 1))
+      return `A ${years}-year offer must guarantee at least ${Math.max(1, years - 1)} year${years - 1 === 1 ? '' : 's'} (all but the final year)`;
     if (wouldOverCap)               return `Bid crosses the hard cap ($${hardCap})`;
     if (underCap)                   return `Insufficient cap space ($${capSpace.toFixed(2)} available)`;
     return null;
@@ -159,7 +161,11 @@ export default function UFABidForm({ player, wave, tier, currentTeam, myCapData,
             {[1,2,3,4].map(yr => (
               <button key={yr}
                 className={`rfa-bid-form__gtd-btn ${years===yr?'rfa-bid-form__gtd-btn--active':''}`}
-                onClick={() => { setYears(yr); if (gtdYears > yr) setGtdYears(yr) }}>
+                onClick={() => {
+                  setYears(yr);
+                  // Keep the guarantee legal when contract length changes.
+                  if (gtdYears > yr || gtdYears < Math.max(1, yr - 1)) setGtdYears(Math.max(1, yr - 1));
+                }}>
                 {yr}yr
               </button>
             ))}
@@ -202,11 +208,13 @@ export default function UFABidForm({ player, wave, tier, currentTeam, myCapData,
         <div className="rfa-bid-form__section">
           <label className="rfa-bid-form__label">Guaranteed Years</label>
           <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
-            {Array.from({length:years},(_,i)=>i+1).map(yr => (
+            {/* League rule: all years but the last must be guaranteed, so the
+                only legal options are years-1 and fully guaranteed. */}
+            {[...new Set([Math.max(1, years - 1), years])].map(yr => (
               <button key={yr}
                 className={`rfa-bid-form__gtd-btn ${gtdYears===yr?'rfa-bid-form__gtd-btn--active':''}`}
                 onClick={() => setGtdYears(yr)}>
-                {yr}yr gtd
+                {yr}yr gtd{yr === years ? ' (full)' : ''}
               </button>
             ))}
           </div>

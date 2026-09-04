@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import RFAContractOfferModal from '../../components/rfa/RFAContractOfferModal'
+import ContractOfferModal from '../../components/contracts/ContractOfferModal'
 import RFAPoolBrowserModal from '../../components/rfa/RFAPoolBrowserModal'
 import PlayerLink from '../../components/PlayerCard/PlayerLink'
 import './RFADraftBoardPage.css'
@@ -368,11 +368,24 @@ export default function RFADraftBoardPage({ currentTeam }) {
       )}
 
       {modalTarget && (
-        <RFAContractOfferModal
+        <ContractOfferModal
           player={modalTarget.player}
-          wave={modalTarget.wave}
           currentTeam={currentTeam}
           existingTerms={modalTarget.existingTerms}
+          title={modalTarget.wave === 1 ? 'Set Tender' : 'Set Challenge Offer'}
+          subtitle={modalTarget.wave === 1
+            ? 'Wave 1 tenders are 3 years, escalating, fully guaranteed.'
+            : `Wave ${modalTarget.wave} challenge offer`}
+          floor={modalTarget.player?.tender_floor ?? null}
+          floorMode={modalTarget.wave === 1 ? 'y1' : 'total_guaranteed'}
+          floorNote={modalTarget.wave === 1
+            ? null
+            : 'Best estimate before Wave 1 runs live -- the real tender may be higher.'}
+          yearsLocked={modalTarget.wave === 1 ? 3 : null}
+          yearsOptions={[3, 4]}
+          structureLocked={modalTarget.wave === 1 ? 'escalating' : null}
+          structureOptions={['escalating', 'flat', 'descending']}
+          guaranteeLocked={modalTarget.wave === 1}
           onSave={handleModalSave}
           onClose={() => setModalTarget(null)}
         />
