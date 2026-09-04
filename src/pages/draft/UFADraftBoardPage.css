@@ -262,8 +262,11 @@
 }
 .ufab__slot-actions button:hover { color: #fff; border-color: #555; }
 .ufab__slot-remove:hover { color: var(--red, #E74C3C) !important; border-color: var(--red, #E74C3C) !important; }
+/* ===== Modal ===== */
+/* The modal is a dark panel regardless of app theme, so it uses explicit
+   colors rather than theme vars -- var(--text-muted) etc. resolve to the
+   light theme's dark values and render near-black on near-black. */
 
-/* ── Modal ──────────────────────────────────────────────────────────────── */
 .ufab-modal__backdrop {
   position: fixed;
   inset: 0;
@@ -276,8 +279,8 @@
 }
 
 .ufab-modal {
-  background: var(--bg-elevated, #16181a);
-  border: 1px solid var(--border, #2a2a2a);
+  background: #16181a;
+  border: 1px solid #2f3336;
   border-radius: 10px;
   width: 100%;
   max-width: 540px;
@@ -285,6 +288,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  color: #f0f0f0;
 }
 
 .ufab-modal__header {
@@ -292,46 +296,49 @@
   justify-content: space-between;
   align-items: center;
   padding: 14px 16px;
-  border-bottom: 1px solid var(--border, #2a2a2a);
+  border-bottom: 1px solid #2f3336;
   font-weight: 700;
-  color: var(--draft-amber, #F5A623);
+  color: #F5A623;
 }
 
 .ufab-modal__close {
   background: none;
   border: none;
-  color: var(--text-muted, #9aa0a6);
+  color: #9aa0a6;
   font-size: 22px;
   line-height: 1;
   cursor: pointer;
 }
+.ufab-modal__close:hover { color: #fff; }
 
 .ufab-modal__search { padding: 14px 16px 8px; }
 .ufab-modal__search input {
   width: 100%;
   padding: 9px 11px;
   border-radius: 6px;
-  border: 1px solid var(--border, #2a2a2a);
-  background: var(--input-bg, #0f1113);
-  color: inherit;
+  border: 1px solid #2f3336;
+  background: #0f1113;
+  color: #fff;
   font-size: 14px;
 }
+.ufab-modal__search input::placeholder { color: #7d8388; }
 
 .ufab-modal__pos { display: flex; gap: 6px; margin-top: 10px; }
 .ufab-modal__pos button {
   flex: 1;
   padding: 6px;
   border-radius: 5px;
-  border: 1px solid var(--border, #2a2a2a);
+  border: 1px solid #2f3336;
   background: none;
-  color: var(--text-muted, #9aa0a6);
+  color: #b6bcc1;
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
 }
+.ufab-modal__pos button:hover { color: #fff; }
 .ufab-modal__pos button.active {
-  border-color: var(--draft-amber, #F5A623);
-  color: var(--draft-amber, #F5A623);
+  border-color: #F5A623;
+  color: #F5A623;
 }
 
 .ufab-modal__results { overflow-y: auto; padding: 6px 10px 14px; }
@@ -345,23 +352,23 @@
   background: none;
   border: none;
   border-radius: 5px;
-  color: inherit;
+  color: #e8eaed;
   font-size: 13px;
   text-align: left;
   cursor: pointer;
 }
-.ufab-modal__result:hover { background: rgba(255,255,255,0.05); }
+.ufab-modal__result:hover { background: rgba(255,255,255,0.07); }
 .ufab-modal__result-team {
   margin-left: auto;
   font-size: 11px;
-  color: var(--text-muted, #9aa0a6);
+  color: #9aa0a6;
 }
 
 .ufab-modal__empty {
   padding: 20px;
   text-align: center;
   font-size: 13px;
-  color: var(--text-muted, #9aa0a6);
+  color: #9aa0a6;
 }
 
 .ufab-modal__terms { padding: 14px 16px 16px; overflow-y: auto; }
@@ -371,21 +378,23 @@
   align-items: center;
   gap: 8px;
   padding: 9px 10px;
-  border: 1px solid var(--border, #2a2a2a);
+  border: 1px solid #2f3336;
   border-radius: 6px;
   margin-bottom: 14px;
   font-size: 14px;
+  color: #fff;
 }
 .ufab-modal__change {
   margin-left: auto;
   background: none;
-  border: 1px solid var(--border, #2a2a2a);
+  border: 1px solid #2f3336;
   border-radius: 4px;
-  color: var(--text-muted, #9aa0a6);
+  color: #b6bcc1;
   font-size: 11px;
   padding: 4px 8px;
   cursor: pointer;
 }
+.ufab-modal__change:hover { color: #fff; border-color: #555; }
 
 .ufab-modal__terms label { display: block; margin-bottom: 12px; }
 .ufab-modal__terms label > span:first-child {
@@ -393,31 +402,34 @@
   font-size: 12px;
   font-weight: 700;
   margin-bottom: 5px;
+  color: #c8ccd0;
 }
 .ufab-modal__terms input[type="number"],
 .ufab-modal__terms select {
   width: 100%;
   padding: 8px 10px;
   border-radius: 5px;
-  border: 1px solid var(--border, #2a2a2a);
-  background: var(--input-bg, #0f1113);
-  color: inherit;
+  border: 1px solid #2f3336;
+  background: #0f1113;
+  color: #fff;
   font-size: 14px;
 }
+.ufab-modal__terms select option { background: #16181a; color: #fff; }
 
 .ufab-modal__fixed {
   padding: 8px 10px;
   border-radius: 5px;
-  border: 1px solid rgba(245,166,35,0.4);
-  background: rgba(245,166,35,0.08);
+  border: 1px solid rgba(245,166,35,0.45);
+  background: rgba(245,166,35,0.10);
   font-size: 15px;
   font-weight: 700;
+  color: #fff;
 }
 .ufab-modal__fixed-note {
   display: block;
   font-size: 11px;
   font-weight: 500;
-  color: var(--text-muted, #9aa0a6);
+  color: #b6bcc1;
   margin-top: 2px;
 }
 
@@ -430,21 +442,22 @@
   gap: 8px;
   font-size: 12px;
   line-height: 1.4;
+  color: #c8ccd0;
 }
 .ufab-modal__check input { margin-top: 2px; }
 
 .ufab-modal__cap {
   font-size: 11.5px;
-  color: var(--text-muted, #9aa0a6);
+  color: #9aa0a6;
   padding: 8px 0;
 }
 
 .ufab-modal__error {
   padding: 8px 10px;
   border-radius: 5px;
-  background: rgba(231,76,60,0.12);
-  border: 1px solid rgba(231,76,60,0.4);
-  color: var(--red, #E74C3C);
+  background: rgba(231,76,60,0.15);
+  border: 1px solid rgba(231,76,60,0.45);
+  color: #ff8a7a;
   font-size: 12.5px;
   margin-bottom: 10px;
 }
@@ -458,15 +471,17 @@
 .ufab-modal__actions button {
   padding: 8px 16px;
   border-radius: 6px;
-  border: 1px solid var(--border, #2a2a2a);
+  border: 1px solid #2f3336;
   background: none;
-  color: inherit;
+  color: #e8eaed;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
 }
+.ufab-modal__actions button:hover { border-color: #555; }
 .ufab-modal__primary {
-  background: var(--draft-amber, #F5A623) !important;
-  border-color: var(--draft-amber, #F5A623) !important;
+  background: #F5A623 !important;
+  border-color: #F5A623 !important;
   color: #111 !important;
 }
+.ufab-modal__primary:hover { background: #ffb840 !important; }
