@@ -5,7 +5,7 @@ import RFATradeBlockTab from '../rfa/RFATradeBlockTab';
 import RFACapOverviewTab from '../rfa/RFACapOverviewTab';
 import UFAResultsTab from './UFAResultsTab';
 
-const TIER_NAMES = { 1: 'Tier 1 — $18+', 2: 'Tier 2 — $9.60+', 3: 'Tier 3 — Open' };
+import { TIER_SHORT as TIER_NAMES } from '../../constants/ufaTiers';
 const POS_BG    = { QB:'rgba(231,76,60,0.2)',  RB:'rgba(39,174,96,0.2)',  WR:'rgba(52,152,219,0.2)',  TE:'rgba(155,89,182,0.2)'  };
 const POS_COLOR = { QB:'#E74C3C',              RB:'#27AE60',              WR:'#3498DB',              TE:'#9B59B6'               };
 

@@ -6,9 +6,7 @@ import UFABidForm from '../components/ufa/UFABidForm.jsx';
 const API = (import.meta.env.VITE_API_URL || 'http://localhost:3001/api').replace(/\/api$/, '');
 
 const TIER_FOR_WAVE = (w) => w <= 3 ? 1 : w <= 6 ? 2 : 3;
-const WAVE_IN_TIER  = (w) => ((w - 1) % 3) + 1;
-const TIER_MINS     = { 1: 18.00, 2: 9.60, 3: 2.40 };
-const TIER_NAMES    = { 1: 'Tier 1 — Premium ($18+)', 2: 'Tier 2 — Mid-Range ($9.60+)', 3: 'Tier 3 — Open Market' };
+import { TIER_NAMES, tierMinLabel, WAVE_IN_TIER, TIER_WAVE_COUNT } from '../constants/ufaTiers';
 
 const S = {
   page: { minHeight: '100vh', background: '#0D1117', color: '#E6EDF3', fontFamily: 'Barlow Condensed, sans-serif', padding: '24px' },
@@ -186,7 +184,7 @@ export default function AdminUFAPage() {
               Wave {wave} · {TIER_NAMES[tier]}
             </div>
             <div style={{ fontSize: 12, color: '#8B949E', marginBottom: 4 }}>
-              Wave {WAVE_IN_TIER(wave)} of 3 in this tier · Min offer: ${TIER_MINS[tier]}
+              Wave {WAVE_IN_TIER(wave)} of {TIER_WAVE_COUNT(wave)} in this tier · Min offer: {tierMinLabel(tier)}
             </div>
             <div style={{ fontSize: 12, color: '#8B949E', marginBottom: 16 }}>
               Teams can bid more than the tier minimum at any time.

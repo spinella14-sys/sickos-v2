@@ -1,9 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { TEAMS, LOGOS } from '../../data/league';
 
-const TIER_NAMES = { 1: 'Tier 1 — Premium ($18+)', 2: 'Tier 2 — Mid-Range ($9.60+)', 3: 'Tier 3 — Open Market' };
-const TIER_MINS  = { 1: '$18.00', 2: '$9.60', 3: '$2.40' };
-const WAVE_IN_TIER = (wave) => ((wave - 1) % 3) + 1;
+import { TIER_NAMES, tierMinLabel, WAVE_IN_TIER, TIER_WAVE_COUNT } from '../../constants/ufaTiers';
 const TIER_FOR_WAVE = (wave) => wave <= 3 ? 1 : wave <= 6 ? 2 : 3;
 
 function formatTime(s) {
@@ -41,7 +39,7 @@ export default function UFAHero({ ufaState, timeLeft, currentTeam, bidsThisWave,
         <span className="rfa-hero__wave-label">UFA Draft — 2026 · Wave {wave} of 9</span>
         <span className="rfa-hero__wave-name">{TIER_NAMES[tier]}</span>
         <span className="rfa-hero__wave-caption">
-          Wave {WAVE_IN_TIER(wave)} of 3 in this tier · Min offer: {TIER_MINS[tier]}
+          Wave {WAVE_IN_TIER(wave)} of {TIER_WAVE_COUNT(wave)} in this tier · Min offer: {tierMinLabel(tier)}
         </span>
       </div>
 

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 // Dynamic caps — pulled from myCapData when available, sensible fallbacks otherwise
-const TIER_MINS  = { 1: 18.00, 2: 9.60, 3: 2.40 };
+import { minBidForTier } from '../../constants/ufaTiers';
 const MIN_SALARY = 2.40;
 
 function calcSalaries(y1, years, structure) {
@@ -32,7 +32,7 @@ export default function UFABidForm({ player, wave, tier, currentTeam, myCapData,
   const maxSal   = isQB
     ? parseFloat((taxLine / 4.5).toFixed(2))   // QB max = LTL / 4.5
     : parseFloat((taxLine / 5.5).toFixed(2));  // non-QB max = LTL / 5.5
-  const tierMin  = TIER_MINS[tier] || MIN_SALARY;
+  const tierMin  = minBidForTier(tier, player?.position);
 
   const existingBid = myBids.find(b =>
     b.player_sleeper_id === player.sleeper_id || b.ufa_pool?.sleeper_id === player.sleeper_id
