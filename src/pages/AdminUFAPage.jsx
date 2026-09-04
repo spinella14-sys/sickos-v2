@@ -5,8 +5,7 @@ import UFABidForm from '../components/ufa/UFABidForm.jsx';
 
 const API = (import.meta.env.VITE_API_URL || 'http://localhost:3001/api').replace(/\/api$/, '');
 
-const TIER_FOR_WAVE = (w) => w <= 3 ? 1 : w <= 6 ? 2 : 3;
-import { TIER_NAMES, tierMinLabel, WAVE_IN_TIER, TIER_WAVE_COUNT } from '../constants/ufaTiers';
+import { TIER_NAMES, tierMinLabel, WAVE_IN_TIER, TIER_WAVE_COUNT, TIER_FOR_WAVE } from '../constants/ufaTiers';
 
 const S = {
   page: { minHeight: '100vh', background: '#0D1117', color: '#E6EDF3', fontFamily: 'Barlow Condensed, sans-serif', padding: '24px' },
@@ -40,6 +39,63 @@ const POS_COLORS = {
   TE: { bg: 'rgba(155,89,182,0.2)', color: '#9B59B6' },
 };
 
+
+// Who has finished bidding this wave. "Ready" means the manager either
+// clicked "All Done With Current Wave" or is absent from the draft room --
+// both mean waiting on them is pointless, which is what lets a wave close
+// early instead of burning the full clock.
+function WaveReadyPanel({ status }) {
+  if (!status) return null;
+  const teams = status.teams || [];
+  const pct = status.total ? Math.round((status.ready_count / status.total) * 100) : 0;
+
+  const REASON = {
+    clicked:            { label: 'Done',    color: '#27AE60' },
+    absent:             { label: 'Absent',  color: '#8B949E' },
+    present_not_ready:  { label: 'Bidding', color: '#F5A623' },
+  };
+
+  return (
+    <div style={{ ...S.card, padding: 16, marginTop: 16 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
+        <span style={S.label}>WAVE {status.wave} READINESS</span>
+        <span style={{ fontSize: 18, fontWeight: 800, color: pct === 100 ? '#27AE60' : '#F5A623', fontVariantNumeric: 'tabular-nums' }}>
+          {status.ready_count}/{status.total}
+        </span>
+      </div>
+
+      <div style={{ height: 4, background: 'rgba(255,255,255,0.07)', borderRadius: 2, overflow: 'hidden', marginBottom: 12 }}>
+        <div style={{ height: '100%', width: `${pct}%`, background: pct === 100 ? '#27AE60' : '#F5A623', transition: 'width 0.3s' }} />
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 6 }}>
+        {teams.map(t => {
+          const r = REASON[t.reason] || REASON.present_not_ready;
+          return (
+            <div key={t.team_abbrev} style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 6,
+              padding: '5px 8px', borderRadius: 4,
+              background: 'rgba(255,255,255,0.03)',
+              border: `1px solid ${t.ready ? 'rgba(39,174,96,0.3)' : 'rgba(245,166,35,0.3)'}`,
+            }}>
+              <span style={{ fontSize: 13, fontWeight: 700 }}>{t.team_abbrev}</span>
+              <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', color: r.color, textTransform: 'uppercase' }}>
+                {r.label}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+
+      {pct === 100 && (
+        <div style={{ marginTop: 10, fontSize: 12, color: '#27AE60', textAlign: 'center', fontWeight: 700 }}>
+          Everyone is ready -- safe to close the wave early.
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function AdminUFAPage() {
   const navigate = useNavigate();
   const [ufaState,       setUfaState]       = useState(null);
@@ -57,13 +113,18 @@ export default function AdminUFAPage() {
   const [busy,           setBusy]           = useState(false);
   const [posFilter,      setPosFilter]      = useState('ALL');
   const [search,         setSearch]         = useState('');
+  const [readyStatus,    setReadyStatus]    = useState(null);
 
   const fetchAll = useCallback(async () => {
     try {
-      const [stateRes, playersRes, teamsRes] = await Promise.all([
+      // wave-ready-status rides this existing 15s poll rather than adding a
+      // second timer. It never blocks the rest of the page: a failure here
+      // just leaves the readiness panel empty.
+      const [stateRes, playersRes, teamsRes, readyRes] = await Promise.all([
         fetch(`${API}/api/ufa/state`),
         fetch(`${API}/api/ufa/players`),
         fetch(`${API}/api/teams`),
+        fetch(`${API}/api/ufa/wave-ready-status`).catch(() => null),
       ]);
       const [stateData, playersData, teamsData] = await Promise.all([
         stateRes.json(), playersRes.json(), teamsRes.json(),
@@ -71,6 +132,7 @@ export default function AdminUFAPage() {
       setUfaState(stateData);
       setPlayers(Array.isArray(playersData) ? playersData : []);
       setTeams(Array.isArray(teamsData) ? teamsData : []);
+      setReadyStatus(readyRes && readyRes.ok ? await readyRes.json().catch(() => null) : null);
       setLoading(false);
     } catch (err) { console.error(err); }
   }, []);
@@ -242,6 +304,8 @@ export default function AdminUFAPage() {
                 UFA PERIOD COMPLETE
               </div>
             )}
+
+            {(isOpen || isPaused) && <WaveReadyPanel status={readyStatus} />}
           </div>
 
           {/* Acting as team */}
