@@ -39,6 +39,7 @@ import RookieDraft  from './pages/draft/RookieDraft'
 import RFADraft     from './pages/draft/RFADraft'
 import UFADraft     from './pages/draft/UFADraft'
 import RFADraftBoardPage from './pages/draft/RFADraftBoardPage'
+import UFADraftBoardPage from './pages/draft/UFADraftBoardPage'
 import AdminRFAPage from './pages/AdminRFAPage'
 import AdminUFAPage from './pages/AdminUFAPage'
 import MatchupPage       from './pages/MatchupPage'
@@ -101,6 +102,7 @@ function AuthenticatedApp() {
             <Route path="/draft/rfa"     element={<DraftWrapper component={RFADraft} />} />
             <Route path="/draft/ufa"     element={<DraftWrapper component={UFADraft} />} />
             <Route path="/draft/rfa-board" element={<DraftWrapper component={RFADraftBoardPage} />} />
+            <Route path="/draft/ufa-board" element={<DraftWrapper component={UFADraftBoardPage} />} />
             <Route path="/rules"         element={<RulesPage />} />
             <Route path="/fa-bid"        element={<FABidPage />} />
             <Route path="/trade"         element={<TradeMachinePage />} />
