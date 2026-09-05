@@ -26,6 +26,11 @@
   background: linear-gradient(135deg, #0a0f18 0%, #111827 100%);
   border-bottom: 1px solid rgba(255,255,255,0.08);
   padding: 32px 0 24px;
+  /* Keep the score visible while scrolling a long box score. */
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  transition: padding 0.15s ease;
 }
 .mp-header-inner {
   max-width: 900px; margin: 0 auto; padding: 0 32px;

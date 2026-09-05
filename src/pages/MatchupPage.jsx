@@ -33,7 +33,11 @@ function PlayerStatus({ player, isFinal, gameInfo }) {
 
   const hasStats  = player.week_pts !== null
   const isLocked  = player.is_locked
-  const onBye     = player.week_pts === null && !isLocked && player.bye_week != null
+  // A player is on bye when their NFL team has NO game this week -- the
+  // schedule is authoritative. The old test was `bye_week != null`, which is
+  // true for anyone who has a bye at ANY point in the season, so every player
+  // with a known bye week rendered BYE in every week.
+  const onBye     = player.week_pts === null && !isLocked && gameInfo === null
 
   if (onBye) {
     return <span className="mp-player-status mp-status-bye">BYE</span>
