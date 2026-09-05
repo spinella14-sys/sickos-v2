@@ -250,6 +250,8 @@ export default function ContractOfferModal({
                 <span style={{ color: TEXT, fontSize: 16 }}>$</span>
                 <input
                   type="number" step="0.01" style={{ ...inputStyle, flex: 1 }}
+                  min={floorMode === 'y1' && floor != null ? floor : undefined}
+                  max={maxSal}
                   value={salary} onChange={e => { setSalary(e.target.value); setError('') }}
                 />
                 <button
