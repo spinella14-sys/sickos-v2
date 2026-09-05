@@ -13,10 +13,10 @@
 export const TOTAL_WAVES = 9
 
 // Max contract values are derived from LTL on the backend
-// (qb_max = ltl/4.5, non_qb_max = ltl/5.5). Kept here for display only.
+// (qb_max = ltl/5.75, non_qb_max = ltl/7 -- salary IS cap hit). Display only.
 export const LTL         = 120
-export const QB_MAX      = +(LTL / 4.5).toFixed(2)   // 26.67
-export const NON_QB_MAX  = +(LTL / 5.5).toFixed(2)   // 21.82
+export const QB_MAX      = +(LTL / 5.75).toFixed(2)  // 20.87 at LTL 120 -- salary IS cap hit, no discount
+export const NON_QB_MAX  = +(LTL / 7).toFixed(2)     // 17.14 at LTL 120
 export const MIN_SALARY  = 2.40
 
 export const TIER_FOR_WAVE = (w) => (w <= 1 ? 1 : w <= 3 ? 2 : w <= 6 ? 3 : 4)

@@ -75,6 +75,7 @@ export default function ContractOfferModal({
   guaranteeLocked = false,            // force fully guaranteed
 
   showWithdrawIfHigher = false,
+  showCarryOver = false,
   saveLabel = 'Save Offer',
 }) {
   const isQB   = player?.position === 'QB'
@@ -99,6 +100,7 @@ export default function ContractOfferModal({
   const [withdrawIfHigher, setWithdrawIfHigher] = useState(
     existingTerms?.withdraw_if_higher_wins ?? false
   )
+  const [noCarryOver, setNoCarryOver] = useState(existingTerms?.no_carry_over ?? false)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -163,6 +165,7 @@ export default function ContractOfferModal({
       guaranteed_years: guaranteedCount,
       signing_bonus: parseFloat(signingBonus) || 0,
       ...(showWithdrawIfHigher ? { withdraw_if_higher_wins: withdrawIfHigher } : {}),
+      ...(showCarryOver ? { no_carry_over: noCarryOver } : {}),
     })
   }
 
@@ -356,6 +359,19 @@ export default function ContractOfferModal({
               <input type="checkbox" checked={withdrawIfHigher} onChange={e => setWithdrawIfHigher(e.target.checked)} />
               Withdraw this bid if I win a higher-priority target in the same wave
             </label>
+          </div>
+        )}
+
+        {showCarryOver && (
+          <div style={fieldStyle}>
+            <label style={{ color: TEXT, fontSize: 13, display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer' }}>
+              <input type="checkbox" checked={noCarryOver} onChange={e => setNoCarryOver(e.target.checked)} />
+              Do not carry this target to the next wave
+            </label>
+            <span style={{ fontSize: 11, color: TEXT_DIM, display: 'block', marginTop: 4 }}>
+              By default an unawarded target moves down one wave at this same price,
+              ranked ahead of your pre-set targets there. Check this to bid only at this wave.
+            </span>
           </div>
         )}
 

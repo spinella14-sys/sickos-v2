@@ -261,7 +261,6 @@ function EditModal({ contract, playerName, onSave, onClose, adminPw }) {
     const isBelowMin = val > 0 && val < minSal
     let capHit = val
     if (slot === 'ps' || slot === 'ir') capHit *= 0.5
-    if (isMax) capHit *= 0.8
     return { minSal, maxSal, val, isMax, isMin, isBelowMin, capHit: parseFloat(capHit.toFixed(2)) }
   }
 
@@ -277,7 +276,8 @@ function EditModal({ contract, playerName, onSave, onClose, adminPw }) {
     // maxCapHit = maxSal * 0.8 (the cap hit at max). If you offer between
     // maxCapHit and maxSal you get a worse cap hit than just offering the max.
     // So snap: if val > maxSal*0.8 and val < maxSal, jump to maxSal.
-    const maxCapHitEquiv = parseFloat((maxSal * 0.8).toFixed(2))
+    // No discount any more: the max cap hit IS the max salary.
+    const maxCapHitEquiv = maxSal
     if (val > maxCapHitEquiv && val < maxSal) {
       setSalaries(p => ({...p, [yr]: maxSal.toFixed(2)}))
     }
@@ -509,7 +509,6 @@ export default function CapSheetPage() {
       const slot = r.roster_slots?.[0]?.slot_type || 'active'
       let hit = sal
       if (slot === 'ps' || slot === 'ir') hit *= 0.5
-      if (r.is_max_contract) hit *= 0.8
       return s + hit
     }, 0)
     const dcHit = deadCap
@@ -583,21 +582,17 @@ export default function CapSheetPage() {
 
           let capHit = sal
           if (slot === 'ps' || slot === 'ir') capHit *= 0.5
-          if (isMax) capHit *= 0.8
           capHit = parseFloat(capHit.toFixed(2))
 
-          // For max contracts: show cap hit (gold, large) + full salary (small, below)
-          // For PS/IR: show cap hit (small) below salary
-          // For NG years: purple text, no badge
+          // Salary IS cap hit now, so a max year shows ONE number like any
+          // other. Only PS/IR still differ (50%), and that keeps its subtext.
+          // NG years: purple text, no badge.
           const salStyle = isNG ? { color: 'var(--purple)' } : {}
 
           return (
             <td key={yr} className={`cs-year-cell cs-year-has-val ${isNG ? 'cs-ng-cell' : ''}`}>
               {isMax ? (
-                <>
-                  <span className="cs-sal cs-sal--cap-hit" style={salStyle}>${capHit.toFixed(2)}</span>
-                  <span className="cs-cap-hit cs-cap-hit--full" style={isNG ? {color:'var(--purple)',opacity:0.6} : {}}>${sal.toFixed(2)}</span>
-                </>
+                <span className="cs-sal cs-sal--cap-hit" style={salStyle}>${sal.toFixed(2)}</span>
               ) : (
                 <>
                   <span className="cs-sal" style={salStyle}>${sal.toFixed(2)}</span>

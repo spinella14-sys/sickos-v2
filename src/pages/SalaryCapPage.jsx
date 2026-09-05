@@ -135,8 +135,8 @@ export default function SalaryCapPage() {
 
       {/* ── League constants bar ── */}
       <div className="scp-constants">
-        <span>QB Max: <strong>$26.67</strong></span>
-        <span>Non-QB Max: <strong>$21.82</strong></span>
+        <span>QB Max: <strong>${QB_MAX.toFixed(2)}</strong></span>
+        <span>Non-QB Max: <strong>${NON_QB_MAX.toFixed(2)}</strong></span>
         <span>Min Salary: <strong>$2.40</strong></span>
         <span>Buy-In: <strong>${BUY_IN.toFixed(2)}</strong></span>
         <span style={{color: overTaxCount > 0 ? 'var(--gold)' : 'var(--text-muted)'}}>

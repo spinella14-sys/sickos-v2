@@ -20,8 +20,9 @@ export function getSeasonConsts(year) {
     ltl,
     hardCap:   parseFloat((ltl * 1.15).toFixed(2)),
     minSalary: parseFloat((ltl / 50).toFixed(2)),
-    qbMax:     parseFloat((ltl / 4.5).toFixed(2)),
-    nonQbMax:  parseFloat((ltl / 5.5).toFixed(2)),
+    // One max, no discount: salary IS cap hit.
+    qbMax:     parseFloat((ltl / 5.75).toFixed(2)),
+    nonQbMax:  parseFloat((ltl / 7).toFixed(2)),
     buyIn:     parseFloat((ltl * 0.50).toFixed(2)),
     sbBase:    parseFloat((ltl * 0.20).toFixed(2)),
     psLimit:   parseFloat((ltl / 6).toFixed(2)),
@@ -107,7 +108,7 @@ export function buildContractYears({ baseSalary, structure, years, nonGuar, star
     // Cap hit
     let capHit = salary
     if (slot === 'ps' || slot === 'ir') capHit *= 0.5
-    if (isMax) capHit *= 0.8  // 20% cap credit
+    // No max discount any more -- salary IS cap hit. isMax is a label only.
     capHit = parseFloat(capHit.toFixed(2))
 
     result.push({ year, yearNum, salary, isGuaranteed, isMax, isTetheredMax, capHit, minSal, maxSal })
@@ -121,15 +122,13 @@ export function buildContractYears({ baseSalary, structure, years, nonGuar, star
  * Returns array of error strings (empty = valid)
  */
 /**
- * Check if a salary value is in the dead zone (above maxCapHit but below max).
- * In that range, the manager would get a worse cap hit than just signing at max.
- * Returns: null (ok), 'snap_to_max' (should jump to max), or 'above_max' (clamp down)
+ * Clamp a salary into the legal range. The old dead zone (a band below max
+ * that cost MORE cap than max) no longer exists -- with no cap-hit discount
+ * the max is simply a ceiling, so there is nothing to snap to.
  */
 export function checkSalaryZone(salary, position, year) {
-  const max       = getMaxForYear(position, year)
-  const maxCapHit = parseFloat((max * 0.8).toFixed(2))
+  const max = getMaxForYear(position, year)
   if (salary > max)                          return { action: 'clamp_max', max }
-  if (salary > maxCapHit && salary < max)    return { action: 'snap_to_max', max, maxCapHit }
   if (salary < getMinForYear(year))          return { action: 'clamp_min', min: getMinForYear(year) }
   return null
 }

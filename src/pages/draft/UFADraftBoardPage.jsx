@@ -77,6 +77,7 @@ export default function UFADraftBoardPage({ currentTeam }) {
           structure: r.structure || 'ascending',
           withdraw_if_higher_wins: !!r.withdraw_if_higher_wins,
           conditional_on_cap: !!r.conditional_on_cap,
+          no_carry_over: !!r.no_carry_over,
           is_max_bid: !!r.is_max_bid,
         }
       })
@@ -303,6 +304,7 @@ export default function UFADraftBoardPage({ currentTeam }) {
           yearsOptions={[1, 2, 3, 4]}
           structureOptions={['ascending', 'flat', 'descending']}
           showWithdrawIfHigher
+          showCarryOver
           saveLabel="Save Target"
           onClose={() => setOffering(null)}
           onSave={terms => {
@@ -349,6 +351,7 @@ function SlotRow({ tier, slotIndex, slot, player, onEdit, onClear }) {
           {slot.years}yr &middot; {slot.guaranteed_years} gtd
           {slot.signing_bonus > 0 && <> &middot; ${Number(slot.signing_bonus).toFixed(2)} SB</>}
           {slot.withdraw_if_higher_wins && <> &middot; withdraw if higher wins</>}
+          {slot.no_carry_over && <> &middot; this wave only</>}
         </span>
       </span>
       <span className="ufab__slot-actions">

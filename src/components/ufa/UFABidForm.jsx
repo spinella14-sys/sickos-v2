@@ -30,8 +30,8 @@ export default function UFABidForm({ player, wave, tier, currentTeam, myCapData,
   const capSpace = myCapData?.cap_space  || 0;
   const taxLine  = myCapData?.tax_line   || 120;
   const maxSal   = isQB
-    ? parseFloat((taxLine / 4.5).toFixed(2))   // QB max = LTL / 4.5
-    : parseFloat((taxLine / 5.5).toFixed(2));  // non-QB max = LTL / 5.5
+    ? parseFloat((taxLine / 5.75).toFixed(2))  // QB max = LTL / 5.75
+    : parseFloat((taxLine / 7).toFixed(2));    // non-QB max = LTL / 7
   const tierMin  = minBidForTier(tier, player?.position);
 
   const existingBid = myBids.find(b =>

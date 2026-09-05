@@ -1,8 +1,8 @@
 import { useState } from 'react';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-const MAX_SALARY = 21.82;
-const QB_MAX = 26.67;
+// Derived, not hardcoded -- see constants/ufaTiers.js
+import { QB_MAX, NON_QB_MAX as MAX_SALARY } from '../../constants/ufaTiers';
 const HARD_CAP = 138;
 const STRUCTURES = ['escalating', 'flat', 'descending'];
 const STRUCTURE_LABELS = { escalating: 'Escalating', flat: 'Flat', descending: 'Descending' };

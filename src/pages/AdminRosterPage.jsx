@@ -237,7 +237,7 @@ function SignPanel({ onLog, onRosterRefresh }) {
           </div>
           {structure === 'max' && (
             <span className="ar-hint ar-hint--max">
-              Max: ${(player?.position === 'QB' ? consts.qbMax : consts.nonQbMax).toFixed(2)} · Cap hit: ${((player?.position === 'QB' ? consts.qbMax : consts.nonQbMax) * 0.8).toFixed(2)} (20% credit)
+              Max: ${(player?.position === 'QB' ? consts.qbMax : consts.nonQbMax).toFixed(2)} (salary = cap hit)
             </span>
           )}
         </div>

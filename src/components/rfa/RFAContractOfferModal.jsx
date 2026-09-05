@@ -5,8 +5,8 @@ const SEASON = new Date().getFullYear()
 const STRUCTURES = ['escalating', 'flat', 'descending']
 const STRUCTURE_LABELS = { escalating: 'Escalating', flat: 'Flat', descending: 'Descending' }
 const RFA_ROUND_LABEL = { 1: 'RFA 1st', 2: 'RFA 2nd' }
-const MAX_SALARY = 21.82
-const QB_MAX = 26.67
+// Derived, not hardcoded -- see constants/ufaTiers.js
+import { QB_MAX, NON_QB_MAX as MAX_SALARY } from '../../constants/ufaTiers'
 
 const BG = '#14171C'
 const CARD_BG = '#1C2028'
