@@ -269,6 +269,7 @@ export default function UFADraftBoardPage({ currentTeam }) {
                         }
                       }}
                       onClear={() => setSlot(w, i, null)}
+                      onToggleCarry={() => setSlot(w, i, { ...slot, no_carry_over: !slot.no_carry_over })}
                     />
                   ))}
                 </div>
@@ -322,7 +323,7 @@ export default function UFADraftBoardPage({ currentTeam }) {
 }
 
 // -- One slot in a wave ------------------------------------------------------
-function SlotRow({ tier, slotIndex, slot, player, onEdit, onClear }) {
+function SlotRow({ tier, slotIndex, slot, player, onEdit, onClear, onToggleCarry }) {
   if (!slot) {
     return (
       <button className="ufab__slot ufab__slot--empty" onClick={onEdit}>
@@ -355,6 +356,13 @@ function SlotRow({ tier, slotIndex, slot, player, onEdit, onClear }) {
         </span>
       </span>
       <span className="ufab__slot-actions">
+        <button
+          onClick={onToggleCarry}
+          title={slot.no_carry_over
+            ? 'This target will NOT move to the next wave if unawarded'
+            : 'If unawarded, this target moves to the next wave at this price'}
+          style={{ color: slot.no_carry_over ? 'var(--red)' : 'var(--green)' }}
+        >{slot.no_carry_over ? 'This wave only' : 'Carries over'}</button>
         <button onClick={onEdit}>Edit</button>
         <button onClick={onClear} className="ufab__slot-remove">Remove</button>
       </span>
