@@ -349,7 +349,7 @@
 
 /* Week matchups sidebar (fixed, slides in from the right) */
 .mp-sidebar-tab {
-  position: fixed; top: 50%; right: 0; transform: translateY(-50%);
+  position: fixed; top: calc(var(--mp-header-h, 132px) + 50%); right: 0; transform: translateY(-50%);
   display: flex; flex-direction: column; align-items: center; gap: 6px;
   background: var(--bg1); border: 1px solid var(--border); border-right: none;
   border-radius: 8px 0 0 8px; padding: 12px 6px; cursor: pointer; z-index: 40;
@@ -362,8 +362,11 @@
 }
 .mp-sidebar-tab-arrow { font-size: 14px; color: var(--text-muted); }
 
+/* Starts BELOW the sticky score header rather than behind it. The header is
+   z-index 40 and was covering the top of this panel. */
 .mp-sidebar {
-  position: fixed; top: 0; right: -280px; width: 280px; height: 100vh;
+  position: fixed; top: var(--mp-header-h, 132px); right: -280px;
+  width: 280px; height: calc(100vh - var(--mp-header-h, 132px));
   background: var(--bg1); border-left: 1px solid var(--border);
   overflow-y: auto; z-index: 39; transition: right 0.2s ease;
 }
