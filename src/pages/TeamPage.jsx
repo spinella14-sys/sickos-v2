@@ -227,7 +227,7 @@ function MoveDropdown({ contract, lineupAssign, onMove, currentSlotOverride, act
 }
 
 function PlayerRow({ contract, slotLabel, slotColor, lineupAssign, onMove, slotOverride,
-  playerStats, isLineupSlot, activeRoster, psRoster, isLocked, canEdit, opponents, defRankings, transNewsIds, onShowNews, onDrop,
+  playerStats, poolStats, isLineupSlot, activeRoster, psRoster, isLocked, canEdit, opponents, defRankings, transNewsIds, onShowNews, onDrop,
   dragCard, setDragCard, setDragOverKey, dropKey, dragOverKey, onAttemptMove, isEligible }) {
   const p    = contract.players || {}
   const sid  = p.sleeper_id || contract.sleeper_id
@@ -297,8 +297,25 @@ function PlayerRow({ contract, slotLabel, slotColor, lineupAssign, onMove, slotO
       <td className="rtr-stat rtr-rank">{ps.posRank || '—'}</td>
       <td className="rtr-stat rtr-fpts">{ps.fpts != null ? ps.fpts : '—'}</td>
       <td className="rtr-stat">{ps.avg != null ? ps.avg : '—'}</td>
-      <td className="rtr-stat rtr-proj">—</td>
-      <td className="rtr-stat">{p.search_rank ? `${Math.max(0,(100-p.search_rank/100)).toFixed(0)}%` : '—'}</td>
+      <td className="rtr-stat rtr-proj">
+        {poolStats?.proj_pts != null ? poolStats.proj_pts.toFixed(1) : '—'}
+      </td>
+      <td className="rtr-stat">
+        {poolStats?.owned_pct != null ? (
+          <>
+            {poolStats.owned_pct.toFixed(0)}%
+            {poolStats.owned_trend != null && poolStats.owned_trend !== 0 && (
+              <span style={{
+                marginLeft: 4, fontSize: 10,
+                color: poolStats.owned_trend > 0 ? 'var(--green)' : 'var(--red)',
+              }}>
+                {poolStats.owned_trend > 0 ? '\u25b2' : '\u25bc'}
+                {Math.abs(poolStats.owned_trend).toFixed(1)}
+              </span>
+            )}
+          </>
+        ) : '—'}
+      </td>
       <td className="rtr-stat rtr-opp">
         <DefenseRankBadge
           opponent={opponents?.[normalizeTeamAbbrev(p.nfl_team)]?.opponent}
@@ -489,6 +506,7 @@ export default function TeamPage() {
   const [lineupAssign,    setLineupAssign]    = useState({})
   const [slotOverrides,   setSlotOverrides]   = useState({}) // contractId → new slot type
   const [currentWeek,     setCurrentWeek]     = useState(1)
+  const [poolStatsMap,    setPoolStatsMap]    = useState({})
   const [opponents,       setOpponents]       = useState({})
   const [defRankings,     setDefRankings]     = useState(null)
   const [schedSeason,     setSchedSeason]     = useState(null)
@@ -696,6 +714,16 @@ export default function TeamPage() {
   // ── Fetch weekly lineup ────────────────────────────────────────────────
   useEffect(() => {
     if (!abbrev || !currentWeek || !roster.length) return
+    // Shared source for PROJ and %OWN -- weekly mode so PROJ matches the box
+    // score exactly rather than showing a season total.
+    fetch(`${API_BASE}/players/pool-stats?week=${currentWeek}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        const m = {}
+        ;(d?.players || []).forEach(x => { m[x.sleeper_id] = x })
+        setPoolStatsMap(m)
+      })
+      .catch(() => {})
     fetch(`${API_BASE}/lineup/${abbrev.toUpperCase()}?season=${CURRENT_SEASON}&week=${currentWeek}`)
       .then(r => r.ok ? r.json() : [])
       .then(data => { setWeeklyLineup(Array.isArray(data) ? data : []) })
@@ -1238,7 +1266,7 @@ export default function TeamPage() {
                             slotColor={POS_COLOR[contract.players?.position] || 'var(--orange)'}
                             lineupAssign={lineupAssign} onMove={handleMove}
                             slotOverride={slotOverrides[contract.id||contract.sleeper_id]}
-                            playerStats={stats[sid]} isLineupSlot={true}
+                            playerStats={stats[sid]} poolStats={poolStatsMap[sid]} isLineupSlot={true}
                             activeRoster={activeRoster} psRoster={psRoster}
                             isLocked={isPlayerLocked(contract)} canEdit={canEdit}
                             opponents={opponents} defRankings={defRankings} transNewsIds={transNewsIds} onShowNews={showNews}
@@ -1289,7 +1317,7 @@ export default function TeamPage() {
                           slotColor="var(--text-muted)" lineupAssign={lineupAssign}
                           onMove={handleMove}
                           slotOverride={slotOverrides[r.id||r.sleeper_id]}
-                          playerStats={stats[r.players?.sleeper_id||r.sleeper_id]}
+                          playerStats={stats[r.players?.sleeper_id||r.sleeper_id]} poolStats={poolStatsMap[r.players?.sleeper_id||r.sleeper_id]}
                           isLineupSlot={false} activeRoster={activeRoster}
                           psRoster={psRoster} canEdit={canEdit}
                           opponents={opponents} defRankings={defRankings} transNewsIds={transNewsIds} onShowNews={showNews}
@@ -1318,7 +1346,7 @@ export default function TeamPage() {
                           slotColor="var(--blue)" lineupAssign={lineupAssign}
                           onMove={handleMove}
                           slotOverride={slotOverrides[r.id||r.sleeper_id]}
-                          playerStats={stats[r.players?.sleeper_id||r.sleeper_id]}
+                          playerStats={stats[r.players?.sleeper_id||r.sleeper_id]} poolStats={poolStatsMap[r.players?.sleeper_id||r.sleeper_id]}
                           isLineupSlot={false} activeRoster={activeRoster}
                           psRoster={psRoster} canEdit={canEdit}
                           opponents={opponents} defRankings={defRankings} transNewsIds={transNewsIds} onShowNews={showNews}
@@ -1359,7 +1387,7 @@ export default function TeamPage() {
                           slotColor="var(--red)" lineupAssign={lineupAssign}
                           onMove={handleMove}
                           slotOverride={slotOverrides[r.id||r.sleeper_id]}
-                          playerStats={stats[r.players?.sleeper_id||r.sleeper_id]}
+                          playerStats={stats[r.players?.sleeper_id||r.sleeper_id]} poolStats={poolStatsMap[r.players?.sleeper_id||r.sleeper_id]}
                           isLineupSlot={false} activeRoster={activeRoster}
                           psRoster={psRoster} canEdit={canEdit}
                           opponents={opponents} defRankings={defRankings} transNewsIds={transNewsIds} onShowNews={showNews}
