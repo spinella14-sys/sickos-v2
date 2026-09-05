@@ -31,11 +31,16 @@ function TeamLogo({ abbrev, size = 48 }) {
   return <img src={url} alt={abbrev} className="sb-logo" style={{ width: size, height: size }} loading="lazy" />
 }
 
-function MatchupCard({ matchup }) {
+function MatchupCard({ matchup, records }) {
   const homeTeam  = TEAMS.find(t => t.abbrev === matchup.home_team)
   const awayTeam  = TEAMS.find(t => t.abbrev === matchup.away_team)
   const homeScore = parseFloat(matchup.home_score || 0)
   const awayScore = parseFloat(matchup.away_score || 0)
+  const homeProj  = matchup.home_proj != null ? parseFloat(matchup.home_proj) : null
+  const awayProj  = matchup.away_proj != null ? parseFloat(matchup.away_proj) : null
+  // Real W-L from /standings. data/league.js has hardcoded 2025 records.
+  const homeRec   = records?.[matchup.home_team]
+  const awayRec   = records?.[matchup.away_team]
   const homeWin   = homeScore > awayScore
   const hasScores = homeScore > 0 || awayScore > 0
   const isFinal   = matchup.status === 'final'
@@ -60,10 +65,18 @@ function MatchupCard({ matchup }) {
           <TeamLogo abbrev={matchup.home_team} size={52} />
           <div className="mc-team-info">
             <span className="mc-tname">{homeTeam?.name || matchup.home_team}</span>
-            <span className="mc-mgr">{homeTeam?.manager}</span>
+            <span className="mc-mgr">
+              {homeTeam?.manager}
+              {homeRec && <span className="mc-rec"> · {homeRec.wins}-{homeRec.losses}</span>}
+            </span>
           </div>
-          <span className={`mc-score ${homeWin && hasScores ? 'mc-score--win' : !homeWin && hasScores && isFinal ? 'mc-score--loss' : ''}`}>
-            {hasScores ? homeScore.toFixed(2) : '—'}
+          <span className="mc-score-block">
+            <span className={`mc-score ${homeWin && hasScores ? 'mc-score--win' : !homeWin && hasScores && isFinal ? 'mc-score--loss' : ''}`}>
+              {hasScores ? homeScore.toFixed(2) : '—'}
+            </span>
+            {homeProj != null && (
+              <span className="mc-proj">PROJ {homeProj.toFixed(1)}</span>
+            )}
           </span>
         </div>
 
@@ -71,12 +84,20 @@ function MatchupCard({ matchup }) {
 
         {/* Away */}
         <div className={`mc-team mc-team--away ${!homeWin && hasScores ? 'mc-team--winner' : ''}`}>
-          <span className={`mc-score ${!homeWin && hasScores ? 'mc-score--win' : homeWin && hasScores && isFinal ? 'mc-score--loss' : ''}`}>
-            {hasScores ? awayScore.toFixed(2) : '—'}
+          <span className="mc-score-block">
+            <span className={`mc-score ${!homeWin && hasScores ? 'mc-score--win' : homeWin && hasScores && isFinal ? 'mc-score--loss' : ''}`}>
+              {hasScores ? awayScore.toFixed(2) : '—'}
+            </span>
+            {awayProj != null && (
+              <span className="mc-proj">PROJ {awayProj.toFixed(1)}</span>
+            )}
           </span>
           <div className="mc-team-info mc-team-info--right">
             <span className="mc-tname">{awayTeam?.name || matchup.away_team}</span>
-            <span className="mc-mgr">{awayTeam?.manager}</span>
+            <span className="mc-mgr">
+              {awayRec && <span className="mc-rec">{awayRec.wins}-{awayRec.losses} · </span>}
+              {awayTeam?.manager}
+            </span>
           </div>
           <TeamLogo abbrev={matchup.away_team} size={52} />
         </div>
@@ -91,6 +112,23 @@ export default function ScoreboardPage() {
   const [week,     setWeek]     = useState(1)
   const [matchups, setMatchups] = useState([])
   const [loading,  setLoading]  = useState(false)
+  const [records,  setRecords]  = useState({})
+
+  // Real W-L, computed server-side from final matchups.
+  useEffect(() => {
+    fetch(`${API_BASE}/standings?season=${season}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        const m = {}
+        const rows = Array.isArray(d) ? d : (d?.standings || d?.teams || [])
+        rows.forEach(t => {
+          const ab = t.team_abbrev || t.abbrev
+          if (ab) m[ab] = { wins: t.wins ?? 0, losses: t.losses ?? 0 }
+        })
+        setRecords(m)
+      })
+      .catch(() => {})
+  }, [season])
 
   // On mount, try to auto-detect the most relevant week from the data
   useEffect(() => {
@@ -121,6 +159,17 @@ export default function ScoreboardPage() {
   const allScores  = finishedGames.flatMap(m => [parseFloat(m.home_score || 0), parseFloat(m.away_score || 0)])
   const avgScore   = allScores.length ? (allScores.reduce((a, b) => a + b, 0) / allScores.length).toFixed(1) : null
   const highScore  = allScores.length ? Math.max(...allScores).toFixed(2) : null
+  // Which team put up that score -- this is what the weekly payout is based on.
+  const highTeam = allScores.length ? (() => {
+    let top = null
+    finishedGames.forEach(m => {
+      ;[{ t: m.home_team, v: parseFloat(m.home_score || 0) },
+        { t: m.away_team, v: parseFloat(m.away_score || 0) }].forEach(x => {
+        if (top === null || x.v > top.v) top = x
+      })
+    })
+    return top?.t || null
+  })() : null
 
   const handleSeasonChange = (s) => {
     setSeason(s)
@@ -145,6 +194,11 @@ export default function ScoreboardPage() {
               <div className="sb-stat">
                 <span className="sb-stat-label">High Score</span>
                 <span className="sb-stat-val sb-stat-val--orange">{highScore}</span>
+                {highTeam && (
+                  <span className="sb-high-scorer">
+                    {TEAMS.find(t => t.abbrev === highTeam)?.name || highTeam}
+                  </span>
+                )}
               </div>
               <div className="sb-stat">
                 <span className="sb-stat-label">Matchups</span>
@@ -210,7 +264,7 @@ export default function ScoreboardPage() {
           </div>
         ) : (
           <div className="sb-grid">
-            {matchups.map(m => <MatchupCard key={m.id} matchup={m} />)}
+            {matchups.map(m => <MatchupCard key={m.id} matchup={m} records={records} />)}
           </div>
         )}
       </div>
