@@ -184,7 +184,14 @@ export default function SBTab({ abbrev }) {
                   <div key={row.id} className="sbtab-ledger-row">
                     <div className="sbtab-ledger-date">{fmtDate(row.created_at)}</div>
                     <div className="sbtab-ledger-desc">
-                      {row.player ? (
+                      {row.transaction_type === 'rfa_conversion' ? (
+                        <>
+                          <PlayerLink playerId={row.related_player} className="sbtab-ledger-player">
+                            {row.player?.players?.full_name || row.description}
+                          </PlayerLink>
+                          <span className="sbtab-ledger-terms">converted to RFA 1st</span>
+                        </>
+                      ) : row.player ? (
                         <>
                           <PlayerLink playerId={row.related_player} className="sbtab-ledger-player">
                             {row.player.players?.full_name || row.related_player}

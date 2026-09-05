@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { LOGOS } from '../data/league'
 import './SalaryCapPage.css'
+import { QB_MAX, NON_QB_MAX } from '../constants/ufaTiers'
 
 const API     = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
 const HARD_CAP  = 138
