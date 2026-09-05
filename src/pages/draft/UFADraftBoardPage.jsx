@@ -340,7 +340,7 @@ function SlotRow({ tier, slotIndex, slot, player, onEdit, onClear }) {
       <span className="ufab__slot-rank">{slotIndex + 1}</span>
       <span className="ufab__slot-player">
         {pos && <span className="ufab__slot-pos" style={{ color: POS_COLOR[pos] }}>{pos}</span>}
-        {player ? <PlayerLink sleeperId={slot.sleeper_id} name={name} /> : name}
+        <PlayerLink playerId={slot.sleeper_id} className="ufab__slot-name">{name}</PlayerLink>
         {player?.nfl_team && <span className="ufab__slot-team">{player.nfl_team}</span>}
       </span>
       <span className="ufab__slot-terms">

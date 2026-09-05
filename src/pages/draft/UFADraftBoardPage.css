@@ -221,7 +221,20 @@
   align-items: center;
   gap: 8px;
   min-width: 0;
+  color: var(--text-primary, #111);
 }
+
+/* The name must be clearly readable -- it was inheriting a muted grey that
+   sat almost invisibly on the light page background. */
+.ufab__slot-name {
+  font-weight: 700;
+  color: var(--text-primary, #111);
+  cursor: pointer;
+}
+.ufab__slot-name:hover { text-decoration: underline; }
+
+.ufab__slot-terms { color: var(--text-primary, #111); }
+.ufab__slot-terms strong { color: var(--text-primary, #111); }
 
 .ufab__slot-pos {
   font-weight: 800;
