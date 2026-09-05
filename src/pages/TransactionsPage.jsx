@@ -12,8 +12,9 @@ const TYPE_META = {
   trade:       { label: 'Trade',       color: 'var(--blue)' },
   bid_lost:    { label: 'Failed Bid',  color: 'var(--gold)' },
   draft_batch: { label: 'Draft',       color: 'var(--text-primary)' },
+  convert:     { label: 'Convert',     color: 'var(--red)' },
 }
-const CHIP_TYPES = ['signing', 'release', 'trade', 'bid_lost']
+const CHIP_TYPES = ['signing', 'release', 'trade', 'bid_lost', 'convert']
 
 function TeamLogo({ abbrev, size = 18 }) {
   const url = LOGOS[abbrev]

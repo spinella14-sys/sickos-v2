@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { LOGOS } from '../data/league'
 import PlayerLink from '../components/PlayerCard/PlayerLink'
 import './CapSheetPage.css'
@@ -17,18 +17,26 @@ export default function SBTab({ abbrev }) {
   const [ledger,        setLedger]        = useState([])
   const [allBalances,   setAllBalances]   = useState({})
   const [loading,       setLoading]       = useState(true)
+  const [convertible,   setConvertible]   = useState(null)
+  const [confirming,    setConfirming]    = useState(null)   // contract_id
+  const [converting,    setConverting]    = useState(false)
+  const [convertMsg,    setConvertMsg]    = useState('')
 
-  useEffect(() => {
+  const load = useCallback(() => {
     if (!abbrev) return
     setLoading(true)
     Promise.all([
       fetch(`${API_BASE}/bids/sb-projection/${abbrev}?season=${CURRENT_SEASON}&salary=0`).then(r => r.ok ? r.json() : null),
       fetch(`${API_BASE}/bids/sb-ledger/${abbrev}?season=${CURRENT_SEASON}`).then(r => r.ok ? r.json() : []),
       fetch(`${API_BASE}/bids/sb-balances?season=${CURRENT_SEASON}`).then(r => r.ok ? r.json() : {}),
-    ]).then(([p, l, b]) => {
-      setProj(p); setLedger(Array.isArray(l) ? l : []); setAllBalances(b || {}); setLoading(false)
+      fetch(`${API_BASE}/contracts/convertible/${abbrev}`).then(r => r.ok ? r.json() : null),
+    ]).then(([p, l, b, cv]) => {
+      setProj(p); setLedger(Array.isArray(l) ? l : []); setAllBalances(b || {})
+      setConvertible(cv); setLoading(false)
     }).catch(() => setLoading(false))
   }, [abbrev])
+
+  useEffect(() => { load() }, [load])
 
   if (loading) return <div className="sbtab-loading">Loading signing bonus data…</div>
   if (!proj) return <div className="sbtab-loading">No signing bonus data available.</div>
@@ -37,6 +45,27 @@ export default function SBTab({ abbrev }) {
   const pctUsed = startBalance ? Math.min(100, (spent / startBalance) * 100) : 0
   const barColor = balance < 5 ? 'var(--red)' : balance < 10 ? 'var(--gold)' : 'var(--green)'
   const sortedTeams = Object.entries(allBalances).sort((a, b) => b[1] - a[1])
+
+
+  async function doConvert(pl) {
+    setConverting(true)
+    setConvertMsg('')
+    try {
+      const r = await fetch(`${API_BASE}/contracts/${pl.contract_id}/convert-to-rfa`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-team-abbrev': abbrev },
+      })
+      const d = await r.json()
+      if (!r.ok) throw new Error(d.error || 'Conversion failed')
+      setConvertMsg(`${d.player} is now an RFA 1st. $${d.cost.toFixed(2)} spent, $${d.sb_remaining.toFixed(2)} remaining.`)
+      setConfirming(null)
+      load()
+    } catch (e) {
+      setConvertMsg(e.message)
+    } finally {
+      setConverting(false)
+    }
+  }
 
   return (
     <div className="sbtab-root">
@@ -63,6 +92,87 @@ export default function SBTab({ abbrev }) {
             <div className="sb-row"><span className="sb-row-label">Spent this season</span><span className="sb-row-val" style={{ color: 'var(--red)' }}>−${spent?.toFixed(2) || '0.00'}</span></div>
             <div className="sb-row"><span className="sb-row-label">Remaining</span><span className="sb-row-val" style={{ color: barColor }}>${balance?.toFixed(2)}</span></div>
           </div>
+
+
+          {convertible && convertible.players?.length > 0 && (
+            <div className="sbtab-card">
+              <div className="sbtab-card-title">Convert a UFA to RFA 1st</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 12 }}>
+                Players in the final year of their deal become UFAs next summer. Spending{' '}
+                <strong style={{ color: 'var(--text-primary)' }}>${convertible.cost.toFixed(2)}</strong>{' '}
+                of signing bonus converts one to an RFA 1st instead, so you can match offers and keep him
+                long term. Deadline is Week {convertible.deadline_week}. This cannot be undone.
+              </div>
+
+              {convertMsg && (
+                <div style={{
+                  fontSize: 12, marginBottom: 10, padding: '8px 10px', borderRadius: 5,
+                  background: 'rgba(245,166,35,0.12)', border: '1px solid rgba(245,166,35,0.4)',
+                }}>{convertMsg}</div>
+              )}
+
+              {convertible.deadline_passed && (
+                <div style={{ fontSize: 12, color: 'var(--red)', marginBottom: 10 }}>
+                  The Week {convertible.deadline_week} deadline has passed for this season.
+                </div>
+              )}
+
+              {convertible.players.map(pl => {
+                const isConfirming = confirming === pl.contract_id
+                const blocked = convertible.deadline_passed || !convertible.can_afford
+                return (
+                  <div key={pl.contract_id} className="sb-row" style={{ alignItems: 'center', gap: 8 }}>
+                    <span className="sb-row-label" style={{ flex: 1 }}>
+                      {pl.full_name}
+                      <span style={{ color: 'var(--text-muted)', fontSize: 11, marginLeft: 6 }}>
+                        {pl.position}{pl.nfl_team ? ` \u00b7 ${pl.nfl_team}` : ''}
+                      </span>
+                    </span>
+
+                    {isConfirming ? (
+                      <span style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                        <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                          Spend ${convertible.cost.toFixed(2)}?
+                        </span>
+                        <button
+                          disabled={converting}
+                          onClick={() => doConvert(pl)}
+                          style={{
+                            background: 'var(--red)', color: '#fff', border: 'none', borderRadius: 4,
+                            fontSize: 11, fontWeight: 700, padding: '5px 10px', cursor: 'pointer',
+                          }}
+                        >{converting ? '...' : 'Confirm'}</button>
+                        <button
+                          disabled={converting}
+                          onClick={() => setConfirming(null)}
+                          style={{
+                            background: 'none', color: 'var(--text-muted)', border: '1px solid var(--border)',
+                            borderRadius: 4, fontSize: 11, padding: '5px 10px', cursor: 'pointer',
+                          }}
+                        >Cancel</button>
+                      </span>
+                    ) : (
+                      <button
+                        disabled={blocked}
+                        title={
+                          convertible.deadline_passed ? 'Past the Week 14 deadline'
+                          : !convertible.can_afford ? `Needs $${convertible.cost.toFixed(2)} of signing bonus`
+                          : 'Convert to RFA 1st'
+                        }
+                        onClick={() => { setConfirming(pl.contract_id); setConvertMsg('') }}
+                        style={{
+                          background: 'none', color: blocked ? 'var(--text-muted)' : 'var(--red)',
+                          border: `1px solid ${blocked ? 'var(--border)' : 'var(--red)'}`,
+                          borderRadius: 4, fontSize: 11, fontWeight: 800, letterSpacing: '0.06em',
+                          padding: '5px 12px', cursor: blocked ? 'not-allowed' : 'pointer',
+                        }}
+                      >CONVERT</button>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          )}
 
           <div className="sbtab-card">
             <div className="sbtab-card-title">Itemized Activity ({CURRENT_SEASON})</div>
