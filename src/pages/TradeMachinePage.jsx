@@ -723,51 +723,68 @@ function ConfirmTradeModal({ teams, assets, notes, onConfirm, onCancel, submitti
             })}
           </div>
 
-          {playerAssets.length > 0 && (
-            <div className="tm-confirm-section">
-              <div className="tm-confirm-section-label">Players</div>
-              {playerAssets.map((a, i) => (
-                <div key={i} className="tm-confirm-asset">
-                  <div style={{display:'flex',flexDirection:'column',gap:2}}>
-                    <span className="tm-confirm-asset-name">{a.player_name || a.sleeper_id}</span>
-                    {a.salary && <span style={{fontFamily:'var(--font-ui)',fontSize:10,color:'var(--text-muted)'}}>
-                      ${a.salary.toFixed(2)}{a.years ? ` · ${a.years}yr` : ''}
-                    </span>}
-                  </div>
-                  <span className="tm-confirm-asset-move">{a.from_team} → {a.to_team}</span>
-                </div>
-              ))}
-            </div>
-          )}
+          {/* Grouped by team rather than by asset type: the question a
+              manager actually has is "what do I get", not "which picks are in
+              this deal". With two teams, one side's receives fully describe
+              the other side's gives, so only receives are shown. */}
+          {(() => {
+            const allAssets = [...playerAssets, ...pickAssets, ...sbAssets]
+            const activeTeams = teams.filter(Boolean)
+            const threeWay = activeTeams.length > 2
 
-          {pickAssets.length > 0 && (
-            <div className="tm-confirm-section">
-              <div className="tm-confirm-section-label">Picks</div>
-              {pickAssets.map((a, i) => (
-                <div key={i} className="tm-confirm-asset">
-                  <div style={{display:'flex',flexDirection:'column',gap:2}}>
-                    <span className="tm-confirm-asset-name">{a.pick_label || 'Pick'}</span>
-                    {a.cap_value && <span style={{fontFamily:'var(--font-ui)',fontSize:10,color:'var(--text-muted)'}}>
-                      ${parseFloat(a.cap_value).toFixed(2)} cap value
-                    </span>}
-                  </div>
-                  <span className="tm-confirm-asset-move">{a.from_team} → {a.to_team}</span>
-                </div>
-              ))}
-            </div>
-          )}
+            const label = (a) => {
+              if (a.asset_type === 'pick' || a.pick_label) return a.pick_label || 'Pick'
+              if (a.sb_amount) return `$${parseFloat(a.sb_amount).toFixed(2)} signing bonus`
+              return a.player_name || a.sleeper_id
+            }
+            const detail = (a) => {
+              if (a.salary) return `$${a.salary.toFixed(2)}${a.years ? ` \u00b7 ${a.years}yr` : ''}`
+              if (a.cap_value) return `$${parseFloat(a.cap_value).toFixed(2)} cap value`
+              return null
+            }
 
-          {sbAssets.length > 0 && (
-            <div className="tm-confirm-section">
-              <div className="tm-confirm-section-label">Signing Bonus Budget</div>
-              {sbAssets.map((a, i) => (
-                <div key={i} className="tm-confirm-asset">
-                  <span className="tm-confirm-asset-name">${parseFloat(a.sb_amount).toFixed(2)}</span>
-                  <span className="tm-confirm-asset-move">{a.from_team} → {a.to_team}</span>
+            const Row = ({ a }) => (
+              <div className="tm-confirm-asset">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <span className="tm-confirm-asset-name">{label(a)}</span>
+                  {detail(a) && (
+                    <span style={{ fontFamily: 'var(--font-ui)', fontSize: 10, color: 'var(--text-muted)' }}>
+                      {detail(a)}
+                    </span>
+                  )}
                 </div>
-              ))}
-            </div>
-          )}
+                {threeWay && (
+                  <span className="tm-confirm-asset-move">
+                    {a.from_team} {'\u2192'} {a.to_team}
+                  </span>
+                )}
+              </div>
+            )
+
+            return activeTeams.map(team => {
+              const gets   = allAssets.filter(a => a.to_team === team)
+              const gives  = allAssets.filter(a => a.from_team === team)
+              if (!gets.length && !gives.length) return null
+
+              return (
+                <div key={team} className="tm-confirm-section">
+                  <div className="tm-confirm-section-label">{team} receives</div>
+                  {gets.length
+                    ? gets.map((a, i) => <Row key={`g${i}`} a={a} />)
+                    : <div className="tm-confirm-asset" style={{ color: 'var(--text-muted)', fontSize: 12 }}>Nothing</div>}
+
+                  {threeWay && gives.length > 0 && (
+                    <>
+                      <div className="tm-confirm-section-label" style={{ marginTop: 10, opacity: 0.75 }}>
+                        {team} gives up
+                      </div>
+                      {gives.map((a, i) => <Row key={`v${i}`} a={a} />)}
+                    </>
+                  )}
+                </div>
+              )
+            })
+          })()}
 
           {notes && (
             <div className="tm-confirm-section">
@@ -1012,12 +1029,16 @@ export default function TradeMachinePage() {
     <div className="tm-root">
       <div className="tm-header">
         <div>
-          <h1 className="tm-title">Trade Machine</h1>
-          <p className="tm-sub">Build, propose, accept or counter trades</p>
+          <h1 className="tm-title">{activeTab === 'history' ? 'Trade Center' : 'Trade Machine'}</h1>
+          <p className="tm-sub">
+            {activeTab === 'history'
+              ? 'Track pending offers and review your trade history'
+              : 'Build, propose, accept or counter trades'}
+          </p>
         </div>
         <div className="tm-tabs">
           <button className={`tm-tab ${activeTab==='build'?'tm-tab--active':''}`} onClick={()=>setActiveTab('build')}>Propose Trade</button>
-          <button className={`tm-tab ${activeTab==='history'?'tm-tab--active':''}`} onClick={()=>setActiveTab('history')}>Trade History</button>
+          <button className={`tm-tab ${activeTab==='history'?'tm-tab--active':''}`} onClick={()=>setActiveTab('history')}>Trade Center</button>
         </div>
       </div>
 
