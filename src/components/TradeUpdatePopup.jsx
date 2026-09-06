@@ -101,7 +101,7 @@ export default function TradeUpdatePopup() {
         )}
 
         <div style={{ display: 'flex', gap: 8 }}>
-          <a href="/trade" style={{
+          <a href="/trade?tab=history" style={{
             flex: 1, padding: '10px 0', borderRadius: 8, textAlign: 'center',
             background: accent, color: '#000', fontWeight: 700, textDecoration: 'none',
           }}>

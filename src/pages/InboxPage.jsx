@@ -56,8 +56,86 @@ function Bubble({ msg, myTeam }) {
         <div className={`bubble ${isMe ? 'bubble--me' : 'bubble--them'}`}>
           {msg.body}
         </div>
+        {msg.related_trade_id && <TradeCard tradeId={msg.related_trade_id} />}
         <div className="bubble-time">{timeSince(msg.created_at)}</div>
       </div>
+    </div>
+  )
+}
+
+
+// A trade proposal attached to a chat message. Collapsed by default and only
+// fetched when opened, so a thread full of proposals does not fire a request
+// per message on load.
+function TradeCard({ tradeId }) {
+  const [open, setOpen]   = useState(false)
+  const [trade, setTrade] = useState(null)
+  const [err, setErr]     = useState(false)
+
+  useEffect(() => {
+    if (!open || trade || err) return
+    fetch(`${API}/trades/${tradeId}`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(setTrade)
+      .catch(() => setErr(true))
+  }, [open, tradeId, trade, err])
+
+  const teams = [...new Set((trade?.trade_assets || []).flatMap(a => [a.from_team, a.to_team]))].filter(Boolean)
+
+  const label = (a) => {
+    if (a.asset_type === 'pick' || a.pick_label) return a.pick_label || 'Pick'
+    if (a.sb_amount) return `$${parseFloat(a.sb_amount).toFixed(2)} signing bonus`
+    return a.player_name || a.sleeper_id
+  }
+
+  return (
+    <div style={{
+      marginTop: 6, border: '1px solid var(--border, rgba(0,0,0,0.12))',
+      borderRadius: 8, overflow: 'hidden', maxWidth: 380,
+    }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          width: '100%', display: 'flex', alignItems: 'center', gap: 6,
+          padding: '7px 10px', background: 'rgba(245,166,35,0.10)',
+          border: 'none', cursor: 'pointer', textAlign: 'left',
+          font: 'inherit', fontSize: 12, fontWeight: 700,
+          color: 'var(--text-primary, #111)',
+        }}
+      >
+        <span style={{ color: 'var(--draft-amber, #F5A623)' }}>{open ? '\u25be' : '\u25b8'}</span>
+        Trade proposal
+      </button>
+
+      {open && (
+        <div style={{ padding: '8px 10px', fontSize: 12 }}>
+          {err && <div style={{ color: 'var(--text-muted)' }}>Could not load this trade.</div>}
+          {!err && !trade && <div style={{ color: 'var(--text-muted)' }}>Loading...</div>}
+
+          {trade && teams.map(t => {
+            const gets = (trade.trade_assets || []).filter(a => a.to_team === t)
+            if (!gets.length) return null
+            return (
+              <div key={t} style={{ marginBottom: 8 }}>
+                <div style={{
+                  fontSize: 10, fontWeight: 800, letterSpacing: '0.06em',
+                  textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 3,
+                }}>{t} receives</div>
+                {gets.map((a, i) => (
+                  <div key={i} style={{ paddingLeft: 6 }}>{label(a)}</div>
+                ))}
+              </div>
+            )
+          })}
+
+          {trade && (
+            <a href="/trade?tab=history" style={{
+              display: 'inline-block', marginTop: 2, fontSize: 11, fontWeight: 700,
+              color: 'var(--draft-amber, #F5A623)', textDecoration: 'none',
+            }}>Open in Trade Center {'\u2192'}</a>
+          )}
+        </div>
+      )}
     </div>
   )
 }
