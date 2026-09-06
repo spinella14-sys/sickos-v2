@@ -976,8 +976,25 @@ export default function TradeMachinePage() {
     if (activeTab==='history' && manager?.team_abbrev) {
       fetch(`${API}/trades?team=${manager.team_abbrev}`)
         .then(r=>r.ok?r.json():[]).then(setTrades)
+
+      // Side column: what other teams are shopping, and where everyone sits
+      // against the cap. Both are read-only context for evaluating an offer.
+      fetch(`${API}/trade-block`)
+        .then(r=>r.ok?r.json():[])
+        .then(d=>setBlockEntries(Array.isArray(d)?d:(d?.players||[])))
+        .catch(()=>{})
+      fetch(`${API}/teams`)
+        .then(r=>r.ok?r.json():[])
+        .then(d=>setAllTeams(Array.isArray(d)?d:[]))
+        .catch(()=>{})
     }
   },[activeTab, manager])
+
+  // Trade Center: history filters and side-column data
+  const [filterTeam,   setFilterTeam]   = useState('ALL')
+  const [filterSeason, setFilterSeason] = useState('ALL')
+  const [blockEntries, setBlockEntries] = useState([])
+  const [allTeams,     setAllTeams]     = useState([])
 
   async function handleAccept(tradeId) {
     const r = await fetch(`${API}/trades/${tradeId}/accept`,{
@@ -1159,7 +1176,8 @@ export default function TradeMachinePage() {
         <div className="tm-history">
           {trades.length === 0 ? (
             <div className="tm-history-empty">No trades found for your team.</div>
-          ) : trades.map(trade => {
+          ) : (() => {
+          const renderCard = (trade) => {
             const myTeam         = manager?.team_abbrev
             const myTT           = trade.trade_teams?.find(t=>t.team_abbrev===myTeam)
             const needsAction    = (trade.status==='proposed'||trade.status==='pending') && myTT && !myTT.has_accepted
@@ -1270,7 +1288,102 @@ export default function TradeMachinePage() {
                 )}
               </div>
             )
-          })}
+          }
+
+          // Anything still live sits up top; everything settled drops into
+          // history. pending_admin counts as live -- it is waiting on someone.
+          const LIVE = new Set(['pending', 'proposed', 'pending_admin'])
+          const pending = trades.filter(t => LIVE.has(t.status))
+          const settled = trades.filter(t => !LIVE.has(t.status))
+
+          const teamsInHistory = [...new Set(
+            settled.flatMap(t => (t.trade_teams || []).map(tt => tt.team_abbrev))
+          )].filter(t => t && t !== manager?.team_abbrev).sort()
+
+          const seasonsInHistory = [...new Set(
+            settled.map(t => new Date(t.created_at).getFullYear())
+          )].sort((a, b) => b - a)
+
+          const filtered = settled.filter(t => {
+            if (filterTeam !== 'ALL' &&
+                !(t.trade_teams || []).some(tt => tt.team_abbrev === filterTeam)) return false
+            if (filterSeason !== 'ALL' &&
+                new Date(t.created_at).getFullYear() !== Number(filterSeason)) return false
+            return true
+          })
+
+          return (
+            <div className="tm-tc-layout">
+              <div className="tm-tc-main">
+
+                <div className="tm-tc-panel">
+                  <div className="tm-tc-panel-title">
+                    Pending
+                    {pending.length > 0 && <span className="tm-tc-count">{pending.length}</span>}
+                  </div>
+                  {pending.length === 0
+                    ? <div className="tm-tc-empty">Nothing pending.</div>
+                    : pending.map(renderCard)}
+                </div>
+
+                <div className="tm-tc-panel">
+                  <div className="tm-tc-panel-title">
+                    History
+                    <span className="tm-tc-filters">
+                      <select value={filterTeam} onChange={e => setFilterTeam(e.target.value)}>
+                        <option value="ALL">All teams</option>
+                        {teamsInHistory.map(t => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                      <select value={filterSeason} onChange={e => setFilterSeason(e.target.value)}>
+                        <option value="ALL">All seasons</option>
+                        {seasonsInHistory.map(y => <option key={y} value={y}>{y}</option>)}
+                      </select>
+                    </span>
+                  </div>
+                  {filtered.length === 0
+                    ? <div className="tm-tc-empty">No trades match those filters.</div>
+                    : filtered.map(renderCard)}
+                </div>
+
+              </div>
+
+              <aside className="tm-tc-side">
+                <div className="tm-tc-panel">
+                  <TradeDeadlineNote />
+                </div>
+
+                <div className="tm-tc-panel">
+                  <div className="tm-tc-panel-title">Trade Block</div>
+                  {blockEntries.length === 0
+                    ? <div className="tm-tc-empty">Nobody has listed anything.</div>
+                    : blockEntries.slice(0, 20).map(b => (
+                        <div key={b.id} className="tm-tc-block-row">
+                          <span className="tm-tc-block-team">{b.team_abbrev}</span>
+                          <span className="tm-tc-block-asset">
+                            {b.player?.full_name || (b.asset_type === 'picks' ? 'Draft picks' : b.asset_type)}
+                          </span>
+                          {b.note && <span className="tm-tc-block-note">{b.note}</span>}
+                        </div>
+                      ))}
+                </div>
+
+                <div className="tm-tc-panel">
+                  <div className="tm-tc-panel-title">Cap Snapshot</div>
+                  {allTeams.length === 0
+                    ? <div className="tm-tc-empty">Loading...</div>
+                    : [...allTeams]
+                        .sort((a, b) => (b.cap_space || 0) - (a.cap_space || 0))
+                        .map(t => (
+                          <div key={t.abbrev} className={`tm-tc-cap-row ${t.abbrev === manager?.team_abbrev ? 'tm-tc-cap-row--me' : ''}`}>
+                            <span className="tm-tc-cap-team">{t.abbrev}</span>
+                            <span className="tm-tc-cap-space">${Number(t.cap_space || 0).toFixed(2)}</span>
+                          </div>
+                        ))}
+                </div>
+              </aside>
+            </div>
+          )
+          })()}
         </div>
       )}
       {selectedTrade && (

@@ -662,3 +662,138 @@
 .trm-btn:hover { opacity: 0.85; }
 
 .tm-tc-summary { font-family: var(--font-ui); font-size: 12px; color: var(--text-muted); padding: 6px 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* -- Trade Center layout --------------------------------------------------
+   Sectioned rather than one flat list. Main column carries Pending then
+   History; the side column carries read-only context (deadline, who is
+   shopping what, where everyone sits against the cap). Modelled on the
+   Signing Bonus tab's card pattern. */
+
+.tm-tc-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 16px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .tm-tc-layout { grid-template-columns: 1fr; }
+}
+
+.tm-tc-main,
+.tm-tc-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.tm-tc-panel {
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, rgba(0,0,0,0.10));
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.tm-tc-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-muted, #8B949E);
+  margin-bottom: 10px;
+}
+
+.tm-tc-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--draft-amber, #F5A623);
+  color: #000;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.tm-tc-empty {
+  font-size: 13px;
+  color: var(--text-muted, #8B949E);
+  padding: 6px 0;
+}
+
+/* Filters sit on the right of the History title */
+.tm-tc-filters {
+  margin-left: auto;
+  display: flex;
+  gap: 6px;
+}
+.tm-tc-filters select {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-primary, #111);
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, rgba(0,0,0,0.15));
+  border-radius: 5px;
+  padding: 3px 6px;
+  cursor: pointer;
+}
+
+/* -- Trade block -- */
+.tm-tc-block-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border, rgba(0,0,0,0.06));
+  font-size: 12px;
+}
+.tm-tc-block-row:last-child { border-bottom: none; }
+.tm-tc-block-team {
+  font-weight: 800;
+  font-size: 11px;
+  color: var(--text-muted, #8B949E);
+  width: 42px;
+  flex-shrink: 0;
+}
+.tm-tc-block-asset { color: var(--text-primary, #111); }
+.tm-tc-block-note {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--text-muted, #8B949E);
+  font-style: italic;
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* -- Cap snapshot -- */
+.tm-tc-cap-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 4px 0;
+  font-size: 12px;
+  border-bottom: 1px solid var(--border, rgba(0,0,0,0.06));
+}
+.tm-tc-cap-row:last-child { border-bottom: none; }
+.tm-tc-cap-row--me {
+  background: rgba(245,166,35,0.10);
+  margin: 0 -16px;
+  padding: 4px 16px;
+}
+.tm-tc-cap-team { font-weight: 800; color: var(--text-muted, #8B949E); }
+.tm-tc-cap-space {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--text-primary, #111);
+}
