@@ -26,7 +26,9 @@ export default function TradeUpdatePopup() {
     if (!team) return
 
     const check = () => {
-      fetch(`${API_BASE}/messages?team=${team}`)
+      // The team comes from the x-team-abbrev HEADER -- getTeam() in
+      // routes/messages.js ignores the query param and returns [] without it.
+      fetch(`${API_BASE}/messages`, { headers: { 'x-team-abbrev': team } })
         .then(r => r.ok ? r.json() : [])
         .then(all => {
           const unread = (Array.isArray(all) ? all : [])
