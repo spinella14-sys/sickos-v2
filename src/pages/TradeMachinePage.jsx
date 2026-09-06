@@ -1349,22 +1349,38 @@ export default function TradeMachinePage() {
 
               <aside className="tm-tc-side">
                 <div className="tm-tc-panel">
-                  <TradeDeadlineNote />
-                </div>
-
-                <div className="tm-tc-panel">
                   <div className="tm-tc-panel-title">Trade Block</div>
                   {blockEntries.length === 0
                     ? <div className="tm-tc-empty">Nobody has listed anything.</div>
-                    : blockEntries.slice(0, 20).map(b => (
-                        <div key={b.id} className="tm-tc-block-row">
-                          <span className="tm-tc-block-team">{b.team_abbrev}</span>
-                          <span className="tm-tc-block-asset">
-                            {b.player?.full_name || (b.asset_type === 'picks' ? 'Draft picks' : b.asset_type)}
-                          </span>
-                          {b.note && <span className="tm-tc-block-note">{b.note}</span>}
-                        </div>
-                      ))}
+                    : (() => {
+                        // Grouped by team: a flat list repeated each team once
+                        // per asset, and hid the status entirely -- which is
+                        // the thing a trade block exists to communicate.
+                        const byTeam = {}
+                        blockEntries.forEach(b => {
+                          (byTeam[b.team_abbrev] = byTeam[b.team_abbrev] || []).push(b)
+                        })
+                        return Object.keys(byTeam).sort().map(tm => (
+                          <details key={tm} className="tm-tc-block-team-group">
+                            <summary>
+                              {LOGOS[tm] && <img src={LOGOS[tm]} alt="" className="tm-tc-logo" />}
+                              <span className="tm-tc-block-team">{tm}</span>
+                              <span className="tm-tc-block-count">{byTeam[tm].length}</span>
+                            </summary>
+                            {byTeam[tm].map(b => (
+                              <div key={b.id} className="tm-tc-block-row">
+                                <span className="tm-tc-block-asset">
+                                  {b.player?.full_name || (b.asset_type === 'picks' ? 'Draft picks' : b.asset_type)}
+                                </span>
+                                <span className={`tm-tc-block-status tm-tc-status--${b.status}`}>
+                                  {b.status}
+                                </span>
+                                {b.note && <div className="tm-tc-block-note">{b.note}</div>}
+                              </div>
+                            ))}
+                          </details>
+                        ))
+                      })()}
                 </div>
 
                 <div className="tm-tc-panel">
@@ -1375,6 +1391,7 @@ export default function TradeMachinePage() {
                         .sort((a, b) => (b.cap_space || 0) - (a.cap_space || 0))
                         .map(t => (
                           <div key={t.abbrev} className={`tm-tc-cap-row ${t.abbrev === manager?.team_abbrev ? 'tm-tc-cap-row--me' : ''}`}>
+                            {LOGOS[t.abbrev] && <img src={LOGOS[t.abbrev]} alt="" className="tm-tc-logo" />}
                             <span className="tm-tc-cap-team">{t.abbrev}</span>
                             <span className="tm-tc-cap-space">${Number(t.cap_space || 0).toFixed(2)}</span>
                           </div>

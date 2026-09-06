@@ -190,7 +190,7 @@
 .tm-submit:disabled { opacity:0.35; cursor:default; }
 
 /* ── HISTORY ─────────────────────────────────────────────────────────────────── */
-.tm-history       { padding:24px; display:flex; flex-direction:column; gap:12px; overflow-y:auto; max-width:760px; margin:0 auto; width:100%; }
+.tm-history       { padding:20px 24px; overflow-y:auto; width:100%; }
 .tm-history-empty { padding:40px; text-align:center; color:var(--text-muted); font-family:var(--font-body); }
 .tm-trade-card    { background:var(--bg1); border:1px solid var(--border); }
 .tm-trade-card--action { border-left:3px solid var(--orange); }
@@ -671,8 +671,8 @@
 
 .tm-tc-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
-  gap: 16px;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 20px;
   align-items: start;
 }
 @media (max-width: 900px) {
@@ -688,10 +688,10 @@
 }
 
 .tm-tc-panel {
-  background: var(--surface, #fff);
-  border: 1px solid var(--border, rgba(0,0,0,0.10));
+  background: var(--bg1);
+  border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 14px 16px;
+  padding: 18px 20px;
 }
 
 .tm-tc-panel-title {
@@ -703,8 +703,8 @@
   font-weight: 800;
   letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: var(--text-muted, #8B949E);
-  margin-bottom: 10px;
+  color: var(--orange);
+  margin-bottom: 14px;
 }
 
 .tm-tc-count {
@@ -797,3 +797,95 @@
   font-weight: 700;
   color: var(--text-primary, #111);
 }
+
+/* -- Trade Center: logos, grouped trade block, status badges -- */
+
+.tm-tc-logo {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* Trade block grouped by team: one expandable row per team rather than the
+   same team repeated once per listed asset. */
+.tm-tc-block-team-group {
+  border-bottom: 1px solid var(--border);
+}
+.tm-tc-block-team-group:last-child { border-bottom: none; }
+
+.tm-tc-block-team-group > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+}
+.tm-tc-block-team-group > summary::-webkit-details-marker { display: none; }
+.tm-tc-block-team-group > summary::before {
+  content: '>';
+  font-size: 10px;
+  color: var(--text-muted);
+  transition: transform 0.15s ease;
+  display: inline-block;
+}
+.tm-tc-block-team-group[open] > summary::before { transform: rotate(90deg); }
+
+.tm-tc-block-count {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.tm-tc-block-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 5px 0 5px 22px;
+  font-size: 12px;
+}
+.tm-tc-block-asset { color: var(--text-primary); }
+
+.tm-tc-block-status {
+  margin-left: auto;
+  font-family: var(--font-ui);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 3px;
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+.tm-tc-status--available   { color: var(--green, #3dba6e); }
+.tm-tc-status--willing     { color: var(--green, #3dba6e); }
+.tm-tc-status--listening   { color: var(--draft-amber, #F5A623); }
+.tm-tc-status--looking     { color: var(--draft-amber, #F5A623); }
+.tm-tc-status--neutral     { color: var(--text-muted); }
+.tm-tc-status--untouchable { color: var(--red, #d94f4f); }
+
+.tm-tc-block-note {
+  flex-basis: 100%;
+  font-size: 10px;
+  color: var(--text-muted);
+  font-style: italic;
+  max-width: none;
+  overflow: visible;
+  white-space: normal;
+}
+
+/* Cap rows now carry a logo, so they need the gap */
+.tm-tc-cap-row {
+  gap: 8px;
+}
+.tm-tc-cap-space { margin-left: auto; }
