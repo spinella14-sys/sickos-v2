@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import { PlayerCardProvider } from './components/PlayerCard/PlayerCardContext'
 import PlayerCardPortal from './components/PlayerCard/PlayerCardPortal'
 import AdminTradeAlertPopup from './components/AdminTradeAlertPopup'
+import TradeUpdatePopup from './components/TradeUpdatePopup'
 import LoginPage from './pages/LoginPage'
 import HomePage from './pages/HomePage'
 import DashboardPage from './pages/DashboardPage'
@@ -81,6 +82,7 @@ function AuthenticatedApp() {
         <div style={{ minHeight:'100vh', background:'var(--bg0)', opacity: loadingDone ? 1 : 0, transition:'opacity 0.3s ease' }}>
           <TopNav />
           <AdminTradeAlertPopup />
+          <TradeUpdatePopup />
           <Routes>
             <Route path="/"              element={<DashboardPage />} />
             <Route path="/home"          element={<HomePage />} />
