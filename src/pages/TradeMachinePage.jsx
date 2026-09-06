@@ -6,6 +6,7 @@ import { TEAMS, LOGOS } from '../data/league'
 import { getSeasonConsts } from '../utils/contractCalc'
 import PlayerLink from '../components/PlayerCard/PlayerLink'
 import './TradeMachinePage.css'
+import TradeDeadlineNote from '../components/TradeDeadlineNote'
 
 const API    = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
 const SEASON = new Date().getFullYear()
@@ -1035,6 +1036,7 @@ export default function TradeMachinePage() {
               ? 'Track pending offers and review your trade history'
               : 'Build, propose, accept or counter trades'}
           </p>
+          <div style={{ marginTop: 4 }}><TradeDeadlineNote /></div>
         </div>
         <div className="tm-tabs">
           <button className={`tm-tab ${activeTab==='build'?'tm-tab--active':''}`} onClick={()=>setActiveTab('build')}>Propose Trade</button>
