@@ -72,13 +72,24 @@ function TradeCard({ tradeId }) {
   const [trade, setTrade] = useState(null)
   const [err, setErr]     = useState(false)
 
+  // Fetched on mount, not on expand: the status badge has to be visible while
+  // collapsed, otherwise scanning a thread tells you nothing about which
+  // proposals went through.
   useEffect(() => {
-    if (!open || trade || err) return
+    if (trade || err) return
     fetch(`${API}/trades/${tradeId}`)
       .then(r => r.ok ? r.json() : Promise.reject())
       .then(setTrade)
       .catch(() => setErr(true))
-  }, [open, tradeId, trade, err])
+  }, [tradeId, trade, err])
+
+  const status = trade?.status === 'pending' || trade?.status === 'proposed' ? 'pending'
+    : trade?.status === 'pending_admin' ? 'awaiting commish'
+    : trade?.status || null
+  const statusColor =
+    trade?.status === 'approved' ? 'var(--green, #3dba6e)'
+    : (trade?.status === 'declined' || trade?.status === 'denied') ? 'var(--red, #d94f4f)'
+    : 'var(--draft-amber, #F5A623)'
 
   const teams = [...new Set((trade?.trade_assets || []).flatMap(a => [a.from_team, a.to_team]))].filter(Boolean)
 
@@ -105,6 +116,13 @@ function TradeCard({ tradeId }) {
       >
         <span style={{ color: 'var(--draft-amber, #F5A623)' }}>{open ? '\u25be' : '\u25b8'}</span>
         Trade proposal
+        {status && (
+          <span style={{
+            marginLeft: 'auto', fontSize: 9, fontWeight: 800, letterSpacing: '0.07em',
+            textTransform: 'uppercase', padding: '2px 6px', borderRadius: 3,
+            border: '1px solid currentColor', color: statusColor,
+          }}>{status}</span>
+        )}
       </button>
 
       {open && (
