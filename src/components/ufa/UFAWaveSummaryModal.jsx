@@ -65,7 +65,10 @@ export default function UFAWaveSummaryModal({
               }}>
                 <strong>{b.player_name}</strong>
                 <span style={{ color: STATUS_COLOR[b.status] || '#8B949E', fontWeight: 700, marginLeft: 8 }}>
-                  {STATUS_LABEL[b.status] || b.status}
+                  {/* The specific reason when we have one -- "Roster is full",
+                      "At the QB limit" -- rather than a generic label that
+                      leaves a manager guessing what to change next wave. */}
+                  {b.rejection_reason || STATUS_LABEL[b.status] || b.status}
                 </span>
                 {b.status === 'won' && (
                   <ContractLine years={b.years} y1Salary={b.y1_salary} y2Salary={b.y2_salary} y3Salary={b.y3_salary} signingBonus={b.signing_bonus} />
