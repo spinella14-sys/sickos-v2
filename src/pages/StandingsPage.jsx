@@ -112,7 +112,12 @@ function StandingsTable({ rows, showDivHeader, divName, leagueMode, odds, oddsLo
                       {row.streak}
                     </span>
                   </td>
-                  <td className="st-td">{row.cap_space > 0 ? `$${row.cap_space.toFixed(0)}` : '—'}</td>
+                  {/* Negative space means over the cap -- that is real
+                      information a manager scanning standings wants, so show
+                      it in red rather than hiding it behind an em-dash. */}
+                  <td className="st-td" style={row.cap_space < 0 ? { color: 'var(--red, #d94f4f)' } : undefined}>
+                    {row.cap_space != null ? `$${row.cap_space.toFixed(2)}` : '\u2014'}
+                  </td>
                   <PlayoffOddsCell
                     pct={rowOdds?.playoff_pct}
                     byePct={rowOdds?.bye_pct}
@@ -152,14 +157,11 @@ export default function StandingsPage() {
   // games yet); once season_mode flips to regular_season, switch to this
   // year's live standings. This was the original design but was never
   // actually wired -- season stayed hardcoded to CURRENT_SEASON always.
-  useEffect(() => {
-    fetch(`${API_BASE}/system/season-mode`)
-      .then(r => r.ok ? r.json() : null)
-      .then(d => {
-        if (d?.season_mode === 'offseason') setSeason(CURRENT_SEASON - 1)
-      })
-      .catch(() => {})
-  }, [])
+  // Previously defaulted to LAST season whenever season_mode was 'offseason'.
+  // That flag is flipped by hand (currently on Wednesday at 5pm ET, when
+  // rosters must be compliant), so with Week 1 underway and managers setting
+  // lineups, standings was still showing 2025. It now always opens on the
+  // current season; 2025 remains available from the toggle.
 
   useEffect(() => {
     setLoading(true)
@@ -257,7 +259,9 @@ export default function StandingsPage() {
           <div className="st-legend">
             <span className="st-legend-item st-legend-bye">Top 2 — First Round Bye</span>
             <span className="st-legend-item st-legend-playoff">Top 6 — Playoff Berth</span>
-            <span className="st-legend-note">PO% = playoff probability (Monte Carlo, 5,000 simulations)</span>
+            <span className="st-legend-note">
+              PO% = playoff probability (Monte Carlo, 5,000 simulations) &middot; shown from Week 4, once there is enough scoring history to model
+            </span>
           </div>
         </div>
       </div>
