@@ -204,7 +204,7 @@ export default function UFADraft({ currentTeam, isCommissioner }) {
           setStatsView={setStatsView}
           trendWindow={trendWindow}
           setTrendWindow={setTrendWindow}
-          myBids={myBids}
+          myBids={myBids.filter(b => b.wave === wave)}
           myCapData={myCapData}
           selectedPlayer={selectedPlayer}
           setSelectedPlayer={setSelectedPlayer}

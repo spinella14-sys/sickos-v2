@@ -1,4 +1,8 @@
-export default function UFAMyBids({ myBids, wave, isWaveOpen, onRerank, onWithdraw }) {
+export default function UFAMyBids({ myBids: allBids, wave, isWaveOpen, onRerank, onWithdraw }) {
+  // Only THIS wave. The sidebar previously showed every bid ever submitted, so
+  // wave 1 max-contract bids on players who had already been awarded sat above
+  // the current wave's bids and made the 3/3 count meaningless.
+  const myBids = (allBids || []).filter(b => b.wave === wave);
   const handleMoveUp = (index) => {
     if (index === 0) return;
     const reordered = [...myBids];
