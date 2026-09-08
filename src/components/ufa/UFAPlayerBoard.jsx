@@ -74,6 +74,31 @@ export default function UFAPlayerBoard({
   const [posFilter, setPosFilter] = useState('ALL');
   const [activeTab, setActiveTab] = useState('board'); // 'board' | 'tradeblock' | 'cap' | 'results'
   const [perGameMode, setPerGameMode] = useState('total'); // 'total' | 'per_game'
+
+  // Unread chat count. Polled here rather than inside RFADraftChat because the
+  // chat component only mounts while its tab is open -- the whole point is
+  // knowing about messages you have NOT looked at.
+  const [chatSeen, setChatSeen] = useState(null);   // count at last open
+  const [chatTotal, setChatTotal] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    const poll = () => {
+      fetch(`${API}/draft-chat/messages?draft_type=ufa&season=2026`)
+        .then(r => r.ok ? r.json() : null)
+        .then(d => {
+          if (cancelled || !Array.isArray(d)) return;
+          setChatTotal(d.length);
+          setChatSeen(prev => prev === null ? d.length : prev);
+        })
+        .catch(() => {});
+    };
+    poll();
+    const t = setInterval(poll, 8000);
+    return () => { cancelled = true; clearInterval(t); };
+  }, []);
+
+  const unreadChat = chatSeen === null ? 0 : Math.max(0, chatTotal - chatSeen);
   const [sortKey,   setSortKey]   = useState('adp_dynasty_2qb');
   const [sortDir,   setSortDir]   = useState('asc'); // ADP ascending default, matching RFA
 
@@ -191,12 +216,27 @@ export default function UFAPlayerBoard({
             { key: 'tradeblock', label: 'Trade Block' },
             { key: 'cap', label: 'Cap Overview' },
             { key: 'results', label: 'Results' },
-            { key: 'chat', label: 'Chat' },
+            { key: 'chat', label: (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                Chat
+                {unreadChat > 0 && (
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    minWidth: 16, height: 16, padding: '0 4px', borderRadius: 8,
+                    background: 'var(--draft-amber, #F5A623)', color: '#000',
+                    fontSize: 10, fontWeight: 800, lineHeight: 1,
+                  }}>{unreadChat > 9 ? '9+' : unreadChat}</span>
+                )}
+              </span>
+            ) },
           ].map(tab => (
             <button
               key={tab.key}
               className={`pos-tab ${activeTab === tab.key ? 'pos-tab--active' : ''}`}
-              onClick={() => setActiveTab(tab.key)}
+              onClick={() => {
+                setActiveTab(tab.key);
+                if (tab.key === 'chat') setChatSeen(chatTotal);
+              }}
             >
               {tab.label}
             </button>
@@ -317,6 +357,10 @@ export default function UFAPlayerBoard({
               return (
                 <div key={player.sleeper_id} style={{
                   display: 'grid', gridTemplateColumns: GRID,
+                  // The header (.rfa-pool__col-headers) sets column-gap: 12px;
+                  // rows did not, so every column drifted further left than its
+                  // header across the nine columns.
+                  columnGap: 12,
                   alignItems: 'center', padding: '10px 16px',
                   borderBottom: '1px solid var(--draft-border)',
                   background: hasBid ? 'rgba(245,166,35,0.04)' : 'transparent',
