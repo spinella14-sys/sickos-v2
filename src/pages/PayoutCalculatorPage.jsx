@@ -391,7 +391,7 @@ export default function PayoutCalculatorPage() {
       </div>
 
       <div className="pcp-footnote">
-        EOS Additional = amount owed beyond the buy-in based on final season salary + tax penalties. SB Bought = signing bonus purchased from the commissioner during the season. Total Paid = Buy-In + EOS Additional + SB Bought.
+        EOS Additional = amount owed beyond the buy-in based on final season salary + tax penalties. SB Bought = signing bonus purchased from the commissioner during the season, already included in EOS Additional. Total Paid = Buy-In + EOS Additional.
         All amounts are projections based on current salary — final figures determined at end of regular season.
       </div>
     </div>
