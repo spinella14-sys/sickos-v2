@@ -3,7 +3,10 @@ import UFABidForm from './UFABidForm';
 import PlayerLink from '../PlayerCard/PlayerLink';
 import RFATradeBlockTab from '../rfa/RFATradeBlockTab';
 import RFACapOverviewTab from '../rfa/RFACapOverviewTab';
-import UFAResultsTab from './UFAResultsTab';
+import UFAResultsTab from './UFAResultsTab'
+import RFADraftChat from '../rfa/RFADraftChat'
+import { TEAMS } from '../../data/league';
+import LOGOS from '../../assets/logos/index.js';;
 
 import { TIER_SHORT as TIER_NAMES } from '../../constants/ufaTiers';
 const POS_BG    = { QB:'rgba(231,76,60,0.2)',  RB:'rgba(39,174,96,0.2)',  WR:'rgba(52,152,219,0.2)',  TE:'rgba(155,89,182,0.2)'  };
@@ -56,6 +59,10 @@ function trendArrow(trend) {
   if (trend < 0) return <span style={{ color: 'var(--draft-red)' }}>▼{Math.abs(trend).toFixed(1)}</span>;
   return <span style={{ color: 'var(--draft-text-muted)' }}>—</span>;
 }
+
+const getTeamName = (abbrev) =>
+  TEAMS.find(t => t.abbrev === abbrev)?.name || abbrev;
+const getTeamLogo = (abbrev) => LOGOS[abbrev] || null;
 
 export default function UFAPlayerBoard({
   players, wave, tier, isWaveOpen, isPreUFA,
@@ -194,6 +201,7 @@ export default function UFAPlayerBoard({
             { key: 'tradeblock', label: 'Trade Block' },
             { key: 'cap', label: 'Cap Overview' },
             { key: 'results', label: 'Results' },
+            { key: 'chat', label: 'Chat' },
           ].map(tab => (
             <button
               key={tab.key}
@@ -269,6 +277,15 @@ export default function UFAPlayerBoard({
       {activeTab === 'tradeblock' && <RFATradeBlockTab />}
       {activeTab === 'cap' && <RFACapOverviewTab myTeam={currentTeam} />}
       {activeTab === 'results' && <UFAResultsTab />}
+      {activeTab === 'chat' && (
+        <RFADraftChat
+          draftType="ufa"
+          season={2026}
+          currentTeam={currentTeam}
+          getTeamName={getTeamName}
+          getTeamLogo={getTeamLogo}
+        />
+      )}
 
       {activeTab === 'board' && (
         <>
