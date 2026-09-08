@@ -289,7 +289,9 @@ export default function UFAPlayerBoard({
             </div>
           )}
 
-          <div className="rfa-pool__col-headers" style={{ gridTemplateColumns: GRID }}>
+          {/* borderLeft matches the rows' 3px bid indicator so the header
+              columns line up with the values beneath them. */}
+          <div className="rfa-pool__col-headers" style={{ gridTemplateColumns: GRID, borderLeft: '3px solid transparent' }}>
             <span />
             <SortHeader colKey="full_name" label="PLAYER" />
             <SortHeader colKey="position" label="POS" />
