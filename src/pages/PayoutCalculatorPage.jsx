@@ -295,6 +295,7 @@ export default function PayoutCalculatorPage() {
               <th className="pcp-th">Salary</th>
               <th className="pcp-th">Pot 2</th>
               <th className="pcp-th">Tax Pmt</th>
+              <th className="pcp-th">SB Bought</th>
               <th className="pcp-th">EOS Addl</th>
               <th className="pcp-th">Total Paid</th>
               <th className="pcp-th">Wkly $</th>
@@ -351,6 +352,12 @@ export default function PayoutCalculatorPage() {
                   <td className="pcp-td pcp-td--num" style={{ color: t.tax_payment > 0 ? 'var(--red,#d94f4f)' : 'var(--text-muted)' }}>
                     {t.tax_payment > 0 ? `$${t.tax_payment.toFixed(2)}` : '—'}
                   </td>
+                  {/* Signing bonus bought from the commissioner -- shown on its
+                      own line so it reads separately from what the cap rules
+                      charged, but it is already inside total_paid. */}
+                  <td className="pcp-td pcp-td--num" style={{ color: t.sb_deposits > 0 ? 'var(--green,#3dba6e)' : 'var(--text-muted)' }}>
+                    {t.sb_deposits > 0 ? `$${t.sb_deposits.toFixed(2)}` : '\u2014'}
+                  </td>
                   <td className="pcp-td pcp-td--num">${t.eos_additional.toFixed(2)}</td>
                   <td className="pcp-td pcp-td--num" style={{ fontWeight:700 }}>${t.total_paid.toFixed(2)}</td>
                   <td className="pcp-td pcp-td--num" style={{ color: wEarnings > 0 ? 'var(--green,#3dba6e)' : 'var(--text-muted)' }}>
@@ -384,7 +391,7 @@ export default function PayoutCalculatorPage() {
       </div>
 
       <div className="pcp-footnote">
-        EOS Additional = amount owed beyond the buy-in based on final season salary + tax penalties. Total Paid = Buy-In + EOS Additional.
+        EOS Additional = amount owed beyond the buy-in based on final season salary + tax penalties. SB Bought = signing bonus purchased from the commissioner during the season. Total Paid = Buy-In + EOS Additional + SB Bought.
         All amounts are projections based on current salary — final figures determined at end of regular season.
       </div>
     </div>

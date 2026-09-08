@@ -18,6 +18,11 @@ export default function SBTab({ abbrev }) {
   const [allBalances,   setAllBalances]   = useState({})
   const [loading,       setLoading]       = useState(true)
   const [convertible,   setConvertible]   = useState(null)
+  const [depositInfo,   setDepositInfo]   = useState(null)
+  const [depositAmt,    setDepositAmt]    = useState('')
+  const [depositBusy,   setDepositBusy]   = useState(false)
+  const [depositMsg,    setDepositMsg]    = useState('')
+  const [depositErr,    setDepositErr]    = useState('')
   const [confirming,    setConfirming]    = useState(null)   // contract_id
   const [converting,    setConverting]    = useState(false)
   const [convertMsg,    setConvertMsg]    = useState('')
@@ -30,9 +35,10 @@ export default function SBTab({ abbrev }) {
       fetch(`${API_BASE}/bids/sb-ledger/${abbrev}?season=${CURRENT_SEASON}`).then(r => r.ok ? r.json() : []),
       fetch(`${API_BASE}/bids/sb-balances?season=${CURRENT_SEASON}`).then(r => r.ok ? r.json() : {}),
       fetch(`${API_BASE}/contracts/convertible/${abbrev}`).then(r => r.ok ? r.json() : null),
-    ]).then(([p, l, b, cv]) => {
+      fetch(`${API_BASE}/bids/sb-deposit/${abbrev}`).then(r => r.ok ? r.json() : null),
+    ]).then(([p, l, b, cv, dep]) => {
       setProj(p); setLedger(Array.isArray(l) ? l : []); setAllBalances(b || {})
-      setConvertible(cv); setLoading(false)
+      setConvertible(cv); setDepositInfo(dep); setLoading(false)
     }).catch(() => setLoading(false))
   }, [abbrev])
 
@@ -67,6 +73,33 @@ export default function SBTab({ abbrev }) {
     }
   }
 
+
+  async function submitDeposit() {
+    const amt = parseFloat(depositAmt)
+    setDepositErr(''); setDepositMsg('')
+    if (!Number.isFinite(amt) || amt <= 0) {
+      setDepositErr('Enter an amount greater than $0.')
+      return
+    }
+    setDepositBusy(true)
+    try {
+      const r = await fetch(`${API_BASE}/bids/sb-deposit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-team-abbrev': abbrev },
+        body: JSON.stringify({ team_abbrev: abbrev, amount: amt }),
+      })
+      const d = await r.json()
+      if (!r.ok) throw new Error(d.error || 'Deposit failed')
+      setDepositMsg(`$${d.amount.toFixed(2)} added. You owe this at the end of the season.`)
+      setDepositAmt('')
+      load()
+    } catch (e) {
+      setDepositErr(e.message)
+    } finally {
+      setDepositBusy(false)
+    }
+  }
+
   return (
     <div className="sbtab-root">
       <div className="sbtab-grid">
@@ -93,6 +126,79 @@ export default function SBTab({ abbrev }) {
             <div className="sb-row"><span className="sb-row-label">Remaining</span><span className="sb-row-val" style={{ color: barColor }}>${balance?.toFixed(2)}</span></div>
           </div>
 
+
+
+          {depositInfo && (
+            <div className="sbtab-card">
+              <div className="sbtab-card-title">Buy Signing Bonus</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 12 }}>
+                Add signing bonus budget by buying it from the commissioner. Capped at{' '}
+                <strong style={{ color: 'var(--text-primary)' }}>${depositInfo.max_deposit.toFixed(2)}</strong>{' '}
+                per season. This is real money you owe at the end of the season, and it
+                appears on the Salary Cap page with the rest of what you are due to pay.
+              </div>
+
+              <div className="sb-row">
+                <span className="sb-row-label">Deposited this season</span>
+                <span className="sb-row-val">${depositInfo.deposited.toFixed(2)}</span>
+              </div>
+              <div className="sb-row">
+                <span className="sb-row-label">Still available</span>
+                <span className="sb-row-val" style={{ color: depositInfo.remaining > 0 ? 'var(--green)' : 'var(--text-muted)' }}>
+                  ${depositInfo.remaining.toFixed(2)}
+                </span>
+              </div>
+
+              {depositMsg && (
+                <div style={{
+                  fontSize: 12, margin: '10px 0', padding: '8px 10px', borderRadius: 5,
+                  background: 'rgba(61,186,110,0.10)', border: '1px solid rgba(61,186,110,0.35)',
+                }}>{depositMsg}</div>
+              )}
+              {depositErr && (
+                <div style={{
+                  fontSize: 12, margin: '10px 0', padding: '8px 10px', borderRadius: 5,
+                  color: 'var(--red)', background: 'rgba(217,79,79,0.10)', border: '1px solid rgba(217,79,79,0.35)',
+                }}>{depositErr}</div>
+              )}
+
+              {depositInfo.remaining > 0 ? (
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 12 }}>
+                  <span style={{ fontSize: 15 }}>$</span>
+                  <input
+                    type="number" step="0.10" min="0.10" max={depositInfo.remaining}
+                    value={depositAmt}
+                    onChange={e => { setDepositAmt(e.target.value); setDepositErr(''); setDepositMsg('') }}
+                    placeholder="0.00"
+                    style={{
+                      flex: 1, padding: '8px 10px', borderRadius: 6,
+                      border: '1px solid var(--border)', background: 'var(--surface)',
+                      color: 'var(--text-primary)', fontSize: 14,
+                    }}
+                  />
+                  <button
+                    onClick={submitDeposit}
+                    disabled={depositBusy || !depositAmt}
+                    style={{
+                      padding: '8px 16px', borderRadius: 6, border: 'none',
+                      background: 'var(--green, #3dba6e)', color: '#fff',
+                      fontWeight: 700, fontSize: 12, letterSpacing: '0.05em',
+                      cursor: depositBusy || !depositAmt ? 'default' : 'pointer',
+                      opacity: depositBusy || !depositAmt ? 0.5 : 1,
+                    }}
+                  >{depositBusy ? '...' : 'DEPOSIT'}</button>
+                </div>
+              ) : (
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 10 }}>
+                  You have bought the season maximum.
+                </div>
+              )}
+
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8 }}>
+                Amounts must be in $0.10 increments.
+              </div>
+            </div>
+          )}
 
           {convertible && convertible.players?.length > 0 && (
             <div className="sbtab-card">
