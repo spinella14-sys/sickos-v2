@@ -155,20 +155,10 @@ export default function UFAPlayerBoard({
     myBids.some(b => b.ufa_pool?.sleeper_id === sleeperId || b.player_sleeper_id === sleeperId);
   const canBid = isWaveOpen && bidsRemaining > 0;
 
-  if (isPreUFA) return (
-    <main className="rfa-pool">
-      <div className="rfa-pool__header">
-        <div className="rfa-pool__title-row">
-          <span className="rfa-pool__title">UFA Free Agent Pool</span>
-          <span className="rfa-pool__wave-badge">Wave {wave}</span>
-        </div>
-      </div>
-      <div className="rfa-pool__empty">
-        <div className="rfa-pool__empty-title">Wave Not Yet Open</div>
-        <p>The commissioner will open Wave {wave} shortly.</p>
-      </div>
-    </main>
-  );
+  // Previously an early return hid the ENTIRE module before wave 1 -- pool,
+  // trade block, cap overview, results and chat all inaccessible while
+  // managers were trying to prepare. Bidding is already gated by canBid
+  // (which requires isWaveOpen), so the board can render freely.
 
   const GRID = [
     '40px',   // headshot
