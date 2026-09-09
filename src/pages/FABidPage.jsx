@@ -146,7 +146,9 @@ export default function FABidPage() {
     setSubmitting(true)
     try {
       await submitFABid({
-        player_id:            preId,
+        // The backend column is sleeper_id and it is NOT NULL -- sending
+        // player_id meant every bid failed the insert.
+        sleeper_id:           preId,
         player_name:          playerInfo?.player?.full_name || playerInfo?.full_name || preName,
         team_abbrev:          team,
         manager_name:         managerName,
