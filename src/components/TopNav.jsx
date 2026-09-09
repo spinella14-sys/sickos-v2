@@ -118,6 +118,9 @@ export default function TopNav() {
               <button className="tnl-draft-item" onClick={() => navigate('/scoreboard')}>
                 Scoreboard
               </button>
+              <button className="tnl-draft-item" onClick={() => navigate('/nfl-scores')}>
+                NFL Scores
+              </button>
               <button className="tnl-draft-item" onClick={() => navigate('/schedule')}>
                 Master Schedule
               </button>
