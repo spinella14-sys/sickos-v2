@@ -78,7 +78,9 @@ export function buildContractYears({ baseSalary, structure, years, nonGuar, star
       salary = minSal
     } else if (structure === 'flat') {
       salary = parseFloat(baseSalary)
-    } else if (structure === 'escalating') {
+    } else if (structure === 'escalating' || structure === 'ascending') {
+      // The bid forms send 'ascending'; 'escalating' is the older internal
+      // name. Matching only one meant an ascending contract previewed flat.
       if (hitMax) {
         // Already hit max in a prior year — stay tethered to LTL max
         salary        = maxSal
