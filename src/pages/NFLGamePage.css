@@ -2,33 +2,33 @@
    sits alongside the rest of the app rather than looking bolted on. */
 
 .ng-root {
-  background: var(--bg0, #0d1117);
+  background: var(--bg0, #f4f5f7);
   min-height: calc(100vh - 56px);
   padding: 16px 20px 40px;
-  color: var(--text-primary, #E6EDF3);
+  color: var(--text-primary, #0f1114);
 }
 
 .ng-loading {
   padding: 60px 20px; text-align: center;
-  color: var(--text-muted, #8B949E);
+  color: var(--text-muted, #6b7280);
   font-family: 'Barlow Condensed', sans-serif; font-size: 15px;
 }
 .ng-loading--error { color: var(--red, #d94f4f); }
 
 .ng-back {
   background: none; border: none; cursor: pointer; padding: 0 0 12px;
-  color: var(--text-muted, #8B949E);
+  color: var(--text-muted, #6b7280);
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 12px; font-weight: 700; letter-spacing: 0.06em;
   text-transform: uppercase;
 }
-.ng-back:hover { color: var(--draft-amber, #F5A623); }
+.ng-back:hover { color: var(--amber-ink, #9a6100); }
 
 /* -- Header --------------------------------------------------------------- */
 
 .ng-header {
-  background: var(--surface, #161b22);
-  border: 1px solid var(--border, rgba(255,255,255,0.08));
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--border, rgba(0,0,0,0.10));
   border-radius: 8px; padding: 18px 20px; margin-bottom: 16px;
 }
 
@@ -45,21 +45,21 @@
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 18px; font-weight: 700; line-height: 1.1;
 }
-.ng-header-rec { font-size: 11px; color: var(--text-muted, #8B949E); }
+.ng-header-rec { font-size: 11px; color: var(--text-muted, #6b7280); }
 
 .ng-header-score {
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 38px; font-weight: 800; line-height: 1;
-  color: var(--text-muted, #8B949E);
+  color: var(--text-muted, #6b7280);
   min-width: 56px; text-align: center;
 }
-.ng-header-score--win { color: var(--text-primary, #E6EDF3); }
+.ng-header-score--win { color: var(--text-primary, #0f1114); }
 
 .ng-header-mid { text-align: center; }
 .ng-header-status {
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 13px; font-weight: 700; letter-spacing: 0.08em;
-  text-transform: uppercase; color: var(--text-muted, #8B949E);
+  text-transform: uppercase; color: var(--text-muted, #6b7280);
   white-space: nowrap;
 }
 .ng-header-status--live { color: var(--draft-red, #e84545); }
@@ -67,8 +67,8 @@
 .ng-header-meta {
   display: flex; flex-wrap: wrap; gap: 14px; justify-content: center;
   margin-top: 14px; padding-top: 12px;
-  border-top: 1px solid var(--border, rgba(255,255,255,0.08));
-  font-size: 11px; color: var(--text-muted, #8B949E);
+  border-top: 1px solid var(--border, rgba(0,0,0,0.10));
+  font-size: 11px; color: var(--text-muted, #6b7280);
 }
 
 .ng-linescore {
@@ -77,11 +77,11 @@
 }
 .ng-linescore th, .ng-linescore td {
   padding: 3px 12px; text-align: center;
-  color: var(--text-muted, #8B949E);
+  color: var(--text-muted, #6b7280);
 }
 .ng-linescore th { font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; }
-.ng-linescore-team { font-weight: 700; color: var(--text-primary, #E6EDF3) !important; text-align: left !important; }
-.ng-linescore-total { font-weight: 800; color: var(--text-primary, #E6EDF3) !important; }
+.ng-linescore-team { font-weight: 700; color: var(--text-primary, #0f1114) !important; text-align: left !important; }
+.ng-linescore-total { font-weight: 800; color: var(--text-primary, #0f1114) !important; }
 
 /* -- Two-column split: 40 / 60 -------------------------------------------- */
 
@@ -93,21 +93,21 @@
 }
 
 .ng-box, .ng-cast {
-  background: var(--surface, #161b22);
-  border: 1px solid var(--border, rgba(255,255,255,0.08));
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--border, rgba(0,0,0,0.10));
   border-radius: 8px; padding: 16px;
 }
 
 .ng-section-title {
   margin: 0 0 14px; font-family: 'Barlow Condensed', sans-serif;
   font-size: 15px; font-weight: 700; letter-spacing: 0.08em;
-  text-transform: uppercase; color: var(--draft-amber, #F5A623);
+  text-transform: uppercase; color: var(--amber-ink, #9a6100);
   display: flex; align-items: center; gap: 8px;
 }
 .ng-sub-title {
   margin: 22px 0 10px; font-family: 'Barlow Condensed', sans-serif;
   font-size: 13px; font-weight: 700; letter-spacing: 0.07em;
-  text-transform: uppercase; color: var(--text-muted, #8B949E);
+  text-transform: uppercase; color: var(--text-muted, #6b7280);
 }
 
 .ng-live-tag {
@@ -121,27 +121,27 @@
 .ng-team-toggle { display: flex; gap: 4px; margin-bottom: 12px; }
 .ng-team-btn {
   flex: 1; padding: 7px 10px; cursor: pointer;
-  background: var(--surface-2, #1c2330);
-  border: 1px solid var(--border, rgba(255,255,255,0.08));
-  border-radius: 5px; color: var(--text-muted, #8B949E);
+  background: var(--surface-2, #eef0f3);
+  border: 1px solid var(--border, rgba(0,0,0,0.10));
+  border-radius: 5px; color: var(--text-muted, #6b7280);
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 13px; font-weight: 700; letter-spacing: 0.05em;
 }
 .ng-team-btn--active {
   background: rgba(245,166,35,0.12);
-  border-color: var(--draft-amber, #F5A623);
-  color: var(--draft-amber, #F5A623);
+  border-color: var(--amber-ink, #9a6100);
+  color: var(--amber-ink, #9a6100);
 }
 
-.ng-cat { border-bottom: 1px solid var(--border, rgba(255,255,255,0.06)); }
+.ng-cat { border-bottom: 1px solid var(--border, rgba(0,0,0,0.07)); }
 .ng-cat-head {
   width: 100%; display: flex; justify-content: space-between; align-items: center;
   padding: 9px 2px; background: none; border: none; cursor: pointer;
-  color: var(--text-primary, #E6EDF3);
+  color: var(--text-primary, #0f1114);
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-align: left;
 }
-.ng-cat-count { font-size: 11px; color: var(--text-muted, #8B949E); }
+.ng-cat-count { font-size: 11px; color: var(--text-muted, #6b7280); }
 .ng-cat-body { overflow-x: auto; padding-bottom: 10px; }
 
 .ng-stat-table { width: 100%; border-collapse: collapse; font-size: 12px; }
@@ -149,77 +149,77 @@
   padding: 4px 6px; text-align: right; white-space: nowrap;
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 10px; font-weight: 700; letter-spacing: 0.05em;
-  color: var(--text-muted, #8B949E);
-  border-bottom: 1px solid var(--border, rgba(255,255,255,0.08));
+  color: var(--text-muted, #6b7280);
+  border-bottom: 1px solid var(--border, rgba(0,0,0,0.10));
 }
 .ng-stat-table td {
   padding: 5px 6px; text-align: right; white-space: nowrap;
-  color: var(--text-primary, #E6EDF3);
+  color: var(--text-primary, #0f1114);
 }
 .ng-stat-name { text-align: left !important; }
 .ng-stat-pos {
-  margin-left: 6px; font-size: 10px; color: var(--text-muted, #8B949E);
+  margin-left: 6px; font-size: 10px; color: var(--text-muted, #6b7280);
 }
 .ng-stat-totals td {
-  border-top: 1px solid var(--border, rgba(255,255,255,0.08));
-  font-weight: 700; color: var(--text-muted, #8B949E);
+  border-top: 1px solid var(--border, rgba(0,0,0,0.10));
+  font-weight: 700; color: var(--text-muted, #6b7280);
 }
 
 .ng-team-stats { width: 100%; border-collapse: collapse; font-size: 12px; }
 .ng-team-stats th, .ng-team-stats td {
   padding: 5px 8px; text-align: center;
-  border-bottom: 1px solid var(--border, rgba(255,255,255,0.05));
+  border-bottom: 1px solid var(--border, rgba(0,0,0,0.06));
 }
 .ng-team-stats th {
   font-family: 'Barlow Condensed', sans-serif; font-size: 11px;
-  font-weight: 700; color: var(--draft-amber, #F5A623);
+  font-weight: 700; color: var(--amber-ink, #9a6100);
 }
-.ng-ts-label { text-align: left !important; color: var(--text-muted, #8B949E); }
+.ng-ts-label { text-align: left !important; color: var(--text-muted, #6b7280); }
 
 .ng-scoring { display: flex; flex-direction: column; gap: 8px; }
 .ng-score-play {
   display: grid; grid-template-columns: 70px 1fr auto; gap: 10px;
   align-items: baseline; padding: 8px 10px; border-radius: 5px;
-  background: var(--surface-2, #1c2330); font-size: 12px;
+  background: var(--surface-2, #eef0f3); font-size: 12px;
 }
 .ng-score-meta {
   display: flex; flex-direction: column; gap: 2px;
-  font-size: 10px; color: var(--text-muted, #8B949E);
+  font-size: 10px; color: var(--text-muted, #6b7280);
 }
 .ng-score-team {
   font-family: 'Barlow Condensed', sans-serif;
-  font-size: 12px; font-weight: 800; color: var(--draft-amber, #F5A623);
+  font-size: 12px; font-weight: 800; color: var(--amber-ink, #9a6100);
 }
 .ng-score-text { line-height: 1.4; }
 .ng-score-tally {
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 13px; font-weight: 700; white-space: nowrap;
-  color: var(--text-muted, #8B949E);
+  color: var(--text-muted, #6b7280);
 }
 
 /* -- Gamecast ------------------------------------------------------------- */
 
 .ng-empty {
   padding: 30px; text-align: center;
-  color: var(--text-muted, #8B949E); font-size: 13px;
+  color: var(--text-muted, #6b7280); font-size: 13px;
 }
 
-.ng-drive { border-bottom: 1px solid var(--border, rgba(255,255,255,0.06)); }
+.ng-drive { border-bottom: 1px solid var(--border, rgba(0,0,0,0.07)); }
 .ng-drive-head {
   width: 100%; display: grid; grid-template-columns: 52px 1fr auto;
   gap: 10px; align-items: center; text-align: left;
   padding: 10px 2px; background: none; border: none; cursor: pointer;
 }
-.ng-drive-head:hover { background: rgba(255,255,255,0.02); }
+.ng-drive-head:hover { background: rgba(0,0,0,0.03); }
 .ng-drive-team {
   font-family: 'Barlow Condensed', sans-serif;
-  font-size: 13px; font-weight: 800; color: var(--draft-amber, #F5A623);
+  font-size: 13px; font-weight: 800; color: var(--amber-ink, #9a6100);
 }
-.ng-drive-desc { font-size: 12px; color: var(--text-muted, #8B949E); }
+.ng-drive-desc { font-size: 12px; color: var(--text-muted, #6b7280); }
 .ng-drive-result {
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 11px; font-weight: 700; letter-spacing: 0.05em;
-  text-transform: uppercase; color: var(--text-muted, #8B949E);
+  text-transform: uppercase; color: var(--text-muted, #6b7280);
   white-space: nowrap;
 }
 .ng-drive-result--score    { color: var(--draft-green, #3dba6e); }
@@ -235,7 +235,7 @@
 .ng-play--turnover { background: rgba(232,69,69,0.08); }
 
 .ng-play-meta {
-  font-size: 10px; color: var(--text-muted, #8B949E);
+  font-size: 10px; color: var(--text-muted, #6b7280);
   display: flex; flex-direction: column; gap: 1px;
 }
 .ng-play-down { font-size: 10px; }
@@ -243,5 +243,5 @@
 .ng-play-score {
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 12px; font-weight: 700; white-space: nowrap;
-  color: var(--text-primary, #E6EDF3);
+  color: var(--text-primary, #0f1114);
 }
