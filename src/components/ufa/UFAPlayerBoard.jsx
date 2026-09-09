@@ -1,6 +1,4 @@
 import { useState, useMemo, useEffect } from 'react';
-
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 import UFABidForm from './UFABidForm';
 import PlayerLink from '../PlayerCard/PlayerLink';
 import RFATradeBlockTab from '../rfa/RFATradeBlockTab';
