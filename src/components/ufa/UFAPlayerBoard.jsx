@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import UFABidForm from './UFABidForm';
 import PlayerLink from '../PlayerCard/PlayerLink';
 import RFATradeBlockTab from '../rfa/RFATradeBlockTab';
