@@ -58,12 +58,6 @@ export default function UFABidForm({ player, wave, tier, currentTeam, myCapData,
   const wouldOverCap = (capUsed + y1Num) > hardCap;
   const underCap     = y1Num > capSpace;
 
-  // Signing bonus budget, shown live as the manager types -- the RFA form does
-  // this and the UFA form did not, so a bid could be built against a budget
-  // the manager could not see.
-  const sbBudget = myCapData?.sb_budget_remaining || 0;
-  const sbLeft   = sbBudget - (parseFloat(signingBonus) || 0);
-
   const validate = () => {
     if (!y1Num || y1Num <= 0)       return 'Please enter a Y1 salary';
     if (y1Num < tierMin)            return `Y1 salary must be at least $${tierMin} (Tier ${tier} minimum)`;
@@ -111,6 +105,12 @@ export default function UFABidForm({ player, wave, tier, currentTeam, myCapData,
     color: '#E6EDF3', fontFamily: 'Barlow Condensed, sans-serif',
     fontSize: 16, padding: '10px 12px', borderRadius: 6, outline: 'none', boxSizing: 'border-box',
   };
+
+  // Signing bonus budget, shown live as the manager types -- the RFA form does
+  // this and the UFA form did not, so a bid could be built against a budget
+  // the manager could not see.
+  const sbBudget = myCapData?.sb_budget_remaining || 0;
+  const sbLeft   = sbBudget - (parseFloat(signingBonus) || 0);
 
   const capStatus = wouldOverCap ? 'error' : underCap ? 'warn' : 'ok';
   const capBg     = { error: 'rgba(232,69,69,0.1)', warn: 'rgba(232,69,69,0.06)', ok: 'rgba(39,174,96,0.08)' }[capStatus];
