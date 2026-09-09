@@ -1,0 +1,247 @@
+/* Box score + gamecast. Follows the draft module's dark surface tokens so it
+   sits alongside the rest of the app rather than looking bolted on. */
+
+.ng-root {
+  background: var(--bg0, #0d1117);
+  min-height: calc(100vh - 56px);
+  padding: 16px 20px 40px;
+  color: var(--text-primary, #E6EDF3);
+}
+
+.ng-loading {
+  padding: 60px 20px; text-align: center;
+  color: var(--text-muted, #8B949E);
+  font-family: 'Barlow Condensed', sans-serif; font-size: 15px;
+}
+.ng-loading--error { color: var(--red, #d94f4f); }
+
+.ng-back {
+  background: none; border: none; cursor: pointer; padding: 0 0 12px;
+  color: var(--text-muted, #8B949E);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.ng-back:hover { color: var(--draft-amber, #F5A623); }
+
+/* -- Header --------------------------------------------------------------- */
+
+.ng-header {
+  background: var(--surface, #161b22);
+  border: 1px solid var(--border, rgba(255,255,255,0.08));
+  border-radius: 8px; padding: 18px 20px; margin-bottom: 16px;
+}
+
+.ng-header-teams {
+  display: grid; grid-template-columns: 1fr auto 1fr;
+  align-items: center; gap: 16px;
+}
+
+.ng-header-side { display: flex; align-items: center; gap: 12px; }
+.ng-header-side--home { justify-content: flex-end; }
+.ng-header-side img { width: 48px; height: 48px; object-fit: contain; }
+
+.ng-header-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 18px; font-weight: 700; line-height: 1.1;
+}
+.ng-header-rec { font-size: 11px; color: var(--text-muted, #8B949E); }
+
+.ng-header-score {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 38px; font-weight: 800; line-height: 1;
+  color: var(--text-muted, #8B949E);
+  min-width: 56px; text-align: center;
+}
+.ng-header-score--win { color: var(--text-primary, #E6EDF3); }
+
+.ng-header-mid { text-align: center; }
+.ng-header-status {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--text-muted, #8B949E);
+  white-space: nowrap;
+}
+.ng-header-status--live { color: var(--draft-red, #e84545); }
+
+.ng-header-meta {
+  display: flex; flex-wrap: wrap; gap: 14px; justify-content: center;
+  margin-top: 14px; padding-top: 12px;
+  border-top: 1px solid var(--border, rgba(255,255,255,0.08));
+  font-size: 11px; color: var(--text-muted, #8B949E);
+}
+
+.ng-linescore {
+  margin: 14px auto 0; border-collapse: collapse;
+  font-family: 'Barlow Condensed', sans-serif; font-size: 13px;
+}
+.ng-linescore th, .ng-linescore td {
+  padding: 3px 12px; text-align: center;
+  color: var(--text-muted, #8B949E);
+}
+.ng-linescore th { font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; }
+.ng-linescore-team { font-weight: 700; color: var(--text-primary, #E6EDF3) !important; text-align: left !important; }
+.ng-linescore-total { font-weight: 800; color: var(--text-primary, #E6EDF3) !important; }
+
+/* -- Two-column split: 40 / 60 -------------------------------------------- */
+
+.ng-columns {
+  display: grid; grid-template-columns: 40fr 60fr; gap: 16px; align-items: start;
+}
+@media (max-width: 900px) {
+  .ng-columns { grid-template-columns: 1fr; }
+}
+
+.ng-box, .ng-cast {
+  background: var(--surface, #161b22);
+  border: 1px solid var(--border, rgba(255,255,255,0.08));
+  border-radius: 8px; padding: 16px;
+}
+
+.ng-section-title {
+  margin: 0 0 14px; font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--draft-amber, #F5A623);
+  display: flex; align-items: center; gap: 8px;
+}
+.ng-sub-title {
+  margin: 22px 0 10px; font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px; font-weight: 700; letter-spacing: 0.07em;
+  text-transform: uppercase; color: var(--text-muted, #8B949E);
+}
+
+.ng-live-tag {
+  font-size: 9px; font-weight: 800; letter-spacing: 0.1em;
+  padding: 2px 6px; border-radius: 3px;
+  background: var(--draft-red, #e84545); color: #fff;
+}
+
+/* -- Box score ------------------------------------------------------------ */
+
+.ng-team-toggle { display: flex; gap: 4px; margin-bottom: 12px; }
+.ng-team-btn {
+  flex: 1; padding: 7px 10px; cursor: pointer;
+  background: var(--surface-2, #1c2330);
+  border: 1px solid var(--border, rgba(255,255,255,0.08));
+  border-radius: 5px; color: var(--text-muted, #8B949E);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px; font-weight: 700; letter-spacing: 0.05em;
+}
+.ng-team-btn--active {
+  background: rgba(245,166,35,0.12);
+  border-color: var(--draft-amber, #F5A623);
+  color: var(--draft-amber, #F5A623);
+}
+
+.ng-cat { border-bottom: 1px solid var(--border, rgba(255,255,255,0.06)); }
+.ng-cat-head {
+  width: 100%; display: flex; justify-content: space-between; align-items: center;
+  padding: 9px 2px; background: none; border: none; cursor: pointer;
+  color: var(--text-primary, #E6EDF3);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-align: left;
+}
+.ng-cat-count { font-size: 11px; color: var(--text-muted, #8B949E); }
+.ng-cat-body { overflow-x: auto; padding-bottom: 10px; }
+
+.ng-stat-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.ng-stat-table th {
+  padding: 4px 6px; text-align: right; white-space: nowrap;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.05em;
+  color: var(--text-muted, #8B949E);
+  border-bottom: 1px solid var(--border, rgba(255,255,255,0.08));
+}
+.ng-stat-table td {
+  padding: 5px 6px; text-align: right; white-space: nowrap;
+  color: var(--text-primary, #E6EDF3);
+}
+.ng-stat-name { text-align: left !important; }
+.ng-stat-pos {
+  margin-left: 6px; font-size: 10px; color: var(--text-muted, #8B949E);
+}
+.ng-stat-totals td {
+  border-top: 1px solid var(--border, rgba(255,255,255,0.08));
+  font-weight: 700; color: var(--text-muted, #8B949E);
+}
+
+.ng-team-stats { width: 100%; border-collapse: collapse; font-size: 12px; }
+.ng-team-stats th, .ng-team-stats td {
+  padding: 5px 8px; text-align: center;
+  border-bottom: 1px solid var(--border, rgba(255,255,255,0.05));
+}
+.ng-team-stats th {
+  font-family: 'Barlow Condensed', sans-serif; font-size: 11px;
+  font-weight: 700; color: var(--draft-amber, #F5A623);
+}
+.ng-ts-label { text-align: left !important; color: var(--text-muted, #8B949E); }
+
+.ng-scoring { display: flex; flex-direction: column; gap: 8px; }
+.ng-score-play {
+  display: grid; grid-template-columns: 70px 1fr auto; gap: 10px;
+  align-items: baseline; padding: 8px 10px; border-radius: 5px;
+  background: var(--surface-2, #1c2330); font-size: 12px;
+}
+.ng-score-meta {
+  display: flex; flex-direction: column; gap: 2px;
+  font-size: 10px; color: var(--text-muted, #8B949E);
+}
+.ng-score-team {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px; font-weight: 800; color: var(--draft-amber, #F5A623);
+}
+.ng-score-text { line-height: 1.4; }
+.ng-score-tally {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px; font-weight: 700; white-space: nowrap;
+  color: var(--text-muted, #8B949E);
+}
+
+/* -- Gamecast ------------------------------------------------------------- */
+
+.ng-empty {
+  padding: 30px; text-align: center;
+  color: var(--text-muted, #8B949E); font-size: 13px;
+}
+
+.ng-drive { border-bottom: 1px solid var(--border, rgba(255,255,255,0.06)); }
+.ng-drive-head {
+  width: 100%; display: grid; grid-template-columns: 52px 1fr auto;
+  gap: 10px; align-items: center; text-align: left;
+  padding: 10px 2px; background: none; border: none; cursor: pointer;
+}
+.ng-drive-head:hover { background: rgba(255,255,255,0.02); }
+.ng-drive-team {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px; font-weight: 800; color: var(--draft-amber, #F5A623);
+}
+.ng-drive-desc { font-size: 12px; color: var(--text-muted, #8B949E); }
+.ng-drive-result {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.05em;
+  text-transform: uppercase; color: var(--text-muted, #8B949E);
+  white-space: nowrap;
+}
+.ng-drive-result--score    { color: var(--draft-green, #3dba6e); }
+.ng-drive-result--turnover { color: var(--draft-red, #e84545); }
+
+.ng-plays { list-style: none; margin: 0; padding: 0 0 12px 62px; }
+.ng-play {
+  display: grid; grid-template-columns: 96px 1fr auto;
+  gap: 10px; align-items: baseline;
+  padding: 6px 8px; border-radius: 4px; font-size: 12px;
+}
+.ng-play--scoring  { background: rgba(61,186,110,0.08); }
+.ng-play--turnover { background: rgba(232,69,69,0.08); }
+
+.ng-play-meta {
+  font-size: 10px; color: var(--text-muted, #8B949E);
+  display: flex; flex-direction: column; gap: 1px;
+}
+.ng-play-down { font-size: 10px; }
+.ng-play-text { line-height: 1.45; }
+.ng-play-score {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px; font-weight: 700; white-space: nowrap;
+  color: var(--text-primary, #E6EDF3);
+}

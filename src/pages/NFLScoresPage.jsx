@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import './ScoreboardPage.css'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
@@ -12,7 +13,7 @@ const NFL_WEEKS = 18
 // kickoff-ordered list buries them under whatever finished at 1pm.
 const STATE_ORDER = { in: 0, pre: 1, post: 2 }
 
-function GameCard({ game }) {
+function GameCard({ game, onOpen }) {
   const { home, away, state, detail, period, clock, broadcast } = game
   const isLive  = state === 'in'
   const isFinal = state === 'post'
@@ -35,7 +36,7 @@ function GameCard({ game }) {
   )
 
   return (
-    <div className="mc-card">
+    <div className="mc-card" onClick={onOpen} style={{ cursor: 'pointer' }}>
       <div className="mc-status-bar">
         <span className={`mc-status ${isLive ? 'mc-status--live' : isFinal ? 'mc-status--final' : 'mc-status--upcoming'}`}>
           {isLive && <span className="mc-live-dot" />}
@@ -56,6 +57,7 @@ function GameCard({ game }) {
 }
 
 export default function NFLScoresPage() {
+  const navigate = useNavigate()
   const [data, setData]       = useState(null)
   const [week, setWeek]       = useState(null)   // null = current
   const [loading, setLoading] = useState(true)
@@ -131,7 +133,7 @@ export default function NFLScoresPage() {
 
       {!loading && !error && games.length > 0 && (
         <div className="sb-grid">
-          {games.map(g => <GameCard key={g.id} game={g} />)}
+          {games.map(g => <GameCard key={g.id} game={g} onOpen={() => navigate(`/nfl-scores/${g.id}`)} />)}
         </div>
       )}
     </div>

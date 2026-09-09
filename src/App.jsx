@@ -50,6 +50,7 @@ import DraftCentralPage from './pages/DraftCentralPage'
 import DraftBoardPage   from './pages/DraftBoardPage'
 import MultiYearCapPage from './pages/MultiYearCapPage'
 import NFLScoresPage from './pages/NFLScoresPage'
+import NFLGamePage from './pages/NFLGamePage'
 
 function DraftWrapper({ component: Component }) {
   const { manager, isAdmin } = useAuth()
@@ -89,6 +90,7 @@ function AuthenticatedApp() {
             <Route path="/home"          element={<HomePage />} />
             <Route path="/scoreboard"    element={<ScoreboardPage />} />
             <Route path="/nfl-scores"    element={<NFLScoresPage />} />
+            <Route path="/nfl-scores/:gameId" element={<NFLGamePage />} />
             <Route path="/teams"         element={<TeamsPage />} />
             <Route path="/standings"     element={<StandingsPage />} />
             <Route path="/players"       element={<PlayersPage />} />
