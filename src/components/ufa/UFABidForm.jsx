@@ -41,10 +41,7 @@ export default function UFABidForm({ player, wave, tier, currentTeam, myCapData,
   const [y1,            setY1]          = useState(existingBid?.y1_salary    || tierMin);
   const [years,         setYears]       = useState(existingBid?.years        || 1);
   const [structure,     setStructure]   = useState(existingBid?.structure    || 'ascending');
-  // Default to FULLY guaranteed. Previously years-1, which meant a 1-year bid
-  // defaulted to 0 guaranteed years and tripped validation before the manager
-  // had touched anything.
-  const [gtdYears,      setGtdYears]    = useState(existingBid?.guaranteed_years || (existingBid?.years || 3));
+  const [gtdYears,      setGtdYears]    = useState(existingBid?.guaranteed_years || Math.max(1, (existingBid?.years || 3) - 1));
   const [signingBonus,  setSB]          = useState(existingBid?.signing_bonus || 0);
   const [condOnCap,     setCondOnCap]   = useState(existingBid?.conditional_on_cap || false);
   const [priority,      setPriority]    = useState(existingBid?.priority_rank || myBids.length + 1);
@@ -63,7 +60,6 @@ export default function UFABidForm({ player, wave, tier, currentTeam, myCapData,
     if (y1Num < tierMin)            return `Y1 salary must be at least $${tierMin} (Tier ${tier} minimum)`;
     if (y1Num > maxSal)             return `Y1 salary cannot exceed $${maxSal.toFixed(2)} (${isQB ? 'QB' : 'non-QB'} max)`;
     if (years < 1 || years > 4)     return 'Contract must be 1–4 years';
-    if (sbLeft < 0)                 return `Signing bonus exceeds your remaining budget ($${sbBudget.toFixed(2)})`;
     if (gtdYears > years)           return 'Guaranteed years cannot exceed contract length';
     if (gtdYears < Math.max(1, years - 1))
       return `A ${years}-year offer must guarantee at least ${Math.max(1, years - 1)} year${years - 1 === 1 ? '' : 's'} (all but the final year)`;
@@ -94,23 +90,11 @@ export default function UFABidForm({ player, wave, tier, currentTeam, myCapData,
     }
   };
 
-  const labelStyle = {
-    display: 'block', marginBottom: 6,
-    fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13, fontWeight: 700,
-    letterSpacing: '0.06em', textTransform: 'uppercase', color: '#8B949E',
-  };
-
   const inputStyle = {
     width: '100%', background: '#1C2330', border: '1px solid rgba(255,255,255,0.07)',
     color: '#E6EDF3', fontFamily: 'Barlow Condensed, sans-serif',
     fontSize: 16, padding: '10px 12px', borderRadius: 6, outline: 'none', boxSizing: 'border-box',
   };
-
-  // Signing bonus budget, shown live as the manager types -- the RFA form does
-  // this and the UFA form did not, so a bid could be built against a budget
-  // the manager could not see.
-  const sbBudget = myCapData?.sb_budget_remaining || 0;
-  const sbLeft   = sbBudget - (parseFloat(signingBonus) || 0);
 
   const capStatus = wouldOverCap ? 'error' : underCap ? 'warn' : 'ok';
   const capBg     = { error: 'rgba(232,69,69,0.1)', warn: 'rgba(232,69,69,0.06)', ok: 'rgba(39,174,96,0.08)' }[capStatus];
@@ -180,7 +164,7 @@ export default function UFABidForm({ player, wave, tier, currentTeam, myCapData,
                 onClick={() => {
                   setYears(yr);
                   // Keep the guarantee legal when contract length changes.
-                  if (gtdYears > yr || gtdYears < Math.max(1, yr - 1)) setGtdYears(yr);
+                  if (gtdYears > yr || gtdYears < Math.max(1, yr - 1)) setGtdYears(Math.max(1, yr - 1));
                 }}>
                 {yr}yr
               </button>
@@ -239,19 +223,14 @@ export default function UFABidForm({ player, wave, tier, currentTeam, myCapData,
 
         {/* Signing bonus */}
         <div className="rfa-bid-form__section">
-          <label className="rfa-bid-form__label" style={labelStyle}>
-            Signing Bonus <span style={{ fontWeight: 400, textTransform: 'none' }}>(optional)</span>
-            <span style={{ float: 'right', color: sbLeft < 0 ? '#e84545' : '#3dba6e' }}>
-              ${sbLeft.toFixed(2)} left
-            </span>
-          </label>
+          <label className="rfa-bid-form__label">Signing Bonus <span style={{color:'#8B949E',marginLeft:6}}>(optional)</span></label>
           <input type="number" style={inputStyle} value={signingBonus}
-            onChange={e => setSB(e.target.value)} min={0} max={sbBudget} step={0.1}/>
+            onChange={e => setSB(e.target.value)} min={0} step={0.1}/>
         </div>
 
         {/* Priority */}
         <div className="rfa-bid-form__section">
-          <label className="rfa-bid-form__label" style={labelStyle}>Priority Rank</label>
+          <label className="rfa-bid-form__label">Priority Rank</label>
           <input type="number" style={inputStyle} value={priority}
             onChange={e => setPriority(parseInt(e.target.value))} min={1} max={3} step={1}/>
           <span className="rfa-bid-form__hint">1 = highest priority. You have 3 bids per wave.</span>
@@ -259,7 +238,7 @@ export default function UFABidForm({ player, wave, tier, currentTeam, myCapData,
 
         {/* Options */}
         <div className="rfa-bid-form__section">
-          <label className="rfa-bid-form__label" style={labelStyle}>Options</label>
+          <label className="rfa-bid-form__label">Options</label>
           <label className="rfa-bid-form__toggle-row">
             <input type="checkbox" checked={condOnCap} onChange={e => setCondOnCap(e.target.checked)}/>
             Only process if cap space remains after higher-priority bids
