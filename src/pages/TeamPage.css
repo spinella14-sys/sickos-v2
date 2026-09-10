@@ -347,3 +347,10 @@
 .rtr--dnd-ineligible, .tp-dnd-ineligible { opacity: 0.35; }
 .rtr--dnd-hover, .tp-dnd-hover { outline: 2px solid var(--green); background: var(--green-dim); }
 .rtr-drag-handle { display:inline-block; cursor: grab; color: var(--text-muted); font-size: 12px; margin-right: 8px; letter-spacing: -2px; user-select: none; }
+
+/* Kickoff time under the opponent badge. */
+.rtr-kickoff {
+  display: block; margin-top: 2px;
+  font-size: 10px; color: var(--text-muted, #6b7280);
+  white-space: nowrap;
+}

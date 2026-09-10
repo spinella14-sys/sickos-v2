@@ -58,6 +58,18 @@ const LINEUP_SLOTS = [
 ]
 const BENCH_SLOTS = 5
 
+// Kickoff, in the manager's own timezone. Shown next to the opponent because
+// setting a lineup depends on knowing who has already played -- a name with no
+// time attached tells you nothing about whether you can still move them.
+function kickoffLabel(gameDate) {
+  if (!gameDate) return null
+  const d = new Date(gameDate)
+  if (isNaN(d)) return null
+  const day  = d.toLocaleDateString('en-US', { weekday: 'short' })
+  const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+  return day + ' ' + time.replace(' ', '').toLowerCase()
+}
+
 function keyToSlotType(key) { return key.replace(/\d+$/, '') }
 
 function buildLineupAssign(weeklyLineup, roster) {
@@ -284,6 +296,16 @@ function PlayerRow({ contract, slotLabel, slotColor, lineupAssign, onMove, slotO
           </div>
         </div>
       </td>
+      <td className="rtr-stat rtr-opp">
+        <DefenseRankBadge
+          opponent={opponents?.[normalizeTeamAbbrev(p.nfl_team)]?.opponent}
+          isBye={!!opponents?.[normalizeTeamAbbrev(p.nfl_team)] && opponents[normalizeTeamAbbrev(p.nfl_team)].opponent === null}
+          rankings={defRankings}
+        />
+        <span className="rtr-kickoff">
+          {kickoffLabel(opponents?.[normalizeTeamAbbrev(p.nfl_team)]?.game_date)}
+        </span>
+      </td>
       {canEdit && (
         <td className="rtr-action">
           {!isLocked && <span className="rtr-drag-handle" title="Drag to move">⠿⠿</span>}
@@ -315,13 +337,6 @@ function PlayerRow({ contract, slotLabel, slotColor, lineupAssign, onMove, slotO
             )}
           </>
         ) : '—'}
-      </td>
-      <td className="rtr-stat rtr-opp">
-        <DefenseRankBadge
-          opponent={opponents?.[normalizeTeamAbbrev(p.nfl_team)]?.opponent}
-          isBye={!!opponents?.[normalizeTeamAbbrev(p.nfl_team)] && opponents[normalizeTeamAbbrev(p.nfl_team)].opponent === null}
-          rankings={defRankings}
-        />
       </td>
       <td className="rtr-stat">
         <OppRankCell
@@ -1107,6 +1122,7 @@ export default function TeamPage() {
         <tr>
           <th className="th-slot">SLOT</th>
           <th className="th-player">PLAYER</th>
+          <th className="th-stat">OPP</th>
           {canEdit && <th className="th-action">MOVE</th>}
           <th className="th-stat">AGE</th>
           <th className="th-stat">BYE</th>
@@ -1115,7 +1131,6 @@ export default function TeamPage() {
           <th className="th-stat">PPG</th>
           <th className="th-stat">PROJ</th>
           <th className="th-stat">% OWN</th>
-          <th className="th-stat">OPP</th>
           <th className="th-stat">OPP RNK</th>
           <th className="th-salary">SALARY</th>
           <th className="th-contract">YRS</th>
