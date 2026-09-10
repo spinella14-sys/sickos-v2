@@ -28,7 +28,7 @@ function InjBadge({ status }) {
 
 // Per-player game status indicator — informational only; the PROJ/TOT
 // numbers themselves live in the dedicated pts block next to each player.
-function PlayerStatus({ player, isFinal, gameInfo }) {
+function PlayerStatus({ player, isFinal, gameInfo, gameState }) {
   if (!player) return null
 
   const hasStats  = player.week_pts !== null
@@ -42,7 +42,10 @@ function PlayerStatus({ player, isFinal, gameInfo }) {
   if (onBye) {
     return <span className="mp-player-status mp-status-bye">BYE</span>
   }
-  if (hasStats && isFinal) {
+  // The fantasy matchup does not finalize until Tuesday, so isFinal alone left
+  // every player reading PLAYING for the whole week. A player's own game
+  // ending is what matters here.
+  if (hasStats && (isFinal || gameState === 'post')) {
     return <span className="mp-player-status mp-status-final">FINAL</span>
   }
   if (isLocked) {
@@ -82,7 +85,7 @@ function buildRows(homeLineup, awayLineup) {
   })
 }
 
-function PlayerCell({ player, side, projMap, opponentMap, isFinal }) {
+function PlayerCell({ player, side, projMap, opponentMap, isFinal, gameStateMap }) {
   const isRight  = side === 'away'
   const gameInfo = player ? (opponentMap[player.nfl_team] ?? null) : null
   const hasPlayed = player?.week_pts !== null
@@ -116,7 +119,7 @@ function PlayerCell({ player, side, projMap, opponentMap, isFinal }) {
           <span className="mp-stat-line">{player.stat_line}</span>
         )}
       </div>
-      <PlayerStatus player={player} isFinal={isFinal} gameInfo={gameInfo} />
+      <PlayerStatus player={player} isFinal={isFinal} gameInfo={gameInfo} gameState={player ? gameStateMap?.[player.nfl_team] : null} />
     </div>
   )
 
@@ -143,7 +146,7 @@ function PlayerCell({ player, side, projMap, opponentMap, isFinal }) {
 
 // Bench player row — same PROJ/TOT + opponent-info treatment as starters,
 // compact layout, mirrored home/away the same way (JSX order, no CSS reversal).
-function BenchPlayerRow({ player, side, projMap, opponentMap, isFinal }) {
+function BenchPlayerRow({ player, side, projMap, opponentMap, isFinal, gameStateMap }) {
   const isRight   = side === 'away'
   const gameInfo  = opponentMap[player.nfl_team] ?? null
   const hasPlayed = player.week_pts !== null
@@ -162,7 +165,7 @@ function BenchPlayerRow({ player, side, projMap, opponentMap, isFinal }) {
         <InjBadge status={player.injury_status} />
       </div>
       <span className="mp-bench-meta" style={{ color: POS_COLOR[player.position] }}>{player.position}</span>
-      <PlayerStatus player={player} isFinal={isFinal} gameInfo={gameInfo} />
+      <PlayerStatus player={player} isFinal={isFinal} gameInfo={gameInfo} gameState={player ? gameStateMap?.[player.nfl_team] : null} />
     </div>
   )
   const pts = (
@@ -270,6 +273,7 @@ export default function MatchupPage() {
   const [error,    setError]    = useState(null)
   const [projMap,      setProjMap]      = useState({})
   const [opponentMap,  setOpponentMap]  = useState({})
+  const [gameStateMap, setGameStateMap] = useState({})   // NFL team -> 'pre'|'in'|'post'
   const [lastPoll, setLastPoll] = useState(null)
   const pollRef   = useRef(null)
 
@@ -320,6 +324,23 @@ export default function MatchupPage() {
     fetch(`${API_BASE}/schedule/opponents?season=${matchup.season}&week=${matchup.week}`)
       .then(r => r.ok ? r.json() : {})
       .then(data => setOpponentMap(data || {}))
+      .catch(() => {})
+
+    // Live NFL game state, so a player whose game has ended reads FINAL rather
+    // than PLAYING. Fetched once on load -- a manager wanting fresher state
+    // reloads, and this keeps it to one call per visit.
+    fetch(`${API_BASE}/nfl/scores?week=${matchup.week}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (!d?.games) return
+        const fix = ab => ab === 'WSH' ? 'WAS' : ab === 'LA' ? 'LAR' : ab
+        const byTeam = {}
+        for (const g of d.games) {
+          if (g.home?.abbrev) byTeam[fix(g.home.abbrev)] = g.state
+          if (g.away?.abbrev) byTeam[fix(g.away.abbrev)] = g.state
+        }
+        setGameStateMap(byTeam)
+      })
       .catch(() => {})
   }, [matchup?.season, matchup?.week])
 
@@ -453,13 +474,13 @@ export default function MatchupPage() {
             <div className="mp-rows">
               {displayRows.map(({ slot, home, away }, i) => (
                 <div key={`${slot}-${i}`} className="mp-row">
-                  <PlayerCell player={home} side="home" projMap={projMap} opponentMap={opponentMap} isFinal={isFinal} />
+                  <PlayerCell player={home} side="home" projMap={projMap} opponentMap={opponentMap} gameStateMap={gameStateMap} isFinal={isFinal} />
                   <div className="mp-slot-center">
                     <span className="mp-slot-badge" style={{ color: POS_COLOR[slot] || 'var(--text-muted)' }}>
                       {slot}
                     </span>
                   </div>
-                  <PlayerCell player={away} side="away" projMap={projMap} opponentMap={opponentMap} isFinal={isFinal} />
+                  <PlayerCell player={away} side="away" projMap={projMap} opponentMap={opponentMap} gameStateMap={gameStateMap} isFinal={isFinal} />
                 </div>
               ))}
             </div>
@@ -489,14 +510,14 @@ export default function MatchupPage() {
                   <div className="mp-bench-col">
                     {homeBench.map(p => (
                       <BenchPlayerRow key={p.sleeper_id} player={p} side="home"
-                        projMap={projMap} opponentMap={opponentMap} isFinal={isFinal} />
+                        projMap={projMap} opponentMap={opponentMap} gameStateMap={gameStateMap} isFinal={isFinal} />
                     ))}
                   </div>
                   <div className="mp-bench-spacer" />
                   <div className="mp-bench-col mp-bench-col--right">
                     {awayBench.map(p => (
                       <BenchPlayerRow key={p.sleeper_id} player={p} side="away"
-                        projMap={projMap} opponentMap={opponentMap} isFinal={isFinal} />
+                        projMap={projMap} opponentMap={opponentMap} gameStateMap={gameStateMap} isFinal={isFinal} />
                     ))}
                   </div>
                 </div>
