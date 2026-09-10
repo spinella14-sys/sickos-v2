@@ -24,9 +24,14 @@ export function rankSuffix(rank) {
 // nflfastR/ESPN-derived schedule data for a couple of teams. Normalize at the
 // lookup point rather than re-importing schedule data, since "LA" is the
 // established convention used throughout player_weeks and nfl_schedule.
+// players.nfl_team and nfl_schedule both use LAR and WAS. This used to map
+// LAR -> LA, which was right until nfl_schedule was normalized to LAR -- after
+// that every Rams player looked up a team abbreviation that no longer existed
+// and came back with no opponent. External feeds are normalized INTO our
+// abbreviations, never the other way.
 const TEAM_ABBREV_NORMALIZE = {
-  LAR: 'LA',
-  // Add more here if other mismatches surface (e.g. WSH -> WAS)
+  LA:  'LAR',
+  WSH: 'WAS',
 }
 
 export function normalizeTeamAbbrev(team) {
