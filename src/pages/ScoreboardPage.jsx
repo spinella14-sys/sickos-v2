@@ -155,8 +155,20 @@ export default function ScoreboardPage() {
       .catch(() => { setMatchups([]); setLoading(false) })
   }, [season, week])
 
-  const finishedGames = matchups.filter(m => m.status === 'final' || parseFloat(m.home_score || 0) > 0)
-  const allScores  = finishedGames.flatMap(m => [parseFloat(m.home_score || 0), parseFloat(m.away_score || 0)])
+  // Any matchup where EITHER side has scored. Testing only the home score
+  // dropped a matchup whose away team led -- Wixted's 66.42 was invisible
+  // because their opponent had not started, so a lower score showed as the
+  // week's high.
+  const finishedGames = matchups.filter(m =>
+    m.status === 'final' ||
+    parseFloat(m.home_score || 0) > 0 ||
+    parseFloat(m.away_score || 0) > 0
+  )
+  // A team whose players have not kicked off yet sits at 0.00, which is not a
+  // score -- including those drags the average down and means nothing.
+  const allScores  = finishedGames
+    .flatMap(m => [parseFloat(m.home_score || 0), parseFloat(m.away_score || 0)])
+    .filter(v => v > 0)
   const avgScore   = allScores.length ? (allScores.reduce((a, b) => a + b, 0) / allScores.length).toFixed(1) : null
   const highScore  = allScores.length ? Math.max(...allScores).toFixed(2) : null
   // Which team put up that score -- this is what the weekly payout is based on.
