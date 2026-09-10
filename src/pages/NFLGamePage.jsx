@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import PlayerLink from '../components/PlayerCard/PlayerLink'
 import './NFLGamePage.css'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
@@ -74,7 +75,14 @@ function StatCategory({ cat, open, onToggle }) {
               {cat.athletes.map(a => (
                 <tr key={a.id}>
                   <td className="ng-stat-name">
-                    {a.short || a.name}
+                    {/* Only players we identified with certainty become links --
+                        the backend leaves sleeper_id null when a name could
+                        match more than one person. */}
+                    {a.sleeper_id ? (
+                      <PlayerLink playerId={a.sleeper_id} style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer', fontWeight: 600 }}>
+                        {a.short || a.name}
+                      </PlayerLink>
+                    ) : (a.short || a.name)}
                     {a.position && <span className="ng-stat-pos">{a.position}</span>}
                   </td>
                   {a.stats.map((s, i) => <td key={i}>{s}</td>)}
