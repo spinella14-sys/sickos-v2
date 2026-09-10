@@ -357,5 +357,5 @@
 
 .rtr-kickoff-cell {
   font-size: 12px; white-space: nowrap;
-  color: var(--text-muted, #6b7280);
+  color: var(--text-primary, #0f1114);
 }
