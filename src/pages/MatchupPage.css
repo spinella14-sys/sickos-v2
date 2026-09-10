@@ -43,7 +43,7 @@
   display: flex; align-items: center; gap: 14px;
 }
 .mp-team-block--away {
-  flex-direction: row-reverse;
+  /* DOM order now mirrors directly; no reversal needed. */
 }
 .mp-team-block--winner .mp-team-logo {
   filter: drop-shadow(0 0 12px rgba(61,186,110,0.4));
@@ -74,8 +74,8 @@
 
 /* Both blocks push their content toward the middle, so the two scores sit
    equidistant from the status pill rather than at the outer edges. */
-.mp-team-block { justify-content: flex-end; }
-.mp-team-block--away { justify-content: flex-end; }
+.mp-team-block--home { justify-content: flex-end; }
+.mp-team-block--away { justify-content: flex-start; }
 
 /* Center block */
 .mp-center-block {

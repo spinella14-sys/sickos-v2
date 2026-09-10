@@ -396,14 +396,14 @@ export default function MatchupPage() {
 
           {/* Home */}
           <div className={`mp-team-block mp-team-block--home ${homeWins && isFinal ? 'mp-team-block--winner' : ''}`}>
-            <img src={LOGOS[matchup.home_team]} alt={matchup.home_team}
-              className="mp-team-logo" onError={e => e.target.style.opacity = 0} />
-            <div className="mp-team-info">
+            <div className="mp-team-info mp-team-info--away">
               <Link to={`/team/${matchup.home_team}`} className="mp-team-name">
                 {matchup.home_team_name}
               </Link>
               <span className="mp-team-abbrev">{matchup.home_team}</span>
             </div>
+            <img src={LOGOS[matchup.home_team]} alt={matchup.home_team}
+              className="mp-team-logo" onError={e => e.target.style.opacity = 0} />
             <div className={`mp-score ${homeWins && isFinal ? 'mp-score--win' : !homeWins && isFinal ? 'mp-score--loss' : ''}`}>
               {homeScore.toFixed(2)}
             </div>
@@ -434,14 +434,14 @@ export default function MatchupPage() {
             <div className={`mp-score mp-score--away ${awayWins && isFinal ? 'mp-score--win' : !awayWins && isFinal ? 'mp-score--loss' : ''}`}>
               {awayScore.toFixed(2)}
             </div>
-            <div className="mp-team-info mp-team-info--away">
+            <img src={LOGOS[matchup.away_team]} alt={matchup.away_team}
+              className="mp-team-logo" onError={e => e.target.style.opacity = 0} />
+            <div className="mp-team-info">
               <Link to={`/team/${matchup.away_team}`} className="mp-team-name">
                 {matchup.away_team_name}
               </Link>
               <span className="mp-team-abbrev">{matchup.away_team}</span>
             </div>
-            <img src={LOGOS[matchup.away_team]} alt={matchup.away_team}
-              className="mp-team-logo" onError={e => e.target.style.opacity = 0} />
           </div>
         </div>
       </div>
