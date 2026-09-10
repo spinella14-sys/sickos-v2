@@ -370,7 +370,9 @@ function PlayerRow({ contract, slotLabel, slotColor, lineupAssign, onMove, slotO
 }
 
 function EmptySlotRow({ slot, canEdit, dragCard, dragOverKey, setDragOverKey, onAttemptMove, isEligible }) {
-  const extraCols = canEdit ? 10 : 9
+  // 15 columns with MOVE, 14 without; this row renders SLOT and PLAYER and
+  // spans the remainder.
+  const extraCols = canEdit ? 13 : 12
   const dropKey = `lineup:${slot.key}`
   const isHover = dragOverKey === dropKey
   const dropProps = dragCard ? {
@@ -401,7 +403,9 @@ function EmptyZoneRow({ zoneKey, label, colorVar, canEdit, dragCard, dragOverKey
     onDragOver: e => { e.preventDefault(); e.stopPropagation(); setDragOverKey(zoneKey) },
     onDrop:     e => { e.preventDefault(); e.stopPropagation(); onAttemptMove(dragCard, zoneKey) },
   } : {}
-  const extraCols = canEdit ? 10 : 9
+  // 15 columns with MOVE, 14 without; this row renders SLOT and PLAYER and
+  // spans the remainder.
+  const extraCols = canEdit ? 13 : 12
   return (
     <tr {...dropProps} className={`rtr rtr--empty ${dragCard ? (isEligible ? 'rtr--dnd-eligible' : 'rtr--dnd-ineligible') : ''} ${isHover ? 'rtr--dnd-hover' : ''}`}>
       <td className="rtr-slot">
@@ -1145,7 +1149,9 @@ export default function TeamPage() {
 
   if (!team) return <div className="tp-loading">Team not found</div>
 
-  const extraColSpan = canEdit ? 12 : 11  // colSpan for empty rows (added OPP RNK column)
+  // 15 columns with MOVE, 14 without; an empty row renders SLOT and PLAYER
+  // itself and spans the rest.
+  const extraColSpan = canEdit ? 13 : 12
 
   function TableHeader() {
     return (
@@ -1325,7 +1331,7 @@ export default function TeamPage() {
                     </tbody>
                     <tfoot>
                       <tr className="tr-total">
-                        <td colSpan={canEdit ? 6 : 5}>LINEUP TOTAL</td>
+                        <td colSpan={canEdit ? 8 : 7}>LINEUP TOTAL</td>
                         <td className="rtr-stat rtr-fpts">
                           {Object.values(lineupAssign).reduce((s,cid) => {
                             const r = roster.find(x => (x.id||x.sleeper_id) === cid)
@@ -1333,7 +1339,7 @@ export default function TeamPage() {
                             return s + (stats[sid]?.fpts || 0)
                           }, 0).toFixed(1)}
                         </td>
-                        <td colSpan={5}/>
+                        <td colSpan={4}/>
                         <td className="rtr-salary">
                           <span className="rtr-sal">
                             ${Object.values(lineupAssign).reduce((s,cid) => {
