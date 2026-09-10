@@ -138,7 +138,7 @@ function PlayerCell({ player, side, projMap, opponentMap, isFinal, gameStateMap 
   )
 
   return (
-    <div className={`mp-player ${isRight ? 'mp-player--right' : ''} ${player.is_locked && !isFinal ? 'mp-player--live' : ''}`}>
+    <div className={`mp-player ${isRight ? 'mp-player--right' : ''} ${player.is_locked && !isFinal && gameStateMap?.[player.nfl_team] !== 'post' ? 'mp-player--live' : ''}`}>
       {isRight ? <>{ptsEl}{bio}{headshot}</> : <>{headshot}{bio}{ptsEl}</>}
     </div>
   )
