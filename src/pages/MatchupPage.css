@@ -68,7 +68,14 @@
 }
 .mp-score--win  { color: #3dba6e; }
 .mp-score--loss { color: rgba(255,255,255,0.35); }
-.mp-score--away { text-align: right; }
+/* In a row-reverse block the score is already the innermost element, so
+   text-align: right pushed it AWAY from the centre instead of toward it. */
+.mp-score--away { text-align: left; }
+
+/* Both blocks push their content toward the middle, so the two scores sit
+   equidistant from the status pill rather than at the outer edges. */
+.mp-team-block { justify-content: flex-end; }
+.mp-team-block--away { justify-content: flex-end; }
 
 /* Center block */
 .mp-center-block {
