@@ -296,16 +296,6 @@ function PlayerRow({ contract, slotLabel, slotColor, lineupAssign, onMove, slotO
           </div>
         </div>
       </td>
-      <td className="rtr-stat rtr-opp">
-        <DefenseRankBadge
-          opponent={opponents?.[normalizeTeamAbbrev(p.nfl_team)]?.opponent}
-          isBye={!!opponents?.[normalizeTeamAbbrev(p.nfl_team)] && opponents[normalizeTeamAbbrev(p.nfl_team)].opponent === null}
-          rankings={defRankings}
-        />
-        <span className="rtr-kickoff">
-          {kickoffLabel(opponents?.[normalizeTeamAbbrev(p.nfl_team)]?.game_date)}
-        </span>
-      </td>
       {canEdit && (
         <td className="rtr-action">
           {!isLocked && <span className="rtr-drag-handle" title="Drag to move">⠿⠿</span>}
@@ -314,6 +304,16 @@ function PlayerRow({ contract, slotLabel, slotColor, lineupAssign, onMove, slotO
           </button>
         </td>
       )}
+      <td className="rtr-stat rtr-opp">
+        <DefenseRankBadge
+          opponent={opponents?.[normalizeTeamAbbrev(p.nfl_team)]?.opponent}
+          isBye={!!opponents?.[normalizeTeamAbbrev(p.nfl_team)] && opponents[normalizeTeamAbbrev(p.nfl_team)].opponent === null}
+          rankings={defRankings}
+        />
+      </td>
+      <td className="rtr-stat rtr-kickoff-cell">
+        {kickoffLabel(opponents?.[normalizeTeamAbbrev(p.nfl_team)]?.game_date) || '\u2014'}
+      </td>
       <td className="rtr-stat">{p.age || '—'}</td>
       <td className="rtr-stat">{p.bye_week || '—'}</td>
       <td className="rtr-stat rtr-rank">{ps.posRank || '—'}</td>
@@ -1114,7 +1114,7 @@ export default function TeamPage() {
 
   if (!team) return <div className="tp-loading">Team not found</div>
 
-  const extraColSpan = canEdit ? 11 : 10  // colSpan for empty rows (added OPP RNK column)
+  const extraColSpan = canEdit ? 12 : 11  // colSpan for empty rows (added OPP RNK column)
 
   function TableHeader() {
     return (
@@ -1122,8 +1122,9 @@ export default function TeamPage() {
         <tr>
           <th className="th-slot">SLOT</th>
           <th className="th-player">PLAYER</th>
-          <th className="th-stat">OPP</th>
           {canEdit && <th className="th-action">MOVE</th>}
+          <th className="th-stat">OPP</th>
+          <th className="th-stat">TIME</th>
           <th className="th-stat">AGE</th>
           <th className="th-stat">BYE</th>
           <th className="th-stat">POS RK</th>
