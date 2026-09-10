@@ -239,7 +239,7 @@ function MoveDropdown({ contract, lineupAssign, onMove, currentSlotOverride, act
 }
 
 function PlayerRow({ contract, slotLabel, slotColor, lineupAssign, onMove, slotOverride,
-  playerStats, poolStats, isLineupSlot, activeRoster, psRoster, isLocked, canEdit, opponents, defRankings, transNewsIds, onShowNews, onDrop,
+  playerStats, poolStats, isLineupSlot, activeRoster, psRoster, isLocked, canEdit, opponents, nflGames, defRankings, transNewsIds, onShowNews, onDrop,
   dragCard, setDragCard, setDragOverKey, dropKey, dragOverKey, onAttemptMove, isEligible }) {
   const p    = contract.players || {}
   const sid  = p.sleeper_id || contract.sleeper_id
@@ -312,7 +312,22 @@ function PlayerRow({ contract, slotLabel, slotColor, lineupAssign, onMove, slotO
         />
       </td>
       <td className="rtr-stat rtr-kickoff-cell">
-        {kickoffLabel(opponents?.[normalizeTeamAbbrev(p.nfl_team)]?.game_date) || '\u2014'}
+        {(() => {
+          const g = nflGames?.[normalizeTeamAbbrev(p.nfl_team)]
+          // Live and finished games say something more useful than a kickoff
+          // time a manager has already watched pass.
+          const label = g?.state === 'in'   ? `Q${g.period} ${g.clock}`
+                      : g?.state === 'post' ? 'Final'
+                      : kickoffLabel(opponents?.[normalizeTeamAbbrev(p.nfl_team)]?.game_date)
+          if (!label) return '\u2014'
+          if (!g?.id) return label
+          return (
+            <Link to={`/nfl-scores/${g.id}`}
+              className={g.state === 'in' ? 'rtr-kick-live' : 'rtr-kick-link'}>
+              {label}
+            </Link>
+          )
+        })()}
       </td>
       <td className="rtr-stat">{p.age || '—'}</td>
       <td className="rtr-stat">{p.bye_week || '—'}</td>
@@ -523,6 +538,7 @@ export default function TeamPage() {
   const [currentWeek,     setCurrentWeek]     = useState(1)
   const [poolStatsMap,    setPoolStatsMap]    = useState({})
   const [opponents,       setOpponents]       = useState({})
+  const [nflGames,        setNflGames]        = useState({})   // NFL team -> game
   const [defRankings,     setDefRankings]     = useState(null)
   const [schedSeason,     setSchedSeason]     = useState(null)
   const [transNewsIds,    setTransNewsIds]    = useState(new Set())
@@ -550,6 +566,21 @@ export default function TeamPage() {
         const safeWeek = week || 1
         setSchedSeason(CURRENT_SEASON)
         setCurrentWeek(safeWeek)
+        fetch(`${API_BASE}/nfl/scores?week=${safeWeek}`)
+          .then(r => r.ok ? r.json() : null)
+          .then(d => {
+            if (!d?.games) return
+            const byTeam = {}
+            for (const g of d.games) {
+              // ESPN uses WSH and LA where players.nfl_team stores WAS and LAR.
+              const fix = ab => ab === 'WSH' ? 'WAS' : ab === 'LA' ? 'LAR' : ab
+              if (g.home?.abbrev) byTeam[fix(g.home.abbrev)] = g
+              if (g.away?.abbrev) byTeam[fix(g.away.abbrev)] = g
+            }
+            setNflGames(byTeam)
+          })
+          .catch(() => {})
+
         fetch(`${API_BASE}/schedule/opponents?season=${CURRENT_SEASON}&week=${safeWeek}`)
           .then(r => r.ok ? r.json() : {})
           .then(setOpponents)
@@ -1285,7 +1316,7 @@ export default function TeamPage() {
                             playerStats={stats[sid]} poolStats={poolStatsMap[sid]} isLineupSlot={true}
                             activeRoster={activeRoster} psRoster={psRoster}
                             isLocked={isPlayerLocked(contract)} canEdit={canEdit}
-                            opponents={opponents} defRankings={defRankings} transNewsIds={transNewsIds} onShowNews={showNews}
+                            opponents={opponents} nflGames={nflGames} defRankings={defRankings} transNewsIds={transNewsIds} onShowNews={showNews}
                             onDrop={setDropTarget}
                             dragCard={dragCard} setDragCard={setDragCard} setDragOverKey={setDragOverKey}
                             dropKey={dropKey} dragOverKey={dragOverKey} onAttemptMove={attemptMove} isEligible={isEligible}/>
@@ -1336,7 +1367,7 @@ export default function TeamPage() {
                           playerStats={stats[r.players?.sleeper_id||r.sleeper_id]} poolStats={poolStatsMap[r.players?.sleeper_id||r.sleeper_id]}
                           isLineupSlot={false} activeRoster={activeRoster}
                           psRoster={psRoster} canEdit={canEdit}
-                          opponents={opponents} defRankings={defRankings} transNewsIds={transNewsIds} onShowNews={showNews}
+                          opponents={opponents} nflGames={nflGames} defRankings={defRankings} transNewsIds={transNewsIds} onShowNews={showNews}
                           onDrop={setDropTarget}
                           dragCard={dragCard} setDragCard={setDragCard} setDragOverKey={setDragOverKey}/>
                       ))}
@@ -1365,7 +1396,7 @@ export default function TeamPage() {
                           playerStats={stats[r.players?.sleeper_id||r.sleeper_id]} poolStats={poolStatsMap[r.players?.sleeper_id||r.sleeper_id]}
                           isLineupSlot={false} activeRoster={activeRoster}
                           psRoster={psRoster} canEdit={canEdit}
-                          opponents={opponents} defRankings={defRankings} transNewsIds={transNewsIds} onShowNews={showNews}
+                          opponents={opponents} nflGames={nflGames} defRankings={defRankings} transNewsIds={transNewsIds} onShowNews={showNews}
                           onDrop={setDropTarget}
                           dragCard={dragCard} setDragCard={setDragCard} setDragOverKey={setDragOverKey}
                           dropKey="ps" dragOverKey={dragOverKey} onAttemptMove={attemptMove}
@@ -1406,7 +1437,7 @@ export default function TeamPage() {
                           playerStats={stats[r.players?.sleeper_id||r.sleeper_id]} poolStats={poolStatsMap[r.players?.sleeper_id||r.sleeper_id]}
                           isLineupSlot={false} activeRoster={activeRoster}
                           psRoster={psRoster} canEdit={canEdit}
-                          opponents={opponents} defRankings={defRankings} transNewsIds={transNewsIds} onShowNews={showNews}
+                          opponents={opponents} nflGames={nflGames} defRankings={defRankings} transNewsIds={transNewsIds} onShowNews={showNews}
                           onDrop={setDropTarget}
                           dragCard={dragCard} setDragCard={setDragCard} setDragOverKey={setDragOverKey}/>
                       ))}

@@ -359,3 +359,8 @@
   font-size: 12px; white-space: nowrap;
   color: var(--text-primary, #0f1114);
 }
+
+.rtr-kick-link { color: inherit; text-decoration: none; }
+.rtr-kick-link:hover { text-decoration: underline; }
+.rtr-kick-live { color: var(--red, #d94f4f); font-weight: 700; text-decoration: none; }
+.rtr-kick-live:hover { text-decoration: underline; }
