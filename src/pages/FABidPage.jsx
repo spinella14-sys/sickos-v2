@@ -156,11 +156,16 @@ export default function FABidPage() {
         years:                parseInt(years),
         structure,
         non_guaranteed_final: nonGuar && years > 1,
+        // buildContractYears returns { year, yearNum, salary, isGuaranteed }.
+        // This mapped cy.season and cy.yearNumber, neither of which exists, so
+        // every bid arrived with a null season and failed the NOT NULL
+        // constraint on contract_years at award time.
         contract_years:       contractYears.map(cy => ({
-          season:        cy.season,
-          year_number:   cy.yearNumber || cy.year_number,
+          season:        cy.year,
+          year_number:   cy.yearNum,
           salary:        cy.salary,
           is_guaranteed: cy.isGuaranteed !== false,
+          cap_hit:       cy.capHit ?? cy.salary,
         })),
         signing_bonus: sbAmount || null,
         drop_player:   dropPlayer || null,
