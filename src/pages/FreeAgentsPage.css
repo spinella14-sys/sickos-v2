@@ -178,3 +178,39 @@
   font-family: var(--font-ui); font-size: 12px; color: var(--text-muted);
   border-top: 1px solid var(--border); background: var(--bg1);
 }
+
+/* Your own pending bids, shown above the pool. The window is a sealed
+   auction -- a manager sees only their own outstanding bids, never anyone
+   else's, and can withdraw any of them before the window closes. */
+.fa-pending {
+  max-width: 1400px; margin: 0 auto 14px; padding: 12px 16px;
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, rgba(0,0,0,0.10));
+  border-radius: 8px;
+}
+.fa-pending-head {
+  display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.fa-pending-note {
+  font-size: 11px; font-weight: 400; letter-spacing: 0;
+  text-transform: none; color: var(--text-muted, #6b7280);
+}
+.fa-pending-row {
+  display: grid; grid-template-columns: 1fr auto auto;
+  gap: 12px; align-items: center; padding: 7px 0;
+  border-top: 1px solid var(--border, rgba(0,0,0,0.06));
+  font-size: 13px;
+}
+.fa-pending-name { font-weight: 600; }
+.fa-pending-terms { color: var(--text-muted, #6b7280); font-size: 12px; }
+.fa-pending-withdraw {
+  padding: 4px 10px; cursor: pointer;
+  background: none; border: 1px solid var(--red, #d94f4f);
+  border-radius: 4px; color: var(--red, #d94f4f);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.05em;
+}
+.fa-pending-withdraw:disabled { opacity: 0.5; cursor: default; }

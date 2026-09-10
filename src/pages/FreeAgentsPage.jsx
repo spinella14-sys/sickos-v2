@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import PlayerLink from '../components/PlayerCard/PlayerLink'
@@ -65,7 +65,33 @@ export default function FreeAgentsPage() {
   }, [])
 
   const { manager } = useAuth()
+  const [myBids, setMyBids] = useState([])
+  const [bidsBusy, setBidsBusy] = useState(false)
   const myTeam = manager?.team_abbrev
+
+  const loadMyBids = useCallback(() => {
+    if (!myTeam) return
+    fetch(`${API_BASE}/bids?team=${myTeam}&status=pending`)
+      .then(r => r.ok ? r.json() : [])
+      .then(d => setMyBids(Array.isArray(d) ? d : (d.bids || [])))
+      .catch(() => {})
+  }, [myTeam])
+
+  useEffect(() => { loadMyBids() }, [loadMyBids])
+
+  async function withdrawBid(id, name) {
+    if (!window.confirm(`Withdraw your bid on ${name}?`)) return
+    setBidsBusy(true)
+    try {
+      const r = await fetch(`${API_BASE}/bids/${id}`, { method: 'DELETE' })
+      if (!r.ok) throw new Error('Withdraw failed')
+      loadMyBids()
+    } catch (e) {
+      window.alert(e.message)
+    } finally {
+      setBidsBusy(false)
+    }
+  }
 
   const [allPlayers,   setAllPlayers]   = useState([])
   const [statsMap,     setStatsMap]     = useState({})
@@ -259,6 +285,30 @@ export default function FreeAgentsPage() {
           <Link to="/fa-bid" className="fa-bid-btn">Submit FA Bid →</Link>
         </div>
       </div>
+
+      {myBids.length > 0 && (
+        <div className="fa-pending">
+          <div className="fa-pending-head">
+            Your pending bids ({myBids.length})
+            <span className="fa-pending-note">Sealed until the window closes</span>
+          </div>
+          {myBids.map(b => (
+            <div key={b.id} className="fa-pending-row">
+              <span className="fa-pending-name">{b.player_name}</span>
+              <span className="fa-pending-terms">
+                {b.years}yr &middot; ${parseFloat(b.salary).toFixed(2)}
+                {b.signing_bonus > 0 ? ` + $${parseFloat(b.signing_bonus).toFixed(2)} SB` : ''}
+                {b.drop_name ? ` \u00b7 drops ${b.drop_name}` : ''}
+              </span>
+              <button className="fa-pending-withdraw"
+                disabled={bidsBusy}
+                onClick={() => withdrawBid(b.id, b.player_name)}>
+                WITHDRAW
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="fa-filters">
         <div className="fa-filters-inner">
