@@ -83,7 +83,10 @@ export default function FreeAgentsPage() {
     if (!window.confirm(`Withdraw your bid on ${name}?`)) return
     setBidsBusy(true)
     try {
-      const r = await fetch(`${API_BASE}/bids/${id}`, { method: 'DELETE' })
+      const r = await fetch(`${API_BASE}/bids/${id}`, {
+        method: 'DELETE',
+        headers: { 'x-team-abbrev': myTeam },
+      })
       if (!r.ok) throw new Error('Withdraw failed')
       loadMyBids()
     } catch (e) {
