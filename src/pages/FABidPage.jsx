@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { submitFABid } from '../utils/api'
 import { headshotUrl } from '../hooks/useSleeper'
-import { buildContractYears, getSeasonConsts, CURRENT_SEASON } from '../utils/contractCalc'
+import { buildContractYears, getSeasonConsts, validateContractYears, CURRENT_SEASON } from '../utils/contractCalc'
 import './FABidPage.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
@@ -135,8 +135,16 @@ export default function FABidPage() {
     if (sigBonus && !sbIsValid) errs.push('Signing bonus must be in $0.10 increments')
     if (sbOverBudget) errs.push(`Signing bonus exceeds budget ($${sbBalance?.toFixed(2)} available)`)
     if (capCheck?.overCap) errs.push(`Would exceed hard cap ($${capCheck.projected.toFixed(2)} / $${capCheck.hardCap})`)
+
+    // Every year, not just this one. The minimum rises with LTL each season, so
+    // a flat contract at today's minimum falls below next year's -- which is
+    // how a 3yr flat deal at $2.41 was signed when 2027 requires $2.60.
+    if (contractYears?.length) {
+      for (const e of validateContractYears(contractYears, pos)) errs.push(e)
+    }
+
     return errs
-  }, [salary, nonGuar, years, sigBonus, sbIsValid, sbOverBudget, capCheck, pos])
+  }, [salary, nonGuar, years, sigBonus, sbIsValid, sbOverBudget, capCheck, pos, contractYears])
 
   async function handleSubmit() {
     if (errors.length || !team || !salary) {
