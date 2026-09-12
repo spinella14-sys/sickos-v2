@@ -41,6 +41,8 @@ export default function FABidPage() {
   const [sbBalance,  setSbBalance]  = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const [result,     setResult]     = useState(null)
+  const [placement,  setPlacement]  = useState(null)   // pending warning, awaiting acknowledgement
+  const [checking,   setChecking]   = useState(false)
 
   const [salary,     setSalary]     = useState('')
   const [years,      setYears]      = useState(1)
@@ -145,6 +147,39 @@ export default function FABidPage() {
 
     return errs
   }, [salary, nonGuar, years, sigBonus, sbIsValid, sbOverBudget, capCheck, pos, contractYears])
+
+  // Ask the server where this bid would land before sending it. Skipped once
+  // the manager has acknowledged a warning -- at that point they have seen it
+  // and chosen to proceed.
+  async function handleSubmitClick() {
+    if (errors.length || !team || !salary) {
+      setResult({ ok: false, msg: errors[0] || 'Fill in all required fields.' })
+      return
+    }
+    setChecking(true)
+    try {
+      const params = new URLSearchParams({
+        team,
+        sleeper_id: preId,
+        salary: String(parseFloat(structure === 'minimum' ? consts.minSalary : salary)),
+      })
+      if (dropPlayer) params.set('drop_player', dropPlayer)
+
+      const r = await fetch(`${API_BASE}/bids/placement-check?${params.toString()}`)
+      const d = await r.json()
+
+      if (d?.status === 'blocked' || (d?.status === 'ok' && d.slot === 'ps')) {
+        setPlacement(d)
+        setChecking(false)
+        return
+      }
+    } catch {
+      // A failed check should not stop a legal bid -- the award path enforces
+      // the same rules regardless.
+    }
+    setChecking(false)
+    handleSubmit()
+  }
 
   async function handleSubmit() {
     if (errors.length || !team || !salary) {
@@ -441,6 +476,30 @@ export default function FABidPage() {
         )}
 
         {/* Result */}
+        {placement && (
+          <div className={`fab-placement ${placement.status === 'blocked' ? 'fab-placement--block' : 'fab-placement--note'}`}>
+            <div className="fab-placement-head">
+              {placement.status === 'blocked' ? 'WARNING: ROSTER CHANGE NEEDED' : 'HEADS UP'}
+            </div>
+            <div className="fab-placement-body">
+              {placement.reason || placement.note}
+            </div>
+            {placement.remedy && (
+              <div className="fab-placement-remedy">{placement.remedy}</div>
+            )}
+            <div className="fab-placement-actions">
+              <button type="button" className="fab-placement-cancel"
+                onClick={() => setPlacement(null)}>
+                Go back and change it
+              </button>
+              <button type="button" className="fab-placement-go"
+                onClick={() => { setPlacement(null); handleSubmit() }}>
+                {placement.status === 'blocked' ? 'Acknowledge and submit anyway' : 'Submit'}
+              </button>
+            </div>
+          </div>
+        )}
+
         {result && (
           <div className={`fab-result ${result.ok ? 'fab-result--ok' : 'fab-result--err'}`}>
             {result.msg}
@@ -456,7 +515,7 @@ export default function FABidPage() {
         {!result?.ok && (
           <button
             className="fab-submit"
-            onClick={handleSubmit}
+            onClick={handleSubmitClick}
             disabled={submitting || !preId || !salary || errors.length > 0 || (seasonMode && seasonMode !== 'regular_season')}
           >
             {submitting ? 'Submitting…' : 'Submit Sealed Bid'}

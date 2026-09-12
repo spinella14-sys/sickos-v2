@@ -445,3 +445,45 @@
 }
 .fab-submit:hover:not(:disabled) { opacity: 0.88; }
 .fab-submit:disabled { opacity: 0.4; cursor: default; }
+
+/* Placement warning shown before a bid is submitted. A blocked bid gets the
+   stronger treatment; a practice-squad placement is a note, not an alarm. */
+.fab-placement {
+  margin: 14px 0; padding: 14px 16px; border-radius: 8px;
+  border: 1px solid;
+}
+.fab-placement--block {
+  background: rgba(217,79,79,0.06);
+  border-color: rgba(217,79,79,0.45);
+}
+.fab-placement--note {
+  background: rgba(245,166,35,0.07);
+  border-color: rgba(245,166,35,0.45);
+}
+.fab-placement-head {
+  font-family: var(--font-ui); font-size: 12px; font-weight: 800;
+  letter-spacing: 0.08em; margin-bottom: 8px;
+}
+.fab-placement--block .fab-placement-head { color: var(--red, #d94f4f); }
+.fab-placement--note  .fab-placement-head { color: #9a6100; }
+.fab-placement-body { font-size: 14px; line-height: 1.5; }
+.fab-placement-remedy {
+  font-size: 13px; line-height: 1.5; margin-top: 8px;
+  color: var(--text-muted, #6b7280);
+}
+.fab-placement-actions {
+  display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap;
+}
+.fab-placement-cancel, .fab-placement-go {
+  padding: 8px 14px; border-radius: 6px; cursor: pointer;
+  font-family: var(--font-ui); font-size: 12px; font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.fab-placement-cancel {
+  background: none; border: 1px solid var(--border, rgba(0,0,0,0.15));
+  color: var(--text-primary, #0f1114);
+}
+.fab-placement-go {
+  background: var(--text-primary, #0f1114); border: 1px solid var(--text-primary, #0f1114);
+  color: #fff;
+}
