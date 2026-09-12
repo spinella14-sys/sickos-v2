@@ -299,9 +299,14 @@ function PlayerRow({ contract, slotLabel, slotColor, lineupAssign, onMove, slotO
       {canEdit && (
         <td className="rtr-action">
           {!isLocked && <span className="rtr-drag-handle" title="Drag to move">⠿⠿</span>}
-          <button className="rtr-drop-btn" onClick={() => onDrop && onDrop(contract)} title="Drop player">
-            Drop
-          </button>
+          {/* A locked player cannot be dropped -- the backend refuses it, and
+              showing the button would invite an error rather than explain the
+              rule. */}
+          {!isLocked && (
+            <button className="rtr-drop-btn" onClick={() => onDrop && onDrop(contract)} title="Drop player">
+              Drop
+            </button>
+          )}
         </td>
       )}
       <td className="rtr-stat rtr-opp">
