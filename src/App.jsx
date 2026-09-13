@@ -51,6 +51,7 @@ import DraftBoardPage   from './pages/DraftBoardPage'
 import MultiYearCapPage from './pages/MultiYearCapPage'
 import NFLScoresPage from './pages/NFLScoresPage'
 import NFLGamePage from './pages/NFLGamePage'
+import FAResultsPopup from './components/FAResultsPopup'
 
 function DraftWrapper({ component: Component }) {
   const { manager, isAdmin } = useAuth()
@@ -85,6 +86,7 @@ function AuthenticatedApp() {
           <TopNav />
           <AdminTradeAlertPopup />
           <TradeUpdatePopup />
+          <FAResultsPopup />
           <Routes>
             <Route path="/"              element={<DashboardPage />} />
             <Route path="/home"          element={<HomePage />} />

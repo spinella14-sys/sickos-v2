@@ -1371,7 +1371,7 @@ export default function TeamPage() {
                     <TableHeader/>
                     <tbody>
                       {benchPlayers.map((r,i) => (
-                        <PlayerRow key={r.id||i} contract={r} slotLabel="Bench"
+                        <PlayerRow key={r.id||i} contract={r} slotLabel="Bench" isLocked={isPlayerLocked(r)}
                           slotColor="var(--text-muted)" lineupAssign={lineupAssign}
                           onMove={handleMove}
                           slotOverride={slotOverrides[r.id||r.sleeper_id]}
@@ -1400,7 +1400,7 @@ export default function TeamPage() {
                     <TableHeader/>
                     <tbody>
                       {psRoster.map((r,i) => (
-                        <PlayerRow key={r.id||i} contract={r} slotLabel="PS"
+                        <PlayerRow key={r.id||i} contract={r} slotLabel="PS" isLocked={isPlayerLocked(r)}
                           slotColor="var(--blue)" lineupAssign={lineupAssign}
                           onMove={handleMove}
                           slotOverride={slotOverrides[r.id||r.sleeper_id]}
@@ -1441,7 +1441,7 @@ export default function TeamPage() {
                           <td colSpan={extraColSpan}/>
                         </tr>
                       ) : irRoster.map((r,i) => (
-                        <PlayerRow key={r.id||i} contract={r} slotLabel="IR"
+                        <PlayerRow key={r.id||i} contract={r} slotLabel="IR" isLocked={isPlayerLocked(r)}
                           slotColor="var(--red)" lineupAssign={lineupAssign}
                           onMove={handleMove}
                           slotOverride={slotOverrides[r.id||r.sleeper_id]}
