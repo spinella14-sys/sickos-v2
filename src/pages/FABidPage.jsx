@@ -78,7 +78,9 @@ export default function FABidPage() {
   const pos = playerInfo?.player?.position || playerInfo?.position
 
   // Max 2 years for minimum contracts
-  const maxYears = structure === 'minimum' || structure === 'min' ? 2 : 5
+  // Four is the league maximum. This read 5, which let a 5-year bid through --
+  // the API did not check term length either, so nothing caught it.
+  const maxYears = structure === 'minimum' || structure === 'min' ? 2 : 4
 
   // Contract year preview
   const contractYears = useMemo(() => {
@@ -334,7 +336,7 @@ export default function FABidPage() {
         <div className="fab-field">
           <label className="fab-label">Years</label>
           <div className="fab-years-row">
-            {[1, 2, 3, 4, 5].filter(y => y <= maxYears).map(y => (
+            {[1, 2, 3, 4].filter(y => y <= maxYears).map(y => (
               <button
                 key={y}
                 type="button"
