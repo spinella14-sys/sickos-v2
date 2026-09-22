@@ -8,7 +8,7 @@ import { headshotUrl, nflTeamLogoUrl } from '../hooks/useSleeper'
 import PlayerLink from '../components/PlayerCard/PlayerLink'
 import CapSheetPage from './CapSheetPage'
 import SBTab from './SBTab'
-import DefenseRankBadge, { OppRankCell } from '../components/DefenseRankBadge'
+import DefenseRankBadge from '../components/DefenseRankBadge'
 import { normalizeTeamAbbrev } from '../utils/defenseRankUtils'
 import NewsCard from '../components/NewsCard'
 import './TeamPage.css'
@@ -337,8 +337,8 @@ function PlayerRow({ contract, slotLabel, slotColor, lineupAssign, onMove, slotO
       <td className="rtr-stat">{p.age || '—'}</td>
       <td className="rtr-stat">{p.bye_week || '—'}</td>
       <td className="rtr-stat rtr-rank">{ps.posRank || '—'}</td>
-      <td className="rtr-stat rtr-fpts">{ps.fpts != null ? ps.fpts : '—'}</td>
-      <td className="rtr-stat">{ps.avg != null ? ps.avg : '—'}</td>
+      <td className="rtr-stat rtr-fpts rtr-stat--fpts">{ps.fpts != null ? ps.fpts : '—'}</td>
+      <td className="rtr-stat rtr-stat--ppg">{ps.avg != null ? ps.avg : '—'}</td>
       <td className="rtr-stat rtr-proj">
         {poolStats?.proj_pts != null ? poolStats.proj_pts.toFixed(1) : '—'}
       </td>
@@ -358,13 +358,6 @@ function PlayerRow({ contract, slotLabel, slotColor, lineupAssign, onMove, slotO
           </>
         ) : '—'}
       </td>
-      <td className="rtr-stat">
-        <OppRankCell
-          opponent={opponents?.[normalizeTeamAbbrev(p.nfl_team)]?.opponent}
-          position={p.position}
-          rankings={defRankings}
-        />
-      </td>
       <td className="rtr-salary">
         <span className="rtr-sal">${sal.toFixed(2)}</span>
         {disc < 1 && <span className="rtr-hit">${capHit.toFixed(2)} cap</span>}
@@ -377,7 +370,7 @@ function PlayerRow({ contract, slotLabel, slotColor, lineupAssign, onMove, slotO
 function EmptySlotRow({ slot, canEdit, dragCard, dragOverKey, setDragOverKey, onAttemptMove, isEligible }) {
   // 15 columns with MOVE, 14 without; this row renders SLOT and PLAYER and
   // spans the remainder.
-  const extraCols = canEdit ? 13 : 12
+  const extraCols = canEdit ? 12 : 11
   const dropKey = `lineup:${slot.key}`
   const isHover = dragOverKey === dropKey
   const dropProps = dragCard ? {
@@ -410,7 +403,7 @@ function EmptyZoneRow({ zoneKey, label, colorVar, canEdit, dragCard, dragOverKey
   } : {}
   // 15 columns with MOVE, 14 without; this row renders SLOT and PLAYER and
   // spans the remainder.
-  const extraCols = canEdit ? 13 : 12
+  const extraCols = canEdit ? 12 : 11
   return (
     <tr {...dropProps} className={`rtr rtr--empty ${dragCard ? (isEligible ? 'rtr--dnd-eligible' : 'rtr--dnd-ineligible') : ''} ${isHover ? 'rtr--dnd-hover' : ''}`}>
       <td className="rtr-slot">
@@ -1156,7 +1149,7 @@ export default function TeamPage() {
 
   // 15 columns with MOVE, 14 without; an empty row renders SLOT and PLAYER
   // itself and spans the rest.
-  const extraColSpan = canEdit ? 13 : 12
+  const extraColSpan = canEdit ? 12 : 11
 
   function TableHeader() {
     return (
@@ -1174,7 +1167,6 @@ export default function TeamPage() {
           <th className="th-stat">PPG</th>
           <th className="th-stat">PROJ</th>
           <th className="th-stat">% OWN</th>
-          <th className="th-stat">OPP RNK</th>
           <th className="th-salary">SALARY</th>
           <th className="th-contract">YRS</th>
         </tr>
@@ -1337,14 +1329,24 @@ export default function TeamPage() {
                     <tfoot>
                       <tr className="tr-total">
                         <td colSpan={canEdit ? 8 : 7}>LINEUP TOTAL</td>
-                        <td className="rtr-stat rtr-fpts">
+                        {/* No FPTS total -- a season sum across whoever happens
+                            to be starting this week answers nothing. */}
+                        <td/>
+                        <td className="rtr-stat rtr-stat--ppg">
                           {Object.values(lineupAssign).reduce((s,cid) => {
                             const r = roster.find(x => (x.id||x.sleeper_id) === cid)
                             const sid = r?.players?.sleeper_id || r?.sleeper_id
-                            return s + (stats[sid]?.fpts || 0)
+                            return s + (stats[sid]?.avg || 0)
                           }, 0).toFixed(1)}
                         </td>
-                        <td colSpan={4}/>
+                        <td className="rtr-stat rtr-proj">
+                          {Object.values(lineupAssign).reduce((s,cid) => {
+                            const r = roster.find(x => (x.id||x.sleeper_id) === cid)
+                            const sid = r?.players?.sleeper_id || r?.sleeper_id
+                            return s + (poolStatsMap[sid]?.proj_pts || 0)
+                          }, 0).toFixed(1)}
+                        </td>
+                        <td/>
                         <td className="rtr-salary">
                           <span className="rtr-sal">
                             ${Object.values(lineupAssign).reduce((s,cid) => {

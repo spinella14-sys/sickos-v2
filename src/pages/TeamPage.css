@@ -98,7 +98,10 @@
 .rtr-move-select:focus { border-color:var(--orange); }
 .rtr-slot-tag { font-family:var(--font-ui); font-size:10px; font-weight:600; letter-spacing:0.1em; color:var(--text-muted); text-transform:uppercase; }
 .rtr-stat { text-align:right; font-family:var(--font-accent); font-size:12px; color:var(--text-secondary); width:58px; }
-.rtr-fpts { color:var(--orange)!important; font-weight:700; font-size:13px!important; }
+/* FPTS keeps its size and weight but gives up the highlight -- PPG carries it
+   now, since per-game says something about a player and a season total mostly
+   says who has been available. */
+.rtr-fpts { color:var(--text-primary)!important; font-weight:700; font-size:13px!important; }
 .rtr-rank { color:var(--text-muted)!important; }
 .rtr-salary { text-align:right; width:90px; }
 .rtr-sal { font-family:var(--font-display); font-size:14px; color:var(--orange); letter-spacing:0.02em; display:block; }
@@ -364,3 +367,25 @@
 .rtr-kick-link:hover { text-decoration: underline; }
 .rtr-kick-live { color: var(--red, #d94f4f); font-weight: 700; text-decoration: none; }
 .rtr-kick-live:hover { text-decoration: underline; }
+
+
+/* ---- Roster table legibility ----------------------------------------------
+   Stat cells were muted grey on a grey row, which is hard to read in a table
+   people scan constantly. Black instead, with the highlight reserved for the
+   two columns worth picking out: PPG and salary. */
+.rtr-stat {
+  color: var(--text-primary);
+}
+
+/* Per-game is the number that says something about a player. Season totals
+   mostly say who has been available. */
+.rtr-stat--ppg {
+  color: var(--orange);
+  font-weight: 700;
+}
+
+/* FPTS keeps its place in the table but gives up the highlight. */
+.rtr-stat--fpts {
+  color: var(--text-primary);
+  font-weight: 600;
+}
