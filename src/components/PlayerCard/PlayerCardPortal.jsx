@@ -265,7 +265,14 @@ function RecentWeeks({ weekly, schedule, schedulesByTeam, projByWeek, pos, curre
               <tr key={week} className={isBye || isDnp ? 'pc-weeks-row--none' : ''}>
                 <td>{week}</td>
                 <td>
-                  {isBye ? 'BYE' : `${game.is_home ? '' : '@'}${game.opponent}`}
+                  {/* Opponent from the stat row where we have it -- a player
+                      who changed clubs played his old team's schedule. The
+                      schedule is the fallback, and for a past season there is
+                      no schedule at all, so `game` can be null. */}
+                  {isBye ? 'BYE'
+                    : stat?.opponent ? stat.opponent
+                    : game ? `${game.is_home ? '' : '@'}${game.opponent}`
+                    : '—'}
                 </td>
                 <td className="pc-weeks-pts">
                   {isBye ? '—' : isDnp ? 'DNP' : (stat.fantasy_pts ?? 0).toFixed(1)}
