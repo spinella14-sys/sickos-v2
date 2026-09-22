@@ -729,11 +729,10 @@ function PlayerCard({ playerId, anchorRect }) {
                   ))}
                 </div>
               )}
+              {/* The games chip and PTS/G repeated what the header now shows
+                  as its own column, so the row carries the season label and the
+                  toggle alone. */}
               <span className="pc-section-label">{statSeason} SEASON</span>
-              {games > 0 && <span className="pc-games-chip">{games}G</span>}
-              {ptsPerG != null && (
-                <span className="pc-ptsg" style={{ color: '#e8822a' }}>{ptsPerG.toFixed(1)} PTS/G</span>
-              )}
               <div className="pc-view-toggle">
                 <button
                   className={`pc-toggle-btn ${viewMode === 'total' ? 'pc-toggle-btn--active' : ''}`}
@@ -744,17 +743,20 @@ function PlayerCard({ playerId, anchorRect }) {
                   onClick={() => setViewMode('perGame')}
                 >Per G</button>
               </div>
+                {/* Sits beside the toggle rather than taking a row of its
+                    own -- it is a one-tap action, not a section. */}
+                {teamAbbrev && (
+                  <button
+                    className={`pc-watchlist-btn ${onWatchlist ? 'pc-watchlist-btn--active' : ''}`}
+                    onClick={toggleWatchlist}
+                    disabled={watchlistBusy}
+                  >
+                    {watchlistBusy ? '…' : onWatchlist ? '★ Watching' : '☆ Watch'}
+                  </button>
+                )}
             </div>
 
-            {teamAbbrev && (
-              <button
-                className={`pc-watchlist-btn ${onWatchlist ? 'pc-watchlist-btn--active' : ''}`}
-                onClick={toggleWatchlist}
-                disabled={watchlistBusy}
-              >
-                {watchlistBusy ? '…' : onWatchlist ? '★ On Watchlist' : '☆ Add to Watchlist'}
-              </button>
-            )}
+
 
             {games > 0 ? (
               <div className="pc-stat-groups">
