@@ -194,6 +194,8 @@ async function fetchSchedulesForTeams(teams, season, apiBase) {
 
 function RecentWeeks({ weekly, schedule, schedulesByTeam, projByWeek, pos, currentWeek, fallbackTeam }) {
   const cols = WEEK_COLS[pos]
+  console.log('[RecentWeeks]', { pos, hasCols: !!cols, weekly: (weekly||[]).length,
+    schedule: (schedule||[]).length, byTeam: Object.keys(schedulesByTeam||{}), currentWeek })
   const haveSchedule = (schedule?.length || 0) > 0 ||
     Object.values(schedulesByTeam || {}).some(s => s.length)
   // Without a schedule the table still works off the stat rows -- it just shows
@@ -963,7 +965,10 @@ function PlayerCard({ playerId, anchorRect }) {
           </div>
 
           {/* ── Recent weeks ── */}
-          {teamSchedule.length > 0 && (
+          {/* Stats are enough on their own. Gating this on a schedule hid the
+              table for every past season, since nfl_schedule only holds 2026 --
+              RecentWeeks handles the missing-schedule case itself. */}
+          {(teamSchedule.length > 0 || weekly.length > 0) && (
             <div className="pc-section">
               <div className="pc-section-hd">
                 <span className="pc-section-label">RECENT WEEKS</span>
