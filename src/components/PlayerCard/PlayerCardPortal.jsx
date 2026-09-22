@@ -374,7 +374,12 @@ function PlayerCard({ playerId, anchorRect }) {
   const [onWatchlist,   setOnWatchlist]   = useState(false)
   const [statSeason,    setStatSeason]    = useState(CURRENT_SEASON)
   const [loading,       setLoading]       = useState(true)
-  const [viewMode,      setViewMode]      = useState('total')
+  // Per-game by default. A season total mostly reports who has been available;
+  // the per-game number is what tells you about the player.
+  const [viewMode,      setViewMode]      = useState('perGame')
+  // This week's projection. The card never had one -- the old PROJ bar was an
+  // empty placeholder labelled "season".
+  const [projPts,       setProjPts]       = useState(null)
   const [watchlistBusy, setWatchlistBusy] = useState(false)
   const [analytics,     setAnalytics]     = useState(null)
   const [availableSeasons, setAvailableSeasons] = useState([])
@@ -658,33 +663,27 @@ function PlayerCard({ playerId, anchorRect }) {
                   {!contract && <span className="pc-fa-chip">FREE AGENT</span>}
                 </div>
 
-                {/* FPTS + PROJ mini bars — right side of bio */}
-                <div className="pc-bio-bars">
-                  <div className="pc-bio-bar-item">
-                    {posRanks?.fpts_pg && pos && (
-                      <span className="pc-bio-bar-rank" style={{ color: pctBarColor(fptsPct(ptsPerG, pos)) }}>
-                        {pos}{posRanks.fpts_pg}
-                      </span>
-                    )}
-                    <span className="pc-bio-bar-pct" style={{ color: pctBarColor(fptsPct(ptsPerG, pos)) }}>
-                      {ptsPerG ? Math.round(fptsPct(ptsPerG, pos)) : '—'}
+                {/* Three plain figures rather than two bars. The bars spent
+                    most of their space on a track and a percentile nobody asked
+                    for, and the PROJ one was empty. */}
+                <div className="pc-bio-stats">
+                  <div className="pc-bio-stat">
+                    <span className="pc-bio-stat-lbl">POS RK</span>
+                    <span className="pc-bio-stat-val" style={{ color: pctBarColor(fptsPct(ptsPerG, pos)) }}>
+                      {posRanks?.fpts_pg && pos ? `${pos}${posRanks.fpts_pg}` : '—'}
                     </span>
-                    <div className="pc-bio-bar-track">
-                      <div className="pc-bio-bar-fill" style={{
-                        height: `${Math.max(4, Math.min(100, fptsPct(ptsPerG, pos)))}%`,
-                        background: ptsPerG ? pctBarColor(fptsPct(ptsPerG, pos)) : 'transparent',
-                      }}/>
-                    </div>
-                    <span className="pc-bio-bar-lbl">FPTS/G</span>
-                    <span className="pc-bio-bar-val">{ptsPerG != null ? ptsPerG.toFixed(1) : '—'}</span>
                   </div>
-                  <div className="pc-bio-bar-item">
-                    <span className="pc-bio-bar-pct" style={{ color:'var(--text-muted)' }}>—</span>
-                    <div className="pc-bio-bar-track">
-                      <div className="pc-bio-bar-fill" style={{ height:'4%', background:'transparent' }}/>
-                    </div>
-                    <span className="pc-bio-bar-lbl">PROJ</span>
-                    <span className="pc-bio-bar-val" style={{ color:'var(--text-muted)', fontSize:8 }}>season</span>
+                  <div className="pc-bio-stat">
+                    <span className="pc-bio-stat-lbl">PPG</span>
+                    <span className="pc-bio-stat-val pc-bio-stat-val--hl">
+                      {ptsPerG != null ? ptsPerG.toFixed(1) : '—'}
+                    </span>
+                  </div>
+                  <div className="pc-bio-stat">
+                    <span className="pc-bio-stat-lbl">PROJ</span>
+                    <span className="pc-bio-stat-val">
+                      {projPts != null ? Number(projPts).toFixed(1) : '—'}
+                    </span>
                   </div>
                 </div>
               </div>
