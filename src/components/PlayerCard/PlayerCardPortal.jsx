@@ -143,6 +143,110 @@ function ptColor(pts) {
 }
 
 // ─── Sparkline ────────────────────────────────────────────────────────────────
+
+// Columns per position: primary stats, then secondary after a divider.
+const WEEK_COLS = {
+  QB: {
+    primary:   [['CMP-ATT', w => `${w.pass_cmp ?? 0}-${w.pass_att ?? 0}`],
+                ['YDS',     w => w.pass_yd ?? 0],
+                ['TD',      w => w.pass_td ?? 0],
+                ['INT',     w => w.pass_int ?? 0]],
+    secondary: [['CAR',     w => w.rush_att ?? 0],
+                ['YDS',     w => w.rush_yd ?? 0],
+                ['TD',      w => w.rush_td ?? 0]],
+  },
+  RB: {
+    primary:   [['CAR',     w => w.rush_att ?? 0],
+                ['YDS',     w => w.rush_yd ?? 0],
+                ['TD',      w => w.rush_td ?? 0]],
+    secondary: [['TGT',     w => w.targets ?? 0],
+                ['REC',     w => w.rec ?? 0],
+                ['YDS',     w => w.rec_yd ?? 0],
+                ['TD',      w => w.rec_td ?? 0]],
+  },
+  WR: {
+    primary:   [['TGT',     w => w.targets ?? 0],
+                ['REC',     w => w.rec ?? 0],
+                ['YDS',     w => w.rec_yd ?? 0],
+                ['TD',      w => w.rec_td ?? 0]],
+    secondary: [['CAR',     w => w.rush_att ?? 0],
+                ['YDS',     w => w.rush_yd ?? 0],
+                ['TD',      w => w.rush_td ?? 0]],
+  },
+}
+WEEK_COLS.TE = WEEK_COLS.WR
+
+function RecentWeeks({ weekly, schedule, projByWeek, pos, currentWeek }) {
+  const cols = WEEK_COLS[pos]
+  if (!cols || !schedule?.length) return null
+
+  const statByWeek = {}
+  for (const w of (weekly || [])) statByWeek[w.week] = w
+
+  // Walk back from the current week. The schedule runs the full season, so
+  // weeks that have not happened are skipped rather than shown as blanks.
+  const played = schedule
+    .filter(g => g.week <= currentWeek)
+    .sort((a, b) => b.week - a.week)
+
+  const byeWeeks = []
+  const weeksInRange = []
+  const maxWeek = Math.max(...schedule.map(g => g.week), 0)
+  for (let wk = currentWeek; wk >= 1 && weeksInRange.length < 5; wk--) {
+    const game = schedule.find(g => g.week === wk)
+    weeksInRange.push({ week: wk, game: game || null })
+    if (!game) byeWeeks.push(wk)
+  }
+
+  const rows = weeksInRange.reverse()
+  const allCols = [...cols.primary, ...cols.secondary]
+  const divideAt = cols.primary.length
+
+  return (
+    <div className="pc-weeks">
+      <table className="pc-weeks-tbl">
+        <thead>
+          <tr>
+            <th>WK</th>
+            <th>OPP</th>
+            <th className="pc-weeks-pts">FPTS</th>
+            <th>PROJ</th>
+            {allCols.map(([label], i) => (
+              <th key={i} className={i === divideAt ? 'pc-weeks-divide' : ''}>{label}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map(({ week, game }) => {
+            const stat = statByWeek[week]
+            const proj = projByWeek?.[week]
+            const isBye = !game
+            const isDnp = !isBye && !stat
+
+            return (
+              <tr key={week} className={isBye || isDnp ? 'pc-weeks-row--none' : ''}>
+                <td>{week}</td>
+                <td>
+                  {isBye ? 'BYE' : `${game.is_home ? '' : '@'}${game.opponent}`}
+                </td>
+                <td className="pc-weeks-pts">
+                  {isBye ? '—' : isDnp ? 'DNP' : (stat.fantasy_pts ?? 0).toFixed(1)}
+                </td>
+                <td>{isBye ? '—' : (proj != null ? proj.toFixed(1) : '—')}</td>
+                {allCols.map(([, get], i) => (
+                  <td key={i} className={i === divideAt ? 'pc-weeks-divide' : ''}>
+                    {isBye || isDnp ? '—' : get(stat)}
+                  </td>
+                ))}
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
 function Sparkline({ weeks }) {
   if (!weeks?.length) return null
   const last8  = [...weeks].sort((a, b) => a.week - b.week).slice(-8)
@@ -386,6 +490,7 @@ function PlayerCard({ playerId, anchorRect }) {
   const [statsLoading,  setStatsLoading]  = useState(false)
   const [posRanks,      setPosRanks]      = useState(null)
   const [teamSchedule, setTeamSchedule] = useState([])
+  const [projByWeek,   setProjByWeek]   = useState({})
   const [schedDefRanks, setSchedDefRanks] = useState(null)
   const [schedCurWeek, setSchedCurWeek] = useState(null)
   const [showNewsCard, setShowNewsCard] = useState(false)
@@ -408,6 +513,10 @@ function PlayerCard({ playerId, anchorRect }) {
       .then(({ season, week }) => {
         if (cancelled) return
         setSchedCurWeek(week)
+        fetch(`${API_BASE}/stats/player/${playerId}/projections?season=${season}`)
+          .then(r => r.ok ? r.json() : null)
+          .then(d => { if (!cancelled) setProjByWeek(d?.by_week || {}) })
+          .catch(() => {})
         return Promise.all([
           fetch(`${API_BASE}/schedule/team/${nflTeam}?season=${season}`).then(r => r.ok ? r.json() : []),
           fetch(`${API_BASE}/schedule/defense-rankings?season=${season}`).then(r => r.ok ? r.json() : null),
@@ -788,15 +897,19 @@ function PlayerCard({ playerId, anchorRect }) {
             )}
           </div>
 
-          {/* ── Sparkline ── */}
-          {weekly.length > 0 && (
+          {/* ── Recent weeks ── */}
+          {teamSchedule.length > 0 && (
             <div className="pc-section">
               <div className="pc-section-hd">
-                <span className="pc-section-label">LAST {Math.min(8, weekly.length)} WEEKS</span>
+                <span className="pc-section-label">RECENT WEEKS</span>
               </div>
-              <div className="pc-sparkline">
-                <Sparkline weeks={weekly} />
-              </div>
+              <RecentWeeks
+                weekly={weekly}
+                schedule={teamSchedule}
+                projByWeek={projByWeek}
+                pos={pos}
+                currentWeek={schedCurWeek}
+              />
             </div>
           )}
 

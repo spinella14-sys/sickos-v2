@@ -613,3 +613,40 @@
   border-radius: 3px;
   flex-shrink: 0;
 }
+
+
+/* ─── Recent weeks table ──────────────────────────────────────────────────────
+   Replaced a sparkline that could show one week was better than another and
+   nothing else -- not the opponent, not the line, not whether a blank meant a
+   bye, an injury, or a bad afternoon. */
+.pc-weeks { overflow-x: auto; }
+.pc-weeks-tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Barlow Condensed', sans-serif;
+}
+.pc-weeks-tbl th {
+  font-size: 10px; font-weight: 800; letter-spacing: 0.05em;
+  text-transform: uppercase; color: #888;
+  padding: 4px 3px; text-align: center;
+  border-bottom: 1px solid #e0dbd5;
+  white-space: nowrap;
+}
+.pc-weeks-tbl td {
+  font-size: 12px; font-weight: 600;
+  color: #1a1a1a; text-align: center;
+  padding: 5px 3px;
+  border-bottom: 1px solid #f0ece7;
+  white-space: nowrap;
+}
+.pc-weeks-tbl th:first-child,
+.pc-weeks-tbl td:first-child { color: #888; font-weight: 700; }
+
+/* The points column is what the eye goes to first. */
+.pc-weeks-pts { color: #e8822a !important; font-weight: 700 !important; }
+
+/* Separates what a player is meant to do from everything else. */
+.pc-weeks-divide { border-left: 1px solid #d8d2ca; }
+
+/* A bye or a missed week is not a bad week -- it should not read like one. */
+.pc-weeks-row--none td { color: #b0a9a0; }
