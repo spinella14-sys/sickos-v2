@@ -176,12 +176,40 @@ const WEEK_COLS = {
 }
 WEEK_COLS.TE = WEEK_COLS.WR
 
-function RecentWeeks({ weekly, schedule, projByWeek, pos, currentWeek }) {
+
+// Schedules for every club a player appeared for in a season, keyed by team.
+// A mid-season move means two, and each week resolves against the right one.
+async function fetchSchedulesForTeams(teams, season, apiBase) {
+  const unique = [...new Set(teams.filter(Boolean))]
+  if (!unique.length) return {}
+  const results = await Promise.all(unique.map(t =>
+    fetch(`${apiBase}/schedule/team/${t}?season=${season}`)
+      .then(r => r.ok ? r.json() : [])
+      .catch(() => [])
+  ))
+  const byTeam = {}
+  unique.forEach((t, i) => { byTeam[t] = Array.isArray(results[i]) ? results[i] : [] })
+  return byTeam
+}
+
+function RecentWeeks({ weekly, schedule, schedulesByTeam, projByWeek, pos, currentWeek, fallbackTeam }) {
   const cols = WEEK_COLS[pos]
-  if (!cols || !schedule?.length) return null
+  const haveSchedule = (schedule?.length || 0) > 0 ||
+    Object.values(schedulesByTeam || {}).some(s => s.length)
+  if (!cols || !haveSchedule) return null
 
   const statByWeek = {}
   for (const w of (weekly || [])) statByWeek[w.week] = w
+
+  // Which club was he on that week? The stat row knows; the player record only
+  // knows where he is now.
+  const teamForWeek = (wk) => statByWeek[wk]?.team || fallbackTeam || null
+
+  const gameForWeek = (wk) => {
+    const team = teamForWeek(wk)
+    const sched = (team && schedulesByTeam?.[team]) || schedule || []
+    return sched.find(g => g.week === wk) || null
+  }
 
   // Walk back from the current week. The schedule runs the full season, so
   // weeks that have not happened are skipped rather than shown as blanks.
@@ -189,13 +217,9 @@ function RecentWeeks({ weekly, schedule, projByWeek, pos, currentWeek }) {
     .filter(g => g.week <= currentWeek)
     .sort((a, b) => b.week - a.week)
 
-  const byeWeeks = []
   const weeksInRange = []
-  const maxWeek = Math.max(...schedule.map(g => g.week), 0)
   for (let wk = currentWeek; wk >= 1 && weeksInRange.length < 5; wk--) {
-    const game = schedule.find(g => g.week === wk)
-    weeksInRange.push({ week: wk, game: game || null })
-    if (!game) byeWeeks.push(wk)
+    weeksInRange.push({ week: wk, game: gameForWeek(wk) })
   }
 
   const rows = weeksInRange.reverse()
@@ -481,15 +505,14 @@ function PlayerCard({ playerId, anchorRect }) {
   // Per-game by default. A season total mostly reports who has been available;
   // the per-game number is what tells you about the player.
   const [viewMode,      setViewMode]      = useState('perGame')
-  // This week's projection. The card never had one -- the old PROJ bar was an
-  // empty placeholder labelled "season".
-  const [projPts,       setProjPts]       = useState(null)
   const [watchlistBusy, setWatchlistBusy] = useState(false)
   const [analytics,     setAnalytics]     = useState(null)
   const [availableSeasons, setAvailableSeasons] = useState([])
   const [statsLoading,  setStatsLoading]  = useState(false)
   const [posRanks,      setPosRanks]      = useState(null)
   const [teamSchedule, setTeamSchedule] = useState([])
+  // One schedule per club the player appeared for that season.
+  const [schedulesByTeam, setSchedulesByTeam] = useState({})
   const [projByWeek,   setProjByWeek]   = useState({})
   const [schedDefRanks, setSchedDefRanks] = useState(null)
   const [schedCurWeek, setSchedCurWeek] = useState(null)
@@ -583,6 +606,17 @@ function PlayerCard({ playerId, anchorRect }) {
         setTotals(statsRes?.totals || {})
         setGames(statsRes?.games || 0)
         setOwnership(ownRes)
+
+        // Schedules for the clubs he actually played for, not the one he is on
+        // now. The card opens on his latest season, which for a retired player
+        // is years back.
+        const loadTeams = [...new Set(rawWeekly.map(w => w.team).filter(Boolean))]
+        if (loadTeams.length) {
+          const byTeam = await fetchSchedulesForTeams(loadTeams, season, API_BASE)
+          if (!cancelled) setSchedulesByTeam(byTeam)
+        } else {
+          setSchedulesByTeam({})
+        }
         setAnalytics(analyticsRes)
         setAvailableSeasons(seasonsRes || [])
         setPosRanks(ranksRes || null)
@@ -609,11 +643,30 @@ function PlayerCard({ playerId, anchorRect }) {
     setWeekly([]); setTotals({}); setGames(0); setAnalytics(null)
     try {
       const pos = player?.position || 'WR'
-      const [statsRes, analyticsRes, ranksRes2] = await Promise.all([
+      const nflTeam = player?.nfl_team
+      // The recent-weeks table has to follow the season being viewed. Without
+      // this it kept showing the current season's schedule and opponents
+      // underneath another season's stats.
+      const [statsRes, analyticsRes, ranksRes2, schedRes, projRes] = await Promise.all([
         fetch(`${API_BASE}/stats/player/${playerId}?season=${newSeason}`).then(r => r.ok ? r.json() : null),
         fetch(`${API_BASE}/stats/player/${playerId}/analytics?season=${newSeason}`).then(r => r.ok ? r.json() : null).catch(() => null),
         fetch(`${API_BASE}/stats/player/${playerId}/position-ranks?season=${newSeason}`).then(r => r.ok ? r.json() : null).catch(() => null),
+        nflTeam
+          ? fetch(`${API_BASE}/schedule/team/${nflTeam}?season=${newSeason}`).then(r => r.ok ? r.json() : []).catch(() => [])
+          : Promise.resolve([]),
+        fetch(`${API_BASE}/stats/player/${playerId}/projections?season=${newSeason}`).then(r => r.ok ? r.json() : null).catch(() => null),
       ])
+      setTeamSchedule(Array.isArray(schedRes) ? schedRes : [])
+      setProjByWeek(projRes?.by_week || {})
+
+      // Schedules for whichever clubs he actually played for that season,
+      // rather than the one he is on today.
+      const seasonTeams = [...new Set((statsRes?.weekly || []).map(w => w.team).filter(Boolean))]
+      setSchedulesByTeam(
+        seasonTeams.length
+          ? await fetchSchedulesForTeams(seasonTeams, newSeason, API_BASE)
+          : {}
+      )
       const rawWeekly = statsRes?.weekly || []
       setWeekly(rawWeekly.map(w => ({ ...w, fantasy_pts: calcFantasyPts(w, pos) })))
       setTotals(statsRes?.totals || {})
@@ -791,7 +844,7 @@ function PlayerCard({ playerId, anchorRect }) {
                   <div className="pc-bio-stat">
                     <span className="pc-bio-stat-lbl">PROJ</span>
                     <span className="pc-bio-stat-val">
-                      {projPts != null ? Number(projPts).toFixed(1) : '—'}
+                      {projByWeek?.[schedCurWeek] != null ? projByWeek[schedCurWeek].toFixed(1) : '—'}
                     </span>
                   </div>
                 </div>
@@ -906,9 +959,11 @@ function PlayerCard({ playerId, anchorRect }) {
               <RecentWeeks
                 weekly={weekly}
                 schedule={teamSchedule}
+                schedulesByTeam={schedulesByTeam}
+                fallbackTeam={player?.nfl_team}
                 projByWeek={projByWeek}
                 pos={pos}
-                currentWeek={schedCurWeek}
+                currentWeek={statSeason === CURRENT_SEASON ? schedCurWeek : Math.max(...teamSchedule.map(g => g.week), 0)}
               />
             </div>
           )}
