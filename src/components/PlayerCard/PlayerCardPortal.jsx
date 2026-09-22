@@ -196,7 +196,9 @@ function RecentWeeks({ weekly, schedule, schedulesByTeam, projByWeek, pos, curre
   const cols = WEEK_COLS[pos]
   const haveSchedule = (schedule?.length || 0) > 0 ||
     Object.values(schedulesByTeam || {}).some(s => s.length)
-  if (!cols || !haveSchedule) return null
+  // Without a schedule the table still works off the stat rows -- it just shows
+  // games played rather than calendar weeks.
+  if (!cols || (!haveSchedule && !(weekly || []).length)) return null
 
   const statByWeek = {}
   for (const w of (weekly || [])) statByWeek[w.week] = w
@@ -218,8 +220,16 @@ function RecentWeeks({ weekly, schedule, schedulesByTeam, projByWeek, pos, curre
     .sort((a, b) => b.week - a.week)
 
   const weeksInRange = []
-  for (let wk = currentWeek; wk >= 1 && weeksInRange.length < 5; wk--) {
-    weeksInRange.push({ week: wk, game: gameForWeek(wk) })
+  if (haveSchedule && currentWeek) {
+    // Calendar weeks: a week he missed still gets a row, which is the point.
+    for (let wk = currentWeek; wk >= 1 && weeksInRange.length < 5; wk--) {
+      weeksInRange.push({ week: wk, game: gameForWeek(wk) })
+    }
+  } else {
+    // No schedule for this season, so there is no way to tell a bye from an
+    // absence. Show the games he did play and claim nothing about the rest.
+    const played = [...(weekly || [])].sort((a, b) => b.week - a.week).slice(0, 5)
+    for (const w of played) weeksInRange.push({ week: w.week, game: null, noSchedule: true })
   }
 
   const rows = weeksInRange.reverse()
@@ -241,11 +251,13 @@ function RecentWeeks({ weekly, schedule, schedulesByTeam, projByWeek, pos, curre
           </tr>
         </thead>
         <tbody>
-          {rows.map(({ week, game }) => {
+          {rows.map(({ week, game, noSchedule }) => {
             const stat = statByWeek[week]
             const proj = projByWeek?.[week]
-            const isBye = !game
-            const isDnp = !isBye && !stat
+            // With no schedule every row here is a game he played, so nothing
+            // is a bye and nothing is a DNP.
+            const isBye = !noSchedule && !game
+            const isDnp = !noSchedule && !isBye && !stat
 
             return (
               <tr key={week} className={isBye || isDnp ? 'pc-weeks-row--none' : ''}>
