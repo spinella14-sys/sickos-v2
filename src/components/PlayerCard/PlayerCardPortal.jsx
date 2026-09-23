@@ -192,6 +192,30 @@ async function fetchSchedulesForTeams(teams, season, apiBase) {
   return byTeam
 }
 
+
+// Strength of the next five weeks, from the same defensive ranks the rows show.
+//
+// Rank 1 is the stingiest defence against a position, so a HIGH average means
+// soft matchups. Byes are skipped rather than counted as neutral -- a week off
+// is not an easy opponent, and averaging it in would drag every bye-week player
+// toward the middle.
+function scheduleStrength(games, position, rankings) {
+  const ranks = []
+  for (const g of (games || [])) {
+    if (!g.opponent) continue          // bye
+    const r = rankings?.[position]?.[g.opponent]
+    if (r?.rank != null) ranks.push({ rank: r.rank, total: r.total_teams || 32 })
+  }
+  if (!ranks.length) return null
+
+  const avg = ranks.reduce((s, r) => s + r.rank, 0) / ranks.length
+  const total = ranks[0].total
+
+  if (avg >= (total * 2) / 3) return { label: 'FRIENDLY SCHEDULE',  color: '#3dba6e', avg, n: ranks.length }
+  if (avg <= total / 3)       return { label: 'DIFFICULT SCHEDULE', color: '#d94f4f', avg, n: ranks.length }
+  return { label: 'MODERATE SCHEDULE', color: '#d4a843', avg, n: ranks.length }
+}
+
 function RecentWeeks({ weekly, schedule, schedulesByTeam, projByWeek, pos, currentWeek, fallbackTeam }) {
   const cols = WEEK_COLS[pos]
   const haveSchedule = (schedule?.length || 0) > 0 ||
@@ -1022,6 +1046,18 @@ function PlayerCard({ playerId, anchorRect }) {
             <div className="pc-section">
               <div className="pc-section-hd">
                 <span className="pc-section-label">UPCOMING SCHEDULE</span>
+                {(() => {
+                  const next5 = teamSchedule
+                    .filter(g => schedCurWeek == null || g.week >= schedCurWeek)
+                    .slice(0, 5)
+                  const sos = scheduleStrength(next5, pos, schedDefRanks)
+                  if (!sos) return null
+                  return (
+                    <span className="pc-sos" style={{ color: sos.color, borderColor: sos.color }}>
+                      {sos.label}
+                    </span>
+                  )
+                })()}
               </div>
               <div className="pc-schedule-list">
                 {teamSchedule

@@ -650,3 +650,14 @@
 
 /* A bye or a missed week is not a bad week -- it should not read like one. */
 .pc-weeks-row--none td { color: #b0a9a0; }
+
+/* Strength of the next five weeks, from the same defensive ranks the rows
+   below already show -- a summary of what the list is telling you. */
+.pc-sos {
+  margin-left: auto;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 10px; font-weight: 800; letter-spacing: 0.08em;
+  padding: 2px 7px;
+  border: 1px solid; border-radius: 3px;
+  white-space: nowrap;
+}
