@@ -194,8 +194,6 @@ async function fetchSchedulesForTeams(teams, season, apiBase) {
 
 function RecentWeeks({ weekly, schedule, schedulesByTeam, projByWeek, pos, currentWeek, fallbackTeam }) {
   const cols = WEEK_COLS[pos]
-  console.log('[RecentWeeks]', { pos, hasCols: !!cols, weekly: (weekly||[]).length,
-    schedule: (schedule||[]).length, byTeam: Object.keys(schedulesByTeam||{}), currentWeek })
   const haveSchedule = (schedule?.length || 0) > 0 ||
     Object.values(schedulesByTeam || {}).some(s => s.length)
   // Without a schedule the table still works off the stat rows -- it just shows
