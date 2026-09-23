@@ -193,29 +193,6 @@ async function fetchSchedulesForTeams(teams, season, apiBase) {
 }
 
 
-// Strength of the next five weeks, from the same defensive ranks the rows show.
-//
-// Rank 1 is the stingiest defence against a position, so a HIGH average means
-// soft matchups. Byes are skipped rather than counted as neutral -- a week off
-// is not an easy opponent, and averaging it in would drag every bye-week player
-// toward the middle.
-function scheduleStrength(games, position, rankings) {
-  const ranks = []
-  for (const g of (games || [])) {
-    if (!g.opponent) continue          // bye
-    const r = rankings?.[position]?.[g.opponent]
-    if (r?.rank != null) ranks.push({ rank: r.rank, total: r.total_teams || 32 })
-  }
-  if (!ranks.length) return null
-
-  const avg = ranks.reduce((s, r) => s + r.rank, 0) / ranks.length
-  const total = ranks[0].total
-
-  if (avg >= (total * 2) / 3) return { label: 'FRIENDLY SCHEDULE',  color: '#3dba6e', avg, n: ranks.length }
-  if (avg <= total / 3)       return { label: 'DIFFICULT SCHEDULE', color: '#d94f4f', avg, n: ranks.length }
-  return { label: 'MODERATE SCHEDULE', color: '#d4a843', avg, n: ranks.length }
-}
-
 function RecentWeeks({ weekly, schedule, schedulesByTeam, projByWeek, pos, currentWeek, fallbackTeam }) {
   const cols = WEEK_COLS[pos]
   const haveSchedule = (schedule?.length || 0) > 0 ||
@@ -558,6 +535,9 @@ function PlayerCard({ playerId, anchorRect }) {
   const [schedulesByTeam, setSchedulesByTeam] = useState({})
   const [projByWeek,   setProjByWeek]   = useState({})
   const [schedDefRanks, setSchedDefRanks] = useState(null)
+  // Banded server-side against all 32 teams -- the card only sees one schedule,
+  // so it cannot know whether an average of 16 is good or bad this week.
+  const [schedStrength, setSchedStrength] = useState(null)
   const [schedCurWeek, setSchedCurWeek] = useState(null)
   const [showNewsCard, setShowNewsCard] = useState(false)
   const [newsCardTab,  setNewsCardTab]  = useState('health')
@@ -593,6 +573,7 @@ function PlayerCard({ playerId, anchorRect }) {
         const [sched, defRanks] = result
         setTeamSchedule(sched || [])
         setSchedDefRanks(defRanks?.rankings || null)
+        setSchedStrength(defRanks?.strength || null)
       })
       .catch(() => {})
 
@@ -1047,14 +1028,15 @@ function PlayerCard({ playerId, anchorRect }) {
               <div className="pc-section-hd">
                 <span className="pc-section-label">UPCOMING SCHEDULE</span>
                 {(() => {
-                  const next5 = teamSchedule
-                    .filter(g => schedCurWeek == null || g.week >= schedCurWeek)
-                    .slice(0, 5)
-                  const sos = scheduleStrength(next5, pos, schedDefRanks)
+                  const sos = schedStrength?.[pos]?.[player?.nfl_team]
                   if (!sos) return null
+                  const color = sos.band === 'friendly' ? '#3dba6e'
+                              : sos.band === 'difficult' ? '#d94f4f'
+                              : '#d4a843'
                   return (
-                    <span className="pc-sos" style={{ color: sos.color, borderColor: sos.color }}>
-                      {sos.label}
+                    <span className="pc-sos" style={{ color, borderColor: color }}
+                          title={`Average opponent rank ${sos.avg_rank} over the next five weeks`}>
+                      {sos.band.toUpperCase()} SCHEDULE
                     </span>
                   )
                 })()}
