@@ -996,13 +996,17 @@ export default function TradeMachinePage() {
   const [blockEntries, setBlockEntries] = useState([])
   const [allTeams,     setAllTeams]     = useState([])
 
+  const [acceptErr, setAcceptErr] = useState({})
+
   async function handleAccept(tradeId) {
+    setAcceptErr(e=>({...e,[tradeId]:null}))
     const r = await fetch(`${API}/trades/${tradeId}/accept`,{
       method:'PATCH', headers:{'Content-Type':'application/json'},
       body:JSON.stringify({team_abbrev:manager?.team_abbrev})
     })
-    const d = await r.json()
+    const d = await r.json().catch(()=>({}))
     if (r.ok) setTrades(prev=>prev.map(t=>t.id===tradeId?{...t,status:d.trade?.status||t.status}:t))
+    else setAcceptErr(e=>({...e,[tradeId]: d.error || 'This trade could not be accepted.'}))
   }
 
   async function handleCancel(tradeId) {
@@ -1264,6 +1268,9 @@ export default function TradeMachinePage() {
                 {/* Action buttons */}
                 {needsAction && (
                   <div className="tm-tc-actions" onClick={e => e.stopPropagation()}>
+                    {acceptErr[trade.id] && (
+                      <div style={{width:'100%',margin:'8px 0',padding:'10px 12px',borderRadius:6,background:'rgba(214,69,69,0.12)',border:'1px solid rgba(214,69,69,0.45)',color:'#d64545',fontSize:13,lineHeight:1.45}}>{acceptErr[trade.id]}</div>
+                    )}
                     <button className="tm-tc-btn tm-tc-btn--accept" onClick={()=>handleAccept(trade.id)}>Accept</button>
                     <button className="tm-tc-btn tm-tc-btn--counter"
                       onClick={()=>navigate(`/trade?counter=${trade.id}&teams=${trade.trade_teams?.map(t=>t.team_abbrev).join(',')}`)}>

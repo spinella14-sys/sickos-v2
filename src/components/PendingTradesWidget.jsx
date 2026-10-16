@@ -111,13 +111,24 @@ export default function PendingTradesWidget() {
 
   useEffect(() => { loadTrades() }, [loadTrades])
 
+  const [acceptErr, setAcceptErr] = useState({})
+
   async function handleAccept(tradeId) {
     setProcessing(p=>({...p,[tradeId]:'accepting'}))
+    setAcceptErr(e=>({...e,[tradeId]:null}))
     const r = await fetch(`${API}/trades/${tradeId}/accept`, {
       method:'PATCH', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ team_abbrev: team })
     })
-    if (r.ok) await loadTrades()
+    if (r.ok) {
+      await loadTrades()
+    } else {
+      // A refused acceptance used to do nothing at all -- the button just
+      // stopped spinning and the trade sat there. The backend now explains
+      // which limit the roster would breach, so show it.
+      const d = await r.json().catch(() => ({}))
+      setAcceptErr(e=>({...e,[tradeId]: d.error || 'This trade could not be accepted.'}))
+    }
     setProcessing(p=>({...p,[tradeId]:null}))
   }
 
@@ -265,6 +276,10 @@ export default function PendingTradesWidget() {
                       </span>
                     ))}
                   </div>
+                )}
+
+                {acceptErr[trade.id] && (
+                  <div style={{width:'100%',margin:'8px 0',padding:'10px 12px',borderRadius:6,background:'rgba(214,69,69,0.12)',border:'1px solid rgba(214,69,69,0.45)',color:'#d64545',fontSize:13,lineHeight:1.45}}>{acceptErr[trade.id]}</div>
                 )}
 
                 {/* Actions */}
