@@ -1112,7 +1112,55 @@ export default function TeamPage() {
     // silently clearing them, and surface the real backend error.
     const remainingOverrides = {}
     let firstError = ''
-    for (const [contractId, newSlot] of Object.entries(slotOverrides)) {
+
+    // Two staged changes that exchange slots are legal as a pair but illegal
+    // in either order alone -- a bench QB moving down trips the PS QB limit,
+    // and the PS QB moving up trips the active QB limit. Sent as two requests
+    // both fail. The backend has one endpoint that validates the end state.
+    const entries = Object.entries(slotOverrides)
+    const infoFor = (cid) => {
+      const c = roster.find(r => (r.id || r.sleeper_id) === cid)
+      return {
+        sleeperId: c?.players?.sleeper_id || c?.sleeper_id,
+        current:   c?.roster_slots?.[0]?.slot_type || 'active',
+      }
+    }
+
+    const handled = new Set()
+    const swapPairs = []
+    for (const [cidA, slotA] of entries) {
+      if (handled.has(cidA)) continue
+      const A = infoFor(cidA)
+      const match = entries.find(([cidB, slotB]) =>
+        cidB !== cidA && !handled.has(cidB) &&
+        slotB === A.current && slotA === infoFor(cidB).current)
+      if (!match) continue
+      handled.add(cidA); handled.add(match[0])
+      swapPairs.push([cidA, match[0]])
+    }
+
+    const keepStaged = (...cids) => cids.forEach(c => { remainingOverrides[c] = slotOverrides[c] })
+
+    for (const [cidA, cidB] of swapPairs) {
+      const A = infoFor(cidA), B = infoFor(cidB)
+      if (!A.sleeperId || !B.sleeperId) { fail += 2; keepStaged(cidA, cidB); continue }
+      try {
+        const r = await fetch(`${API_BASE}/teams/${abbrev.toUpperCase()}/swap-slots`, {
+          method:'POST', headers,
+          body: JSON.stringify({ sleeper_id_a: A.sleeperId, sleeper_id_b: B.sleeperId }),
+        })
+        if (r.ok) { const updated = await r.json(); setTeamData(prev => ({...prev, ...updated})); ok += 2 }
+        else {
+          fail += 2
+          keepStaged(cidA, cidB)
+          const body = await r.json().catch(() => ({}))
+          if (body.error && !firstError) firstError = body.error
+        }
+      } catch { fail += 2; keepStaged(cidA, cidB) }
+    }
+
+    for (const [contractId, newSlot] of entries) {
+      if (handled.has(contractId)) continue
       const contract  = roster.find(r => (r.id||r.sleeper_id) === contractId)
       const sleeperId = contract?.players?.sleeper_id || contract?.sleeper_id
       if (!sleeperId) { fail++; remainingOverrides[contractId] = newSlot; continue }
