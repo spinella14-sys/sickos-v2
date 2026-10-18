@@ -498,11 +498,41 @@ function ReleasePanel({ onLog, onRosterRefresh }) {
 
 // ── Slot Change Panel ─────────────────────────────────────────────────────────
 function SlotPanel({ onLog, onRosterRefresh }) {
+  const SEASON = 2026
+
+  const ROSTER_SLOTS = [
+    { v:'active', label:'Active Roster' },
+    { v:'ps',     label:'Practice Squad' },
+    { v:'ir',     label:'Injured Reserve' },
+  ]
+
+  // Lineup slots write to weekly_lineups for the week being played and carry
+  // override_lock, so a game that has already kicked off does not block the
+  // move. This is the commissioner's path for a manager who could not set
+  // their own lineup -- the editor is drag-and-drop and does not work on a
+  // phone, so the standing workaround is to message the commissioner.
+  const LINEUP_SLOTS = [
+    { v:'QB',   label:'QB',    pos:['QB'] },
+    { v:'RB',   label:'RB',    pos:['RB'] },
+    { v:'WR',   label:'WR',    pos:['WR'] },
+    { v:'TE',   label:'TE',    pos:['TE'] },
+    { v:'FLEX', label:'FLEX',  pos:['RB','WR','TE'] },
+    { v:'BN',   label:'Bench', pos:['QB','RB','WR','TE'] },
+  ]
+
   const [team,     setTeam]     = useState('')
   const [roster,   setRoster]   = useState([])
   const [selected, setSelected] = useState(null)
   const [newSlot,  setNewSlot]  = useState('active')
   const [loading,  setLoading]  = useState(false)
+  const [week,     setWeek]     = useState(null)
+
+  useEffect(() => {
+    fetch(`${API_BASE}/lineup/meta/current-week`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => setWeek(d?.week ?? d?.current_week ?? null))
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (!team) return
@@ -511,32 +541,61 @@ function SlotPanel({ onLog, onRosterRefresh }) {
       .then(d => setRoster(d?.roster || []))
   }, [team])
 
+  const slotOf       = r => r?.roster_slots?.[0]?.slot_type || 'active'
+  const isLineupSlot = LINEUP_SLOTS.some(s => s.v === newSlot)
+  const onActive     = selected ? slotOf(selected) === 'active' : false
+  const pos          = selected?.players?.position
+
   async function handleSlotChange() {
     if (!selected) return
     setLoading(true)
-    const r = await fetch(`${API_BASE}/contracts/${selected.id}/slot`, {
-      method: 'PATCH',
-      headers: { 'Content-Type':'application/json' },
-      body: JSON.stringify({ new_slot: newSlot, season: SEASON })
-    })
-    const data = await r.json()
-    setLoading(false)
-    if (r.ok) {
-      onLog(`✓ ${selected.players?.full_name} → ${newSlot.toUpperCase()}`, 'success')
-      setSelected(null)
+    try {
+      if (isLineupSlot) {
+        const sleeperId = selected.players?.sleeper_id || selected.sleeper_id
+        const r = await fetch(`${API_BASE}/lineup/${team}/move`, {
+          method: 'PATCH',
+          headers: { 'Content-Type':'application/json', 'x-admin-password': ADMIN_PW },
+          body: JSON.stringify({
+            sleeper_id: String(sleeperId),
+            new_slot: newSlot,
+            season: SEASON,
+            week,
+            override_lock: true,
+          }),
+        })
+        const data = await r.json().catch(() => ({}))
+        if (r.ok) {
+          onLog(`✓ ${selected.players?.full_name} → ${newSlot} (week ${week}, lock overridden)`, 'success')
+          setSelected(null)
+        } else {
+          onLog(`✗ ${data.error || 'Lineup move failed'}`, 'error')
+        }
+      } else {
+        const r = await fetch(`${API_BASE}/contracts/${selected.id}/slot`, {
+          method: 'PATCH',
+          headers: { 'Content-Type':'application/json', 'x-admin-password': ADMIN_PW },
+          body: JSON.stringify({ new_slot: newSlot, season: SEASON }),
+        })
+        const data = await r.json().catch(() => ({}))
+        if (r.ok) {
+          onLog(`✓ ${selected.players?.full_name} → ${newSlot.toUpperCase()}`, 'success')
+          setSelected(null)
+          setRoster(prev => prev.map(x => x.id === selected.id
+            ? { ...x, roster_slots:[{ slot_type:newSlot }] } : x))
+        } else {
+          onLog(`✗ ${data.error || 'Slot change failed'}`, 'error')
+        }
+      }
       onRosterRefresh(team)
-      setRoster(prev => prev.map(r => r.id===selected.id
-        ? {...r, roster_slots:[{slot_type:newSlot}]}
-        : r
-      ))
-    } else {
-      onLog(`✗ ${data.error}`, 'error')
+    } catch (e) {
+      onLog(`✗ ${e.message}`, 'error')
     }
+    setLoading(false)
   }
 
   return (
     <div className="ar-panel">
-      <div className="ar-panel-title">🔀 Change Roster Slot</div>
+      <div className="ar-panel-title">🔀 Change Roster / Lineup Slot</div>
 
       <div className="ar-field">
         <label className="ar-label">Team</label>
@@ -552,7 +611,7 @@ function SlotPanel({ onLog, onRosterRefresh }) {
           <div className="ar-roster-list">
             {roster.map(r => {
               const p = r.players || {}
-              const currentSlot = r.roster_slots?.[0]?.slot_type || 'active'
+              const currentSlot = slotOf(r)
               return (
                 <button key={r.id} className={`ar-roster-row ${selected?.id===r.id?'ar-roster-row--sel':''}`}
                   onClick={()=>{setSelected(r);setNewSlot(currentSlot)}}>
@@ -568,21 +627,44 @@ function SlotPanel({ onLog, onRosterRefresh }) {
       )}
 
       {selected && (
-        <div className="ar-row">
-          <div className="ar-field">
-            <label className="ar-label">Move to slot</label>
-            <select className="ar-select" value={newSlot} onChange={e=>setNewSlot(e.target.value)}>
-              <option value="active">Active Roster</option>
-              <option value="ps">Practice Squad</option>
-              <option value="ir">Injured Reserve</option>
-            </select>
+        <>
+          <div className="ar-row">
+            <div className="ar-field">
+              <label className="ar-label">Move to slot</label>
+              <select className="ar-select" value={newSlot} onChange={e=>setNewSlot(e.target.value)}>
+                <optgroup label="Roster">
+                  {ROSTER_SLOTS.map(s => <option key={s.v} value={s.v}>{s.label}</option>)}
+                </optgroup>
+                <optgroup label={week ? `Lineup — week ${week}` : 'Lineup'}>
+                  {LINEUP_SLOTS.map(s => (
+                    <option key={s.v} value={s.v}
+                      disabled={!onActive || !week || (pos && !s.pos.includes(pos))}>
+                      {s.label}
+                    </option>
+                  ))}
+                </optgroup>
+              </select>
+            </div>
+            <div className="ar-field ar-field--end">
+              <button className="ar-btn ar-btn--primary" onClick={handleSlotChange} disabled={loading}>
+                {loading ? 'Moving…' : 'Move Player →'}
+              </button>
+            </div>
           </div>
-          <div className="ar-field ar-field--end">
-            <button className="ar-btn ar-btn--primary" onClick={handleSlotChange} disabled={loading}>
-              {loading ? 'Moving…' : 'Move Player →'}
-            </button>
-          </div>
-        </div>
+
+          {!onActive && (
+            <div style={{fontSize:12,opacity:.75,marginTop:-4}}>
+              {selected.players?.full_name} is on {slotOf(selected).toUpperCase()}. Move him to
+              the Active Roster first before assigning a lineup slot.
+            </div>
+          )}
+          {onActive && isLineupSlot && (
+            <div style={{fontSize:12,color:'#d08b2c',marginTop:-4}}>
+              Lineup moves override the kickoff lock and are recorded. The player scores
+              his full game total for week {week}.
+            </div>
+          )}
+        </>
       )}
     </div>
   )
