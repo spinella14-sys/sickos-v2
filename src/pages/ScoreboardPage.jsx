@@ -116,13 +116,13 @@ function MatchupCard({ matchup, records }) {
     <Link to={`/matchup/${matchup.id}`} className="mc-card mc-card--link">
       <StatusBar d={d} />
       <div className="mc-body">
-        <TeamIdent side="home" data={d.home} logoSize={60} />
+        <TeamIdent side="home" data={d.home} logoSize={72} />
         <div className="mc-center">
           <ScoreCell data={d.home} hasScores={d.hasScores} isFinal={d.isFinal} />
           <span className="mc-vs">VS</span>
           <ScoreCell data={d.away} hasScores={d.hasScores} isFinal={d.isFinal} />
         </div>
-        <TeamIdent side="away" data={d.away} logoSize={60} />
+        <TeamIdent side="away" data={d.away} logoSize={72} />
       </div>
     </Link>
   )
