@@ -90,41 +90,43 @@
 }
 @keyframes sb-pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-/* Both halves are mirror images: logo outboard, score inboard against the
-   VS divider. The score column is a fixed width so a six-character total
-   ("261.60") can never be clipped by the card's overflow, and so both
-   halves line up regardless of how long the team names are. */
+/* Identity halves bookend a centre score cluster. Names get the full outer
+   width, which is what the earlier per-side fixed score column stole. */
 .mc-body {
   display: grid;
-  grid-template-columns: minmax(0,1fr) 48px minmax(0,1fr);
+  grid-template-columns: minmax(0,1fr) auto minmax(0,1fr);
   align-items: center;
-  padding: 18px 18px;
-  gap: 10px;
+  padding: 16px 18px;
+  gap: 14px;
 }
 
-.mc-side { display: grid; align-items: center; gap: 12px; min-width: 0; }
-.mc-side--home { grid-template-columns: auto minmax(0,1fr) 100px; }
-.mc-side--away { grid-template-columns: 100px minmax(0,1fr) auto; }
+.mc-ident { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.mc-ident--away { flex-direction: row; justify-content: flex-end; }
+
+.mc-center { display: grid; grid-template-columns: auto 34px auto; align-items: center; }
+.mc-center--hero { grid-template-columns: auto 72px auto; }
 
 .sb-logo { object-fit: contain; flex-shrink: 0; border-radius: 3px; }
 .sb-logo-ph { display: inline-block; background: var(--bg3); border-radius: 3px; flex-shrink: 0; }
 
 .mc-team-info { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.mc-team-info--right { text-align: right; }
+.mc-team-info--right { text-align: right; align-items: flex-end; }
 
-/* Wraps to two lines instead of ellipsing -- "Take Off Your Pads and
-   Jacket" was being truncated mid-word. */
+/* Wraps to two lines instead of ellipsing mid-word. */
 .mc-tname {
   font-family: var(--font-ui); font-size: 13px; font-weight: 700; letter-spacing: 0.03em;
-  color: var(--text-primary); line-height: 1.15;
+  color: var(--text-primary); line-height: 1.18;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
-.mc-mgr { font-family: var(--font-body); font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mc-mgr {
+  font-family: var(--font-body); font-size: 11px; color: var(--text-muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+}
 .mc-rec { color: var(--text-muted); font-variant-numeric: tabular-nums; }
 
-.mc-score-block { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; }
+.mc-score-block { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 86px; }
 .mc-score {
-  font-family: var(--font-display); font-size: 28px; letter-spacing: 0.01em;
+  font-family: var(--font-display); font-size: 27px; letter-spacing: 0.01em;
   color: var(--text-muted); white-space: nowrap; font-variant-numeric: tabular-nums;
 }
 .mc-score--win  { color: var(--green,#3dba6e); }
@@ -150,9 +152,9 @@
 }
 .mc-hero .mc-status-bar { padding-left: 120px; }
 
-.mc-body--hero { padding: 30px 28px; grid-template-columns: minmax(0,1fr) 72px minmax(0,1fr); }
-.mc-body--hero .mc-side--home { grid-template-columns: auto minmax(0,1fr) 150px; gap: 18px; }
-.mc-body--hero .mc-side--away { grid-template-columns: 150px minmax(0,1fr) auto; gap: 18px; }
+.mc-body--hero { padding: 28px; gap: 24px; }
+.mc-body--hero .mc-ident { gap: 20px; }
+.mc-body--hero .mc-score-block { min-width: 150px; }
 .mc-body--hero .mc-tname { font-size: 19px; letter-spacing: 0.02em; }
 .mc-body--hero .mc-mgr   { font-size: 13px; }
 .mc-body--hero .mc-score { font-size: 46px; }

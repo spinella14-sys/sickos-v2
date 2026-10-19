@@ -66,10 +66,12 @@ function readMatchup(m, records) {
 // card. The DOM order IS the visual order -- an earlier version wrote the
 // away side pre-mirrored and then flex-reversed it, which cancelled out and
 // pushed away scores into the card's overflow.
-function TeamSide({ side, data, hasScores, isFinal, logoSize }) {
-  const { abbrev, team, rec, score, proj, isWinner } = data
-  const scoreCls = !hasScores ? '' : isWinner ? 'mc-score--win' : isFinal ? 'mc-score--loss' : ''
-
+// Identity half: logo outboard, name and record inboard. The scores live in
+// a shared centre cluster instead of inside each half -- with a fixed score
+// column per side, a 560px card left roughly 40px for the team name, which
+// truncated every name and cut the record off entirely.
+function TeamIdent({ side, data, logoSize }) {
+  const { abbrev, team, rec } = data
   const logo = <TeamLogo abbrev={abbrev} size={logoSize} />
   const info = (
     <div className={`mc-team-info ${side === 'away' ? 'mc-team-info--right' : ''}`}>
@@ -80,16 +82,20 @@ function TeamSide({ side, data, hasScores, isFinal, logoSize }) {
       </span>
     </div>
   )
-  const scoreBlock = (
+  return side === 'home'
+    ? <div className="mc-ident mc-ident--home">{logo}{info}</div>
+    : <div className="mc-ident mc-ident--away">{info}{logo}</div>
+}
+
+function ScoreCell({ data, hasScores, isFinal }) {
+  const { score, proj, isWinner } = data
+  const cls = !hasScores ? '' : isWinner ? 'mc-score--win' : isFinal ? 'mc-score--loss' : ''
+  return (
     <div className="mc-score-block">
-      <span className={`mc-score ${scoreCls}`}>{hasScores ? score.toFixed(2) : '—'}</span>
+      <span className={`mc-score ${cls}`}>{hasScores ? score.toFixed(2) : '—'}</span>
       {proj != null && <span className="mc-proj">PROJ {proj.toFixed(1)}</span>}
     </div>
   )
-
-  return side === 'home'
-    ? <div className="mc-side mc-side--home">{logo}{info}{scoreBlock}</div>
-    : <div className="mc-side mc-side--away">{scoreBlock}{info}{logo}</div>
 }
 
 function StatusBar({ d }) {
@@ -110,9 +116,13 @@ function MatchupCard({ matchup, records }) {
     <Link to={`/matchup/${matchup.id}`} className="mc-card mc-card--link">
       <StatusBar d={d} />
       <div className="mc-body">
-        <TeamSide side="home" data={d.home} hasScores={d.hasScores} isFinal={d.isFinal} logoSize={64} />
-        <div className="mc-vs"><span>VS</span></div>
-        <TeamSide side="away" data={d.away} hasScores={d.hasScores} isFinal={d.isFinal} logoSize={64} />
+        <TeamIdent side="home" data={d.home} logoSize={60} />
+        <div className="mc-center">
+          <ScoreCell data={d.home} hasScores={d.hasScores} isFinal={d.isFinal} />
+          <span className="mc-vs">VS</span>
+          <ScoreCell data={d.away} hasScores={d.hasScores} isFinal={d.isFinal} />
+        </div>
+        <TeamIdent side="away" data={d.away} logoSize={60} />
       </div>
     </Link>
   )
@@ -131,9 +141,13 @@ function HeroMatchup({ matchup, records }) {
       <div className="mc-hero-tag">Your Matchup</div>
       <StatusBar d={d} />
       <div className="mc-body mc-body--hero">
-        <TeamSide side="home" data={d.home} hasScores={d.hasScores} isFinal={d.isFinal} logoSize={96} />
-        <div className="mc-vs mc-vs--hero"><span>VS</span></div>
-        <TeamSide side="away" data={d.away} hasScores={d.hasScores} isFinal={d.isFinal} logoSize={96} />
+        <TeamIdent side="home" data={d.home} logoSize={96} />
+        <div className="mc-center mc-center--hero">
+          <ScoreCell data={d.home} hasScores={d.hasScores} isFinal={d.isFinal} />
+          <span className="mc-vs mc-vs--hero">VS</span>
+          <ScoreCell data={d.away} hasScores={d.hasScores} isFinal={d.isFinal} />
+        </div>
+        <TeamIdent side="away" data={d.away} logoSize={96} />
       </div>
       {d.hasScores && (
         <div className="mc-hero-bar">
