@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { TEAMS, LOGOS } from '../data/league'
+import { useAuth } from '../context/AuthContext'
 import './ScoreboardPage.css'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
@@ -25,89 +26,128 @@ function weekTitle(w) {
   return `Week ${w}`
 }
 
-function TeamLogo({ abbrev, size = 48 }) {
+function TeamLogo({ abbrev, size = 64 }) {
   const url = LOGOS[abbrev]
   if (!url) return <span className="sb-logo-ph" style={{ width: size, height: size }} />
   return <img src={url} alt={abbrev} className="sb-logo" style={{ width: size, height: size }} loading="lazy" />
 }
 
-function MatchupCard({ matchup, records }) {
-  const homeTeam  = TEAMS.find(t => t.abbrev === matchup.home_team)
-  const awayTeam  = TEAMS.find(t => t.abbrev === matchup.away_team)
-  const homeScore = parseFloat(matchup.home_score || 0)
-  const awayScore = parseFloat(matchup.away_score || 0)
-  const homeProj  = matchup.home_proj != null ? parseFloat(matchup.home_proj) : null
-  const awayProj  = matchup.away_proj != null ? parseFloat(matchup.away_proj) : null
-  // Real W-L from /standings. data/league.js has hardcoded 2025 records.
-  const homeRec   = records?.[matchup.home_team]
-  const awayRec   = records?.[matchup.away_team]
-  const homeWin   = homeScore > awayScore
-  const hasScores = homeScore > 0 || awayScore > 0
-  const isFinal   = matchup.status === 'final'
-  const isLive    = matchup.status === 'in_progress' || matchup.status === 'live'
-  const margin    = Math.abs(homeScore - awayScore).toFixed(2)
+// One read of a matchup row, shared by the hero and the small cards so the
+// two can never disagree about who is winning.
+function readMatchup(m, records) {
+  const homeScore = parseFloat(m.home_score || 0)
+  const awayScore = parseFloat(m.away_score || 0)
+  return {
+    home: {
+      abbrev: m.home_team,
+      team:   TEAMS.find(t => t.abbrev === m.home_team),
+      rec:    records?.[m.home_team],
+      score:  homeScore,
+      proj:   m.home_proj != null ? parseFloat(m.home_proj) : null,
+      isWinner: homeScore > awayScore,
+    },
+    away: {
+      abbrev: m.away_team,
+      team:   TEAMS.find(t => t.abbrev === m.away_team),
+      rec:    records?.[m.away_team],
+      score:  awayScore,
+      proj:   m.away_proj != null ? parseFloat(m.away_proj) : null,
+      isWinner: awayScore > homeScore,
+    },
+    hasScores: homeScore > 0 || awayScore > 0,
+    isFinal:   m.status === 'final',
+    isLive:    m.status === 'in_progress' || m.status === 'live',
+    margin:    Math.abs(homeScore - awayScore).toFixed(2),
+  }
+}
 
+// Home renders logo -> name -> score; away renders score -> name -> logo, so
+// both scores sit inboard against the VS divider and the logos bookend the
+// card. The DOM order IS the visual order -- an earlier version wrote the
+// away side pre-mirrored and then flex-reversed it, which cancelled out and
+// pushed away scores into the card's overflow.
+function TeamSide({ side, data, hasScores, isFinal, logoSize }) {
+  const { abbrev, team, rec, score, proj, isWinner } = data
+  const scoreCls = !hasScores ? '' : isWinner ? 'mc-score--win' : isFinal ? 'mc-score--loss' : ''
+
+  const logo = <TeamLogo abbrev={abbrev} size={logoSize} />
+  const info = (
+    <div className={`mc-team-info ${side === 'away' ? 'mc-team-info--right' : ''}`}>
+      <span className="mc-tname">{team?.name || abbrev}</span>
+      <span className="mc-mgr">
+        {team?.manager}
+        {rec && <span className="mc-rec"> · {rec.wins}-{rec.losses}</span>}
+      </span>
+    </div>
+  )
+  const scoreBlock = (
+    <div className="mc-score-block">
+      <span className={`mc-score ${scoreCls}`}>{hasScores ? score.toFixed(2) : '—'}</span>
+      {proj != null && <span className="mc-proj">PROJ {proj.toFixed(1)}</span>}
+    </div>
+  )
+
+  return side === 'home'
+    ? <div className="mc-side mc-side--home">{logo}{info}{scoreBlock}</div>
+    : <div className="mc-side mc-side--away">{scoreBlock}{info}{logo}</div>
+}
+
+function StatusBar({ d }) {
+  return (
+    <div className="mc-status-bar">
+      <span className={`mc-status ${d.isLive ? 'mc-status--live' : d.isFinal ? 'mc-status--final' : 'mc-status--upcoming'}`}>
+        {d.isLive && <span className="mc-live-dot" />}
+        {d.isLive ? 'LIVE' : d.isFinal ? 'FINAL' : 'UPCOMING'}
+      </span>
+      {d.hasScores && d.isFinal && <span className="mc-diff">by {d.margin}</span>}
+    </div>
+  )
+}
+
+function MatchupCard({ matchup, records }) {
+  const d = readMatchup(matchup, records)
   return (
     <Link to={`/matchup/${matchup.id}`} className="mc-card mc-card--link">
-      <div className="mc-status-bar">
-        <span className={`mc-status ${isLive ? 'mc-status--live' : isFinal ? 'mc-status--final' : 'mc-status--upcoming'}`}>
-          {isLive && <span className="mc-live-dot" />}
-          {isLive ? 'LIVE' : isFinal ? 'FINAL' : 'UPCOMING'}
-        </span>
-        {hasScores && isFinal && (
-          <span className="mc-diff">by {margin}</span>
-        )}
-      </div>
-
+      <StatusBar d={d} />
       <div className="mc-body">
-        {/* Home */}
-        <div className={`mc-team mc-team--home ${homeWin && hasScores ? 'mc-team--winner' : ''}`}>
-          <TeamLogo abbrev={matchup.home_team} size={52} />
-          <div className="mc-team-info">
-            <span className="mc-tname">{homeTeam?.name || matchup.home_team}</span>
-            <span className="mc-mgr">
-              {homeTeam?.manager}
-              {homeRec && <span className="mc-rec"> · {homeRec.wins}-{homeRec.losses}</span>}
-            </span>
-          </div>
-          <span className="mc-score-block">
-            <span className={`mc-score ${homeWin && hasScores ? 'mc-score--win' : !homeWin && hasScores && isFinal ? 'mc-score--loss' : ''}`}>
-              {hasScores ? homeScore.toFixed(2) : '—'}
-            </span>
-            {homeProj != null && (
-              <span className="mc-proj">PROJ {homeProj.toFixed(1)}</span>
-            )}
-          </span>
-        </div>
-
+        <TeamSide side="home" data={d.home} hasScores={d.hasScores} isFinal={d.isFinal} logoSize={64} />
         <div className="mc-vs"><span>VS</span></div>
-
-        {/* Away */}
-        <div className={`mc-team mc-team--away ${!homeWin && hasScores ? 'mc-team--winner' : ''}`}>
-          <span className="mc-score-block">
-            <span className={`mc-score ${!homeWin && hasScores ? 'mc-score--win' : homeWin && hasScores && isFinal ? 'mc-score--loss' : ''}`}>
-              {hasScores ? awayScore.toFixed(2) : '—'}
-            </span>
-            {awayProj != null && (
-              <span className="mc-proj">PROJ {awayProj.toFixed(1)}</span>
-            )}
-          </span>
-          <div className="mc-team-info mc-team-info--right">
-            <span className="mc-tname">{awayTeam?.name || matchup.away_team}</span>
-            <span className="mc-mgr">
-              {awayRec && <span className="mc-rec">{awayRec.wins}-{awayRec.losses} · </span>}
-              {awayTeam?.manager}
-            </span>
-          </div>
-          <TeamLogo abbrev={matchup.away_team} size={52} />
-        </div>
+        <TeamSide side="away" data={d.away} hasScores={d.hasScores} isFinal={d.isFinal} logoSize={64} />
       </div>
     </Link>
   )
 }
 
+// The viewing manager's own matchup, lifted out of the grid. Ordering the
+// grid by division put the same teams on top every week, which reads as
+// favouritism; everyone now leads with their own game.
+function HeroMatchup({ matchup, records }) {
+  const d = readMatchup(matchup, records)
+  const total = d.home.score + d.away.score
+  const homePct = total > 0 ? (d.home.score / total) * 100 : 50
+
+  return (
+    <Link to={`/matchup/${matchup.id}`} className="mc-card mc-card--link mc-hero">
+      <div className="mc-hero-tag">Your Matchup</div>
+      <StatusBar d={d} />
+      <div className="mc-body mc-body--hero">
+        <TeamSide side="home" data={d.home} hasScores={d.hasScores} isFinal={d.isFinal} logoSize={96} />
+        <div className="mc-vs mc-vs--hero"><span>VS</span></div>
+        <TeamSide side="away" data={d.away} hasScores={d.hasScores} isFinal={d.isFinal} logoSize={96} />
+      </div>
+      {d.hasScores && (
+        <div className="mc-hero-bar">
+          <span className="mc-hero-bar-fill mc-hero-bar-fill--home" style={{ width: `${homePct}%` }} />
+          <span className="mc-hero-bar-fill mc-hero-bar-fill--away" style={{ width: `${100 - homePct}%` }} />
+        </div>
+      )}
+    </Link>
+  )
+}
+
 export default function ScoreboardPage() {
-  // FIX: was defaulting to season:2025, week:14 — all data is 2026
+  const { teamAbbrev } = useAuth()
+
   const [season,   setSeason]   = useState(CURRENT_SEASON)
   const [week,     setWeek]     = useState(1)
   const [matchups, setMatchups] = useState([])
@@ -136,10 +176,9 @@ export default function ScoreboardPage() {
       .then(r => r.ok ? r.json() : [])
       .then(data => {
         if (!Array.isArray(data) || !data.length) return
-        // Find the latest week with a final or in-progress game, or fall back to week 1
-        const live = data.find(m => m.status === 'in_progress' || m.status === 'live')
+        const live  = data.find(m => m.status === 'in_progress' || m.status === 'live')
         const final = data.find(m => m.status === 'final')
-        if (live)  setWeek(live.week)
+        if (live) setWeek(live.week)
         else if (final) setWeek(final.week)
         else setWeek(1)
       })
@@ -171,7 +210,6 @@ export default function ScoreboardPage() {
     .filter(v => v > 0)
   const avgScore   = allScores.length ? (allScores.reduce((a, b) => a + b, 0) / allScores.length).toFixed(1) : null
   const highScore  = allScores.length ? Math.max(...allScores).toFixed(2) : null
-  // Which team put up that score -- this is what the weekly payout is based on.
   const highTeam = allScores.length ? (() => {
     let top = null
     finishedGames.forEach(m => {
@@ -182,6 +220,11 @@ export default function ScoreboardPage() {
     })
     return top?.t || null
   })() : null
+
+  const myMatchup = teamAbbrev
+    ? matchups.find(m => m.home_team === teamAbbrev || m.away_team === teamAbbrev)
+    : null
+  const restMatchups = myMatchup ? matchups.filter(m => m.id !== myMatchup.id) : matchups
 
   const handleSeasonChange = (s) => {
     setSeason(s)
@@ -270,14 +313,15 @@ export default function ScoreboardPage() {
         ) : matchups.length === 0 ? (
           <div className="sb-empty">
             <span>No matchups for {season} {weekTitle(week)}</span>
-            {week > 14 && (
-              <p>Playoff bracket seeds after Week 14 finalizes.</p>
-            )}
+            {week > 14 && <p>Playoff bracket seeds after Week 14 finalizes.</p>}
           </div>
         ) : (
-          <div className="sb-grid">
-            {matchups.map(m => <MatchupCard key={m.id} matchup={m} records={records} />)}
-          </div>
+          <>
+            {myMatchup && <HeroMatchup matchup={myMatchup} records={records} />}
+            <div className="sb-grid">
+              {restMatchups.map(m => <MatchupCard key={m.id} matchup={m} records={records} />)}
+            </div>
+          </>
         )}
       </div>
     </div>
