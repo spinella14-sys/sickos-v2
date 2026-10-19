@@ -82,9 +82,13 @@ function TeamIdent({ side, data, logoSize }) {
       </span>
     </div>
   )
-  return side === 'home'
-    ? <div className="mc-ident mc-ident--home">{logo}{info}</div>
-    : <div className="mc-ident mc-ident--away">{info}{logo}</div>
+  // Always logo-then-info. In the stacked cards that keeps the logo on top for
+  // BOTH teams -- rendering the away side reversed flipped it north-south, so
+  // one team's name sat above its logo and the other's below. The hero mirrors
+  // east-west only, via row-reverse in CSS.
+  return (
+    <div className={`mc-ident mc-ident--${side}`}>{logo}{info}</div>
+  )
 }
 
 function ScoreCell({ data, hasScores, isFinal }) {
