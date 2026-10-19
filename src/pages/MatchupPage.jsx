@@ -275,7 +275,28 @@ export default function MatchupPage() {
   const [opponentMap,  setOpponentMap]  = useState({})
   const [gameStateMap, setGameStateMap] = useState({})   // NFL team -> 'pre'|'in'|'post'
   const [lastPoll, setLastPoll] = useState(null)
+  const [records,  setRecords]  = useState({})
   const pollRef   = useRef(null)
+
+  // Records for the header. The sidebar fetches these for itself; the header
+  // had no access to them, so it showed the abbreviation the logo already
+  // conveys instead of the W-L a box score actually wants.
+  useEffect(() => {
+    if (!matchup?.season) return
+    fetch(`${API_BASE}/matchups/standings?season=${matchup.season}`)
+      .then(r => r.ok ? r.json() : [])
+      .then(data => {
+        const map = {}
+        ;(Array.isArray(data) ? data : []).forEach(t => { map[t.team] = t })
+        setRecords(map)
+      })
+      .catch(() => {})
+  }, [matchup?.season])
+
+  const headerRecord = (abbrev) => {
+    const r = records[abbrev]
+    return r ? `${r.wins}-${r.losses}${r.ties ? `-${r.ties}` : ''}` : ''
+  }
 
   const fetchMatchup = () => {
     if (!matchupId) return
@@ -400,7 +421,7 @@ export default function MatchupPage() {
               <Link to={`/team/${matchup.home_team}`} className="mp-team-name">
                 {matchup.home_team_name}
               </Link>
-              <span className="mp-team-abbrev">{matchup.home_team}</span>
+              <span className="mp-team-abbrev">{headerRecord(matchup.home_team)}</span>
             </div>
             <img src={LOGOS[matchup.home_team]} alt={matchup.home_team}
               className="mp-team-logo" onError={e => e.target.style.opacity = 0} />
@@ -440,7 +461,7 @@ export default function MatchupPage() {
               <Link to={`/team/${matchup.away_team}`} className="mp-team-name">
                 {matchup.away_team_name}
               </Link>
-              <span className="mp-team-abbrev">{matchup.away_team}</span>
+              <span className="mp-team-abbrev">{headerRecord(matchup.away_team)}</span>
             </div>
           </div>
         </div>
