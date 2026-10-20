@@ -254,19 +254,27 @@ function PlayerRow({ contract, slotLabel, slotColor, lineupAssign, onMove, slotO
   const isDropZone = !!dropKey
   const isHover = isDropZone && dragOverKey === dropKey
 
+  // Tap to select, tap to place. Drag-and-drop does not work on touch at all,
+  // so lineups could only be set from a laptop; tapping works the same with a
+  // mouse, so there is one interaction rather than two code paths. The
+  // eligible/ineligible highlighting already keyed off a selected card, so it
+  // comes along unchanged.
   const rowProps = {}
-  if (canEdit && !isLocked) {
-    rowProps.draggable = true
-    rowProps.onDragStart = () => setDragCard(contract)
-    rowProps.onDragEnd   = () => { setDragCard(null); setDragOverKey(null) }
-  }
-  if (isDropZone) {
-    rowProps.onDragOver = e => { e.preventDefault(); e.stopPropagation(); setDragOverKey(dropKey) }
-    rowProps.onDrop     = e => { e.preventDefault(); e.stopPropagation(); if (dragCard) onAttemptMove(dragCard, dropKey, contract) }
+  const selectable = canEdit && !isLocked
+  if (selectable || isDropZone) {
+    rowProps.onClick = (e) => {
+      // Never hijack a tap meant for a link, the MOVE menu or the drop button.
+      if (e.target.closest('button, a, select, input, .rtr-move-cell')) return
+      if (!dragCard) { if (selectable) setDragCard(contract) ; return }
+      if (isDraggingThis) { setDragCard(null); return }
+      if (isDropZone && isEligible) { onAttemptMove(dragCard, dropKey, contract); return }
+      // Tapping an ineligible row just moves the selection there.
+      if (selectable) setDragCard(contract)
+    }
   }
 
   return (
-    <tr {...rowProps} className={`rtr ${isPending ? 'rtr--pending' : ''} ${isLineupSlot ? 'rtr--lineup' : ''} ${isLocked ? 'rtr--locked' : ''} ${canEdit && !isLocked ? 'rtr--draggable' : ''} ${isDraggingThis ? 'rtr--dragging' : ''} ${isDropZone && dragCard ? (isEligible ? 'rtr--dnd-eligible' : 'rtr--dnd-ineligible') : ''} ${isHover ? 'rtr--dnd-hover' : ''}`}>
+    <tr {...rowProps} className={`rtr ${isPending ? 'rtr--pending' : ''} ${isLineupSlot ? 'rtr--lineup' : ''} ${isLocked ? 'rtr--locked' : ''} ${canEdit && !isLocked ? 'rtr--tappable' : ''} ${isDraggingThis ? 'rtr--selected' : ''} ${isDropZone && dragCard ? (isEligible ? 'rtr--dnd-eligible' : 'rtr--dnd-ineligible') : ''} ${isHover ? 'rtr--dnd-hover' : ''}`}>
       <td className="rtr-slot">
         <span className="rtr-slot-label" style={{ borderLeftColor: slotColor || POS_COLOR[p.position] || 'var(--border)' }}>
           {slotLabel}{isLocked && <span className="rtr-lock" title="Locked">🔒</span>}
@@ -373,9 +381,8 @@ function EmptySlotRow({ slot, canEdit, dragCard, dragOverKey, setDragOverKey, on
   const extraCols = canEdit ? 12 : 11
   const dropKey = `lineup:${slot.key}`
   const isHover = dragOverKey === dropKey
-  const dropProps = dragCard ? {
-    onDragOver: e => { e.preventDefault(); e.stopPropagation(); setDragOverKey(dropKey) },
-    onDrop:     e => { e.preventDefault(); e.stopPropagation(); onAttemptMove(dragCard, dropKey) },
+  const dropProps = dragCard && isEligible ? {
+    onClick: () => onAttemptMove(dragCard, dropKey),
   } : {}
   return (
     <tr {...dropProps} className={`rtr rtr--empty ${dragCard ? (isEligible ? 'rtr--dnd-eligible' : 'rtr--dnd-ineligible') : ''} ${isHover ? 'rtr--dnd-hover' : ''}`}>
@@ -397,9 +404,8 @@ function EmptySlotRow({ slot, canEdit, dragCard, dragOverKey, setDragOverKey, on
 
 function EmptyZoneRow({ zoneKey, label, colorVar, canEdit, dragCard, dragOverKey, setDragOverKey, onAttemptMove, isEligible }) {
   const isHover = dragOverKey === zoneKey
-  const dropProps = dragCard ? {
-    onDragOver: e => { e.preventDefault(); e.stopPropagation(); setDragOverKey(zoneKey) },
-    onDrop:     e => { e.preventDefault(); e.stopPropagation(); onAttemptMove(dragCard, zoneKey) },
+  const dropProps = dragCard && isEligible ? {
+    onClick: () => onAttemptMove(dragCard, zoneKey),
   } : {}
   // 15 columns with MOVE, 14 without; this row renders SLOT and PLAYER and
   // spans the remainder.

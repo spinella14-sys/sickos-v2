@@ -343,12 +343,18 @@
 .tp-fa-ufa   { background:var(--green-dim); color:var(--green); border:1px solid var(--green); }
 
 /* Drag-and-drop roster moves */
-.rtr--draggable { cursor: grab; }
-.rtr--draggable:active { cursor: grabbing; }
-.rtr--dragging { opacity: 0.4; }
+/* Tap to select, tap to place. The selected row is emphasised rather than
+   faded -- when dragging, the ghost under the cursor showed what you had hold
+   of, but a tap leaves the row in place, so it has to be the thing that reads
+   as held. Eligible targets stay green. */
+.rtr--tappable { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .rtr--dnd-eligible, .tp-dnd-eligible { outline: 2px dashed var(--green); outline-offset: -2px; background: var(--green-dim); }
-.rtr--dnd-ineligible, .tp-dnd-ineligible { opacity: 0.35; }
+.rtr--dnd-ineligible, .tp-dnd-ineligible { opacity: 0.4; }
 .rtr--dnd-hover, .tp-dnd-hover { outline: 2px solid var(--green); background: var(--green-dim); }
+.rtr--selected {
+  outline: 2px solid var(--orange); outline-offset: -2px;
+  background: rgba(232,130,42,0.12);
+}
 .rtr-drag-handle { display:inline-block; cursor: grab; color: var(--text-muted); font-size: 12px; margin-right: 8px; letter-spacing: -2px; user-select: none; }
 
 /* Kickoff time under the opponent badge. */
