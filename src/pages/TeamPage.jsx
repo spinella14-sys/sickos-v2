@@ -1440,7 +1440,20 @@ export default function TeamPage() {
                           psRoster={psRoster} canEdit={canEdit}
                           opponents={opponents} nflGames={nflGames} defRankings={defRankings} transNewsIds={transNewsIds} onShowNews={showNews}
                           onDrop={setDropTarget}
-                          dragCard={dragCard} setDragCard={setDragCard} setDragOverKey={setDragOverKey}/>
+                          dragCard={dragCard} setDragCard={setDragCard} setDragOverKey={setDragOverKey}
+                          dropKey="bench" dragOverKey={dragOverKey} onAttemptMove={attemptMove}
+                          isEligible={!!dragCard && (dragCard.id||dragCard.sleeper_id) !== (r.id||r.sleeper_id)}/>
+                      ))}
+                      {/* Like IR, bench rows carried no dropKey -- the section
+                          relied on the wrapper's onDrop. Six open rows (14 active
+                          less 8 starters) give IR and PS players somewhere to
+                          land, which is what made IR -> bench unreachable. */}
+                      {Array.from({length: Math.max(0, 6 - benchPlayers.length)}).map((_,i) => (
+                        <EmptyZoneRow key={`ebn${i}`} zoneKey="bench" label="Open bench slot"
+                          colorVar="var(--text-muted)" canEdit={canEdit}
+                          dragCard={dragCard} dragOverKey={dragOverKey} setDragOverKey={setDragOverKey}
+                          onAttemptMove={attemptMove}
+                          isEligible={!!dragCard && getValidTargets(dragCard).has('bench')}/>
                       ))}
                     </tbody>
                   </table>
