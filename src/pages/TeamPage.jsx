@@ -267,8 +267,12 @@ function PlayerRow({ contract, slotLabel, slotColor, lineupAssign, onMove, slotO
       if (e.target.closest('button, a, select, input, .rtr-move-cell')) return
       if (!dragCard) { if (selectable) setDragCard(contract) ; return }
       if (isDraggingThis) { setDragCard(null); return }
-      if (isDropZone && isEligible) { onAttemptMove(dragCard, dropKey, contract); return }
-      // Tapping an ineligible row just moves the selection there.
+      // No eligibility gate here. attemptMove is the authority: it allows a
+      // direct 1-for-1 swap onto an occupied PS/IR row even when that slot is
+      // at capacity, which getValidTargets (and therefore isEligible) rejects.
+      // Gating on isEligible made every move into a full PS or IR unreachable.
+      // An invalid move is refused there with a message, exactly as on a drop.
+      if (isDropZone) { onAttemptMove(dragCard, dropKey, contract); return }
       if (selectable) setDragCard(contract)
     }
   }
@@ -381,7 +385,7 @@ function EmptySlotRow({ slot, canEdit, dragCard, dragOverKey, setDragOverKey, on
   const extraCols = canEdit ? 12 : 11
   const dropKey = `lineup:${slot.key}`
   const isHover = dragOverKey === dropKey
-  const dropProps = dragCard && isEligible ? {
+  const dropProps = dragCard ? {
     onClick: () => onAttemptMove(dragCard, dropKey),
   } : {}
   return (
@@ -404,7 +408,7 @@ function EmptySlotRow({ slot, canEdit, dragCard, dragOverKey, setDragOverKey, on
 
 function EmptyZoneRow({ zoneKey, label, colorVar, canEdit, dragCard, dragOverKey, setDragOverKey, onAttemptMove, isEligible }) {
   const isHover = dragOverKey === zoneKey
-  const dropProps = dragCard && isEligible ? {
+  const dropProps = dragCard ? {
     onClick: () => onAttemptMove(dragCard, zoneKey),
   } : {}
   // 15 columns with MOVE, 14 without; this row renders SLOT and PLAYER and
