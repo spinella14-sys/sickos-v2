@@ -1494,13 +1494,7 @@ export default function TeamPage() {
                   <table className="tp-table">
                     <TableHeader/>
                     <tbody>
-                      {irRoster.length === 0 ? (
-                        <tr className="rtr rtr--empty">
-                          <td className="rtr-slot"><span className="rtr-slot-label" style={{borderLeftColor:'var(--red)',color:'var(--text-muted)'}}>IR</span></td>
-                          <td className="rtr-player"><div className="rtr-empty-cell"><div className="rtr-empty-avatar"/><span className="rtr-empty-text">No players on injured reserve</span></div></td>
-                          <td colSpan={extraColSpan}/>
-                        </tr>
-                      ) : irRoster.map((r,i) => (
+                      {irRoster.map((r,i) => (
                         <PlayerRow key={r.id||i} contract={r} slotLabel="IR" isLocked={isPlayerLocked(r)}
                           slotColor="var(--red)" lineupAssign={lineupAssign}
                           onMove={handleMove}
@@ -1510,8 +1504,19 @@ export default function TeamPage() {
                           psRoster={psRoster} canEdit={canEdit}
                           opponents={opponents} nflGames={nflGames} defRankings={defRankings} transNewsIds={transNewsIds} onShowNews={showNews}
                           onDrop={setDropTarget}
-                          dragCard={dragCard} setDragCard={setDragCard} setDragOverKey={setDragOverKey}/>
+                          dragCard={dragCard} setDragCard={setDragCard} setDragOverKey={setDragOverKey}
+                          dropKey="ir" dragOverKey={dragOverKey} onAttemptMove={attemptMove}
+                          isEligible={!!dragCard && (dragCard.id||dragCard.sleeper_id) !== (r.id||r.sleeper_id)}/>
                       ))}
+                      {/* IR rows carried no dropKey or onAttemptMove -- the whole
+                          section was a drop target via the wrapper's onDrop, so
+                          with drag gone there was nothing in IR to tap at all.
+                          An open row always renders, since IR is unlimited. */}
+                      <EmptyZoneRow zoneKey="ir" label={irRoster.length ? 'Open IR slot' : 'No players on injured reserve'}
+                        colorVar="var(--red)" canEdit={canEdit}
+                        dragCard={dragCard} dragOverKey={dragOverKey} setDragOverKey={setDragOverKey}
+                        onAttemptMove={attemptMove}
+                        isEligible={!!dragCard && getValidTargets(dragCard).has('ir')}/>
                     </tbody>
                   </table>
                 </div>
