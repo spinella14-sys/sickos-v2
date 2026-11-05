@@ -16,15 +16,26 @@ const FALLBACK_HOUR_ET = 23
 // on either side of the DST change depending on the year.
 function deadlineInstant(dateStr, timeStr) {
   const [y, m, d] = dateStr.split('-').map(Number)
-  const hour = timeStr ? parseInt(timeStr.split(':')[0]) : FALLBACK_HOUR_ET
+  const [hStr, mStr] = (timeStr || '').split(':')
+  const hour   = timeStr ? parseInt(hStr) : FALLBACK_HOUR_ET
+  const minute = timeStr ? (parseInt(mStr) || 0) : 0
 
-  // Start from the naive UTC instant, then measure how far ET is from UTC on
-  // that date and shift by it.
-  const naive = Date.UTC(y, m - 1, d, hour)
-  const asET  = new Date(naive).toLocaleString('en-US', { timeZone: 'America/New_York' })
-  const drift = naive - new Date(asET).getTime()
+  // Read the ET offset off the date itself. The previous version round-tripped
+  // through new Date(localeString), which parses in the BROWSER's timezone --
+  // on an Eastern machine the drift came out 0 and the deadline resolved to
+  // 11pm UTC, i.e. 6pm ET, five hours early. formatToParts avoids the parse.
+  const guess = Date.UTC(y, m - 1, d, hour, minute)
+  const p = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York', hour12: false,
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+  }).formatToParts(new Date(guess)).reduce((acc, part) => {
+    acc[part.type] = part.value
+    return acc
+  }, {})
 
-  return new Date(naive + drift)
+  const etAsUTC = Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour % 24, +p.minute, +p.second)
+  return new Date(guess + (guess - etAsUTC))
 }
 
 export default function TradeDeadlineNote() {
