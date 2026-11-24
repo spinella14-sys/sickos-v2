@@ -7,7 +7,6 @@ import TRTL   from './TRTL.jpg'
 import GG     from './GG.jpg'
 import RAY    from './RAY.jpg'
 import MAC    from './MAC.png'
-import FLA    from './FLA.jpg'
 import WIXT   from './WIXT.jpg'
 import FLEM   from './FLEM.jpg'
 import STAY   from './STAY.jpg'
@@ -19,8 +18,11 @@ import LEAGUE from './LEAGUE.png'
 
 const LOGOS = {
   NH, JJ, JOH, ACC, TRTL, GG, RAY, MAC,
-  FLA, WIXT, FLEM, STAY, SANT, H2P, SNOW, CER,
+  WIXT, FLEM, STAY, SANT, H2P, SNOW, CER,
   LEAGUE,
+  // FLA is the league office now, not a managed franchise. The abbrev stays
+  // -- it is the foreign key across matchups, rosters, contracts and lineups.
+  FLA: LEAGUE,
 }
 
 export default LOGOS

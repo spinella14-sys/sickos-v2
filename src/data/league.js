@@ -59,7 +59,7 @@ export const TEAMS = [
   { abbrev: 'GG',   name: 'Gang Green',                     manager: 'Trey Morin',        salary: 107.37, wins: 7, losses: 6,  color: { primary: '#004c54', accent: '#3dba6e', text: '#ffffff' } },
   { abbrev: 'RAY',  name: 'Boiler Boys',                    manager: 'Kyle Ray',          salary: 105.36, wins: 6, losses: 7,  color: { primary: '#1a1a1a', accent: '#c28f2c', text: '#ffffff' } },
   { abbrev: 'MAC',  name: 'Take Off Your Pads and Jacket',  manager: 'Mac McDonald',      salary: 101.61, wins: 8, losses: 5,  color: { primary: '#2d0057', accent: '#00bcd4', text: '#ffffff' } },
-  { abbrev: 'FLA',  name: 'Fantasy Frodo',                  manager: 'Evan Volpe',        salary: 110.11, wins: 7, losses: 6,  color: { primary: '#1a3d1a', accent: '#c8a84b', text: '#ffffff' } },
+  { abbrev: 'FLA',  name: 'Sickos League Office',          manager: 'League Office',     salary: 110.11, wins: 7, losses: 6,  color: { primary: '#1a3d1a', accent: '#c8a84b', text: '#ffffff' } },
   { abbrev: 'WIXT', name: 'Team Wixted',                    manager: 'Gerry Wixted',      salary:  93.38, wins: 4, losses: 9,  color: { primary: '#1a1a1a', accent: '#f57c00', text: '#ffffff' } },
   { abbrev: 'FLEM', name: "Buc-ee's Nabers",                manager: 'Parker Fleming',    salary: 117.75, wins: 9, losses: 4,  color: { primary: '#8b0000', accent: '#f5c518', text: '#ffffff' } },
   { abbrev: 'STAY', name: 'Team Stayman',                   manager: 'Rich Stayman',      salary: 118.48, wins: 8, losses: 5,  color: { primary: '#0d2b6b', accent: '#5b9bd5', text: '#ffffff' } },

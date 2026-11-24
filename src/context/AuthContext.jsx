@@ -32,7 +32,12 @@ export function AuthProvider({ children }) {
       .select('*, teams(name, abbrev)')
       .eq('id', userId)
       .single()
-    setManager(data || null)
+    // is_active is a real gate, not a label. It existed on managers and was
+    // read nowhere, so deactivating someone looked like it removed them and
+    // changed nothing -- and team_abbrev is NOT NULL, so there was no way to
+    // detach a manager from their team either. A deactivated manager now gets
+    // no team and no admin rights even with a valid session.
+    setManager(data?.is_active === false ? null : (data || null))
     setLoading(false)
   }
 
