@@ -143,8 +143,25 @@ export default function FreeAgentsPage() {
   // separate from statsMap above, purely additive, general-purpose
   // endpoint shared across Free Agents/PlayerPage/PlayerCard/Roster.
   const [poolStatsMap, setPoolStatsMap] = useState({})
+
+  // Season projections are the wrong number to bid on after week 1 -- what
+  // matters is what the player does for you THIS week. pool-stats already
+  // serves weekly rows when given a week; the page simply never asked.
+  //
+  // The week comes from the server's Tuesday-2am boundary rather than being
+  // derived here, so a Wednesday or Thursday bid window shows the upcoming
+  // week rather than one whose games have already been played.
+  const [projWeek, setProjWeek] = useState(undefined)   // undefined = resolving
   useEffect(() => {
-    fetch(`${API_BASE}/players/pool-stats`)
+    fetch(`${API_BASE}/lineup/meta/current-week`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => setProjWeek(d?.week ?? d?.current_week ?? null))
+      .catch(() => setProjWeek(null))
+  }, [])
+
+  useEffect(() => {
+    if (projWeek === undefined) return      // don't flash season numbers first
+    fetch(`${API_BASE}/players/pool-stats${projWeek ? `?week=${projWeek}` : ''}`)
       .then(r => r.ok ? r.json() : null)
       .then(d => {
         const map = {}
@@ -152,7 +169,7 @@ export default function FreeAgentsPage() {
         setPoolStatsMap(map)
       })
       .catch(() => {})
-  }, [])
+  }, [projWeek])
 
 
 
@@ -360,7 +377,7 @@ export default function FreeAgentsPage() {
                     <th className="fa-th"><SortHeader colKey="fantasy_pts" label="PTS" title="Season Fantasy Points" /></th>
                     <th className="fa-th"><SortHeader colKey="pts_pg" label="PTS/G" title="Fantasy Points Per Game" /></th>
                     <th className="fa-th"><SortHeader colKey="pos_rank" label="POS RK" title="Position Rank by PTS/G" /></th>
-                    <th className="fa-th"><SortHeader colKey="proj_pts" label="PROJ" title="2026 Projected Fantasy Points" /></th>
+                    <th className="fa-th"><SortHeader colKey="proj_pts" label="PROJ" title={projWeek ? `Week ${projWeek} projected fantasy points` : '2026 projected fantasy points'} /></th>
                     <th className="fa-th"><SortHeader colKey="adp" label="ADP" title="Average Draft Position in standard redraft leagues" /></th>
                     <th className="fa-th"><SortHeader colKey="owned_pct" label="%OWNED" title="Percent Owned + Trend" /></th>
 
