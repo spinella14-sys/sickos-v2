@@ -42,7 +42,7 @@ export default function TradeUpdatePopup() {
     }
 
     check()
-    pollRef.current = setInterval(check, 15000)
+    pollRef.current = setInterval(check, 90000)
     return () => clearInterval(pollRef.current)
   }, [team])
 
