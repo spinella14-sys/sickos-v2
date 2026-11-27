@@ -2,7 +2,10 @@ import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../context/AuthContext'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
-const POLL_MS = 15000
+// 15s meant 5,760 fetches a day per open tab, each returning the team's FULL
+// message list, for an event that happens three times a week. The list is
+// filtered client-side, so the whole thing crosses the wire every time.
+const POLL_MS = 120000
 
 // Results of an FA window, shown once to each manager who bid in it.
 //
@@ -24,14 +27,12 @@ export default function FAResultsPopup() {
     if (!team) return
 
     const check = () => {
-      fetch(`${API_BASE}/messages`, { headers: { 'x-team-abbrev': team } })
+      // Server-side filtered: normally an empty array. Fetching the whole
+      // inbox and filtering here shipped up to 100 full messages, payloads
+      // included, on every poll.
+      fetch(`${API_BASE}/messages/unread-fa`, { headers: { 'x-team-abbrev': team } })
         .then(r => r.ok ? r.json() : [])
-        .then(all => {
-          const unread = (Array.isArray(all) ? all : [])
-            .filter(m => m.message_type === 'fa_results')
-            .filter(m => !m.is_read)
-          setMsgs(unread)
-        })
+        .then(all => setMsgs(Array.isArray(all) ? all : []))
         .catch(() => {})
     }
 
